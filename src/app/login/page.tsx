@@ -22,26 +22,33 @@ export default function Login() {
 
     async function verificarCorreo(data: LoginData): Promise<void> {
         try {
-            const response = await fetch("https://api.example.com/login", {
+            const url = new URL("http://localhost:3000/usuarios/login");
+
+            //ENVIA LA SOLICITUD POST AL BACKEND
+            const response = await fetch(url.toString(), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify({
+                    email: data.email,
+                    password: data.password
+                }),
             });
 
             if (!response.ok || response.json() === null) {
-                console.log("Error en la respuesta de la API:", response.statusText);
-                throw new Error("Correo y/o contraseña incorrectos");
+                const errorData = await response.json();
+                throw new Error(errorData.message);
             }
 
-            router.push("/dashboard");
+            router.push("/");
 
         } catch (error: unknown) {
             console.error("Error:", error);
         }
     }
 
+    //FUNCION PARA MOSTRAR/OCULTAR LA CONTRASEÑA
     function verContaseña() {
         setMostrarPassword(prev => !prev);
     }
@@ -115,8 +122,8 @@ export default function Login() {
                             <div className="min-h-[1.25rem] transition-all duration-300 ease-in-out transform">
                                 <span
                                     className={`block text-red-600 text-sm transition-all duration-300 ease-in-out transform ${errors.password
-                                            ? 'opacity-100 translate-y-0'
-                                            : 'opacity-0 -translate-y-1 pointer-events-none select-none'
+                                        ? 'opacity-100 translate-y-0'
+                                        : 'opacity-0 -translate-y-1 pointer-events-none select-none'
                                         }`}
                                 >
                                     {errors.password?.type === "required" && "La contraseña no debe estar vacía"}
