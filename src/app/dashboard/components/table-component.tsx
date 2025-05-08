@@ -1,33 +1,29 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, Calendar, MapPin, Eye, Users, Tag, FileText, PlusCircle } from "lucide-react"
+import { Search, Calendar, MapPin, Eye, Users, Tag, FileText, PlusCircle, ChevronDown, ChevronUp } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { CreateEventDialog, type EventFormData } from "./create-event-dialog"
-
-export interface ItemData {
-  id: string
-  nombre: string
-  fechaInicio?: string
-  fechaFinalizacion?: string
-  direccion?: string
-  visibilidad?: string
-  categorias?: string[]
-  capacidad?: number
-  estado?: string
-  categoria: string
-}
+import type { ItemData } from "./data-table"
 
 interface TableComponentProps {
   items?: ItemData[]
   onItemClick: (item: ItemData) => void
   onCreateEvent?: (data: EventFormData) => void
+  selectedItemId?: string
+  renderDetails?: (item: ItemData) => ReactNode
 }
 
-export function TableComponent({ items = [], onItemClick, onCreateEvent }: TableComponentProps) {
+export function TableComponent({
+  items = [],
+  onItemClick,
+  onCreateEvent,
+  selectedItemId,
+  renderDetails,
+}: TableComponentProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -65,6 +61,7 @@ export function TableComponent({ items = [], onItemClick, onCreateEvent }: Table
   const handleCreateEvent = (data: EventFormData) => {
     if (onCreateEvent) {
       onCreateEvent(data)
+      setIsDialogOpen(false)
     }
   }
 
@@ -87,7 +84,7 @@ export function TableComponent({ items = [], onItemClick, onCreateEvent }: Table
         </Button>
       </div>
 
-      <div className="rounded-md border overflow-x-auto">
+      <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -146,55 +143,77 @@ export function TableComponent({ items = [], onItemClick, onCreateEvent }: Table
               </TableRow>
             ) : (
               filteredItems.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell
-                    className="font-medium cursor-pointer hover:text-blue-600 hover:underline"
-                    onClick={() => onItemClick(item)}
-                  >
-                    {item.nombre}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">{formatDate(item.fechaInicio)}</TableCell>
-                  <TableCell className="hidden md:table-cell">{formatDate(item.fechaFinalizacion)}</TableCell>
-                  <TableCell className="hidden lg:table-cell max-w-[200px] truncate" title={item.direccion}>
-                    {item.direccion || "-"}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {item.visibilidad ? (
-                      <Badge variant={getVisibilityBadgeVariant(item.visibilidad) as any}>{item.visibilidad}</Badge>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden xl:table-cell">
-                    {item.categorias && item.categorias.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {item.categorias.slice(0, 2).map((cat, index) => (
-                          <Badge key={index} variant="outline" className="whitespace-nowrap">
-                            {cat}
-                          </Badge>
-                        ))}
-                        {item.categorias.length > 2 && <Badge variant="outline">+{item.categorias.length - 2}</Badge>}
+                <>
+                  <TableRow key={item.id} className={selectedItemId === item.id ? "bg-muted/50 border-b-0" : ""}>
+                    <TableCell
+                      className={`font-medium cursor-pointer hover:text-blue-600 hover:underline ${
+                        selectedItemId === item.id ? "text-blue-600" : ""
+                      }`}
+                      onClick={() => onItemClick(item)}
+                    >
+                      <div className="flex items-center gap-2">
+                        {selectedItemId === item.id ? (
+                          <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                        )}
+                        {item.nombre}
                       </div>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {item.capacidad !== undefined ? item.capacidad : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {item.estado ? (
-                      <Badge variant={getStatusBadgeVariant(item.estado) as any}>{item.estado}</Badge>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => onItemClick(item)}>
-                      Ver detalles
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{formatDate(item.fechaInicio)}</TableCell>
+                    <TableCell className="hidden md:table-cell">{formatDate(item.fechaFinalizacion)}</TableCell>
+                    <TableCell className="hidden lg:table-cell max-w-[200px] truncate" title={item.direccion}>
+                      {item.direccion || "-"}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {item.visibilidad ? (
+                        <Badge variant={getVisibilityBadgeVariant(item.visibilidad) as any}>{item.visibilidad}</Badge>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      {item.categorias && item.categorias.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {item.categorias.slice(0, 2).map((cat, index) => (
+                            <Badge key={index} variant="outline" className="whitespace-nowrap">
+                              {cat}
+                            </Badge>
+                          ))}
+                          {item.categorias.length > 2 && <Badge variant="outline">+{item.categorias.length - 2}</Badge>}
+                        </div>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {item.capacidad !== undefined ? item.capacidad : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {item.estado ? (
+                        <Badge variant={getStatusBadgeVariant(item.estado) as any}>{item.estado}</Badge>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant={selectedItemId === item.id ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => onItemClick(item)}
+                      >
+                        {selectedItemId === item.id ? "Ocultar" : "Ver detalles"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  {selectedItemId === item.id && renderDetails && (
+                    <TableRow className="bg-muted/30">
+                      <TableCell colSpan={9} className="p-0 border-t-0">
+                        <div className="animate-in fade-in-0 zoom-in-95 duration-200">{renderDetails(item)}</div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
               ))
             )}
           </TableBody>
