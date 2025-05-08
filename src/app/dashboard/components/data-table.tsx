@@ -7,6 +7,7 @@ import { DetailView } from "../components/detail-view"
 import { MapView } from "../components/map-view"
 import { Button } from "@/components/ui/button"
 import { ReloadIcon } from "./ui/iconos"
+import { fetchEventos } from "../utils/eventos"
 
 // Tipo para los datos que vendrán de la API
 export type ItemData = {
@@ -38,9 +39,9 @@ export function DataTable() {
 		setIsLoading(true)
 		try {
 			// Aquí se reemplazaría con la llamada real a la API
-			const response = await fetch("/api/items")
-			const data = await response.json()
+			const data = await fetchEventos()
 			setItems(data)
+
 		} catch (error) {
 			console.error("Error al cargar los datos:", error)
 		} finally {
