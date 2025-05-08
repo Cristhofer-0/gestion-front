@@ -134,7 +134,7 @@ export function DataTable() {
 		<div className="container mx-auto py-6">
 			<Card className="w-full mb-6">
 				<CardHeader>
-					<CardTitle>Gestión de Ubicaciones</CardTitle>
+					<CardTitle>Gestión de Eventos</CardTitle>
 					<CardDescription>Visualiza y gestiona todas las ubicaciones disponibles</CardDescription>
 					<div className="flex gap-2">
 						<Button onClick={fetchData} disabled={isLoading}>
