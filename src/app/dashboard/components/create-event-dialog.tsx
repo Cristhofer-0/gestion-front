@@ -15,6 +15,8 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { crearEvento } from "../utils/eventos"
+import { ItemData } from "../components/data-table"
 
 interface CreateEventDialogProps {
   open: boolean
@@ -39,6 +41,28 @@ export interface EventFormData {
   capacity: string
 }
 
+const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
+  orgId: data.organizerId,
+  titulo: data.title,
+  descripcion: data.description,
+  categoria: data.categories[0], // Ajusta según tu lógica
+  fechaInicio: data.startDate?.toISOString(),
+  fechaFinalizacion: data.endDate?.toISOString(),
+  direccion: data.address,
+  visibilidad: data.visibility as any,
+  categorias: data.categories,
+  capacidad: Number(data.capacity),
+  estado: data.status as any,
+  ubicacion: {
+    lat: Number(data.latitude),
+    lng: Number(data.longitude),
+  },
+  Latitude: data.latitude,
+  bannerUrl: data.bannerUrl,
+  videoUrl: data.videoUrl,
+})
+
+
 export function CreateEventDialog({ open, onOpenChange, onSubmit }: CreateEventDialogProps) {
   const [formData, setFormData] = useState<EventFormData>({
     organizerId: "",
@@ -49,7 +73,7 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit }: CreateEventD
     address: "",
     latitude: "",
     longitude: "",
-    visibility: "público",
+    visibility: "public",
     categories: [],
     bannerUrl: "",
     videoUrl: "",
@@ -68,7 +92,7 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit }: CreateEventD
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleDateChange = (name: "startDate" | "endDate", date: Date | null) => {
+  const handleDateChange = (name: "startDate" | "endDate", date: Date | undefined) => {
     setFormData((prev) => ({ ...prev, [name]: date }))
   }
 
@@ -89,11 +113,19 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit }: CreateEventD
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+ try {
+    const itemData = adaptFormDataToItemData(formData)
+    console.log("Datos a enviar al backend:", itemData) // 👈 Imprime aquí
+    await crearEvento(itemData)
     onOpenChange(false)
+  } catch (error) {
+    console.error("Error al crear el evento:", error)
   }
+}
+
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -229,9 +261,9 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit }: CreateEventD
                   <SelectValue placeholder="Seleccionar visibilidad" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="público">Público</SelectItem>
-                  <SelectItem value="privado">Privado</SelectItem>
-                  <SelectItem value="solo invitación">Solo Invitación</SelectItem>
+                  <SelectItem value="public">Público</SelectItem>
+                  <SelectItem value="private">Privado</SelectItem>
+
                 </SelectContent>
               </Select>
             </div>

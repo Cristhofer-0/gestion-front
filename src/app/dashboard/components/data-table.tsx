@@ -10,8 +10,9 @@ import { ReloadIcon } from "./ui/iconos"
 import { fetchEventos } from "../utils/eventos"
 
 export type ItemData = {
+  orgId: String
   Latitude: string
-  id: string
+  id?: string
   titulo: string
   descripcion: string
   categoria: string
@@ -21,7 +22,7 @@ export type ItemData = {
   visibilidad?: "público" | "privado" | "solo invitación"
   categorias?: string[]
   capacidad?: number
-  estado?: "published" | "draft"
+  estado?: "publicado" | "borrador"
   ubicacion?: {
     lat: number
     lng: number
