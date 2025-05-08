@@ -3,8 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // ICONOS
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
@@ -16,9 +17,17 @@ interface LoginData {
 }
 
 export default function Login() {
-    const { register, handleSubmit, formState: { errors } } = useForm<LoginData>();
+    const { register, handleSubmit, watch, formState: { errors } } = useForm<LoginData>();
     const router = useRouter();
     const [mostrarPassword, setMostrarPassword] = useState(false);
+    const [emailLleno, setEmailLleno] = useState(false);
+
+    const valorEmail = watch("email");
+
+    useEffect(() => {
+        setEmailLleno((valorEmail || "").trim() !== "");
+    }, [valorEmail]);
+
 
     async function verificarCorreo(data: LoginData): Promise<void> {
         try {
@@ -40,7 +49,6 @@ export default function Login() {
                 const errorData = await response.json();
                 throw new Error(errorData.message);
             }
-
             router.push("/");
 
         } catch (error: unknown) {
@@ -52,6 +60,7 @@ export default function Login() {
     function verContaseña() {
         setMostrarPassword(prev => !prev);
     }
+
 
     return (
         <div className="flex justify-center items-center bg-slate-100 h-full md:min-h-screen p-4">
@@ -65,15 +74,13 @@ export default function Login() {
                         <h3 className="text-3xl font-bold text-blue-600">Iniciar sesión</h3>
                     </div>
 
-                    <div className="space-y-6">
-                    </div>
-
                     {/* INPUT CORREO */}
                     <div className="space-y-1">
                         <div className="relative flex items-center">
                             <input
                                 type="text"
-                                className="w-full text-slate-800 text-sm border-b border-slate-300 focus:border-blue-600 px-2 py-3 pr-8 outline-none"
+                                className={`w-full text-slate-800 text-sm border-b border-slate-300 focus:border-blue-600 px-2 py-3 pr-8 outline-none
+                                ${emailLleno ? 'opacity-100' : 'opacity-50'} transition-all duration-300 ease-in-out transform`}
                                 {...register("email", {
                                     required: true,
                                     pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i
@@ -102,16 +109,18 @@ export default function Login() {
                     {/* INPUT CONTRASEÑA */}
                     <div className="space-y-1">
                         <div className="relative flex items-center">
-                            <input
-                                type={mostrarPassword ? "text" : "password"}
+
+
+                            {emailLleno ? (<Input type={mostrarPassword ? "text" : "password"}
                                 {...register("password", {
                                     required: true,
                                     minLength: 6,
                                     maxLength: 20,
-                                })}
-                                className="w-full text-slate-800 text-sm border-b border-slate-300 focus:border-blue-600 px-2 py-3 pr-8 outline-none"
-                                placeholder="Ingresar contraseña"
-                            />
+                                })} placeholder='Ingresar contraseña' className="w-full text-slate-800 text-sm border-b border-slate-300 px-2 py-3 pr-8 outline-none placeholder-red-500"
+                            />) : (
+                                <Input disabled type="password" placeholder="Ingrese su correo electronico primero" className="w-full text-red-800 text-sm border-b border-slate-300 px-2 py-3 pr-8 outline-none placeholder-red-500" />
+                            )}
+
                             {mostrarPassword ? (
                                 <FaRegEye className="w-[24px] h-[24px] absolute right-1 cursor-pointer" onClick={verContaseña} />
                             ) : (
@@ -128,12 +137,11 @@ export default function Login() {
                                 >
                                     {errors.password?.type === "required" && "La contraseña no debe estar vacía"}
                                     {errors.password?.type === "minLength" && "La contraseña debe tener al menos 6 caracteres"}
+                                    {errors.password?.type === "maxLength" && "La contraseña no debe exceder los 20 caracteres"}
                                 </span>
                             </div>
 
                         </div>
-
-
                         {/* RECORDAR Y OLVIDAR */}
                         <div className="flex flex-wrap items-center justify-between gap-4">
                             <div className="flex items-center">
