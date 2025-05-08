@@ -18,12 +18,7 @@ export async function fetchEventos(): Promise<ItemData[]> {
 		fechaInicio: event.StartDate,
 		fechaFinalizacion: event.EndDate,
 		direccion: event.Address,
-		visibilidad:
-			event.Visibility === "public"
-				? "público"
-				: event.Visibility === "private"
-				? "privado"
-				: "solo invitación",
+		visibilidad: event.Visibility,
 		categorias: event.Categories?.split(",").map((c: string) => c.trim()) || [],
 		capacidad: event.Capacity,
 		estado: event.Status,
@@ -54,12 +49,7 @@ export async function crearEvento(nuevoEvento: ItemData): Promise<void> {
 			StartDate: nuevoEvento.fechaInicio,
 			EndDate: nuevoEvento.fechaFinalizacion,
 			Address: nuevoEvento.direccion,
-			Visibility:
-				nuevoEvento.visibilidad === "público"
-					? "public"
-					: nuevoEvento.visibilidad === "privado"
-					? "private"
-					: "invite-only",
+			Visibility: nuevoEvento.visibilidad,
 			Categories: nuevoEvento.categorias?.join(",") || "",
 			Capacity: nuevoEvento.capacidad,
 			Status: nuevoEvento.estado,
