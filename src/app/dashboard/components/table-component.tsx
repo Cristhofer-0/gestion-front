@@ -4,16 +4,17 @@ import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, Calendar, MapPin, Eye, Users, Tag, FileText } from "lucide-react"
+import { Search, Calendar, MapPin, Eye, Users, Tag, FileText, PlusCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import type { ItemData } from "./data-table"
 
 interface TableComponentProps {
-    items: ItemData[]
+    items?: ItemData[]
     onItemClick: (item: ItemData) => void
+    onCreateEvent?: () => void
 }
 
-export function TableComponent({ items, onItemClick }: TableComponentProps) {
+export function TableComponent({ items = [], onItemClick, onCreateEvent  }: TableComponentProps) {
     const [searchTerm, setSearchTerm] = useState("")
 
     // Filtrar los elementos según el término de búsqueda
@@ -60,6 +61,10 @@ export function TableComponent({ items, onItemClick }: TableComponentProps) {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <Button onClick={onCreateEvent} className="flex items-center gap-2">
+                <PlusCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Crear Evento</span>
+                </Button>
             </div>
 
             <div className="rounded-md border overflow-x-auto">
