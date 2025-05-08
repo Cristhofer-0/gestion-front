@@ -8,6 +8,7 @@ import { Search, Calendar, MapPin, Eye, Users, Tag, FileText, PlusCircle, Chevro
 import { Badge } from "@/components/ui/badge"
 import { CreateEventDialog, type EventFormData } from "./create-event-dialog"
 import type { ItemData } from "./data-table"
+import { EditEventDialog } from "./edit-event-dialog"
 
 interface TableComponentProps {
   items?: ItemData[]
@@ -26,11 +27,13 @@ export function TableComponent({
 }: TableComponentProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [eventToEdit, setEventToEdit] = useState<ItemData | null>(null)
+  const [editOpen, setEditOpen] = useState(false)
 
   // Filtrar los elementos según el término de búsqueda
   const filteredItems = items.filter(
     (item) =>
-      item.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.direccion && item.direccion.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (item.categorias && item.categorias.some((cat) => cat.toLowerCase().includes(searchTerm.toLowerCase()))),
@@ -88,7 +91,7 @@ export function TableComponent({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nombre</TableHead>
+              <TableHead>Titulo</TableHead>
               <TableHead className="hidden md:table-cell">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
@@ -157,7 +160,7 @@ export function TableComponent({
                         ) : (
                           <ChevronDown className="h-4 w-4 flex-shrink-0" />
                         )}
-                        {item.nombre}
+                        {item.titulo}
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{formatDate(item.fechaInicio)}</TableCell>
@@ -197,13 +200,22 @@ export function TableComponent({
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant={selectedItemId === item.id ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => onItemClick(item)}
-                      >
-                        {selectedItemId === item.id ? "Ocultar" : "Ver detalles"}
-                      </Button>
+                    <Button onClick={() => {
+                      setEventToEdit(item) // Este `item` debería venir directo desde la API
+                      setEditOpen(true)
+                    }}>
+                      Editar
+                    </Button>
+                    {eventToEdit && (
+                      <EditEventDialog
+                        open={editOpen}
+                        onOpenChange={setEditOpen}
+                        event={eventToEdit}
+                        onSubmit={(data) => {
+                          console.log("Actualizar evento:", data)
+                        }}
+                      />
+                    )}
                     </TableCell>
                   </TableRow>
                   {selectedItemId === item.id && renderDetails && (

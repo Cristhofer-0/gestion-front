@@ -11,7 +11,7 @@ export async function fetchEventos(): Promise<ItemData[]> {
 
 	const transformedData: ItemData[] = rawData.map((event: any) => ({
 		id: event.EventId.toString(),
-		nombre: event.Title,
+		titulo: event.Title,
 		descripcion: event.Description,
 		categoria: "General", // Puedes ajustar esto si tu evento tiene una categoría real
 		fechaInicio: event.StartDate,
@@ -36,3 +36,38 @@ export async function fetchEventos(): Promise<ItemData[]> {
 
 	return transformedData
 }
+
+export async function updateEvento(id: string, updatedData: Partial<ItemData>): Promise<void> {
+	const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+	const response = await fetch(`${API_BASE_URL}/eventos/${id}`, {
+	  method: "PUT",
+	  headers: {
+		"Content-Type": "application/json",
+	  },
+	  body: JSON.stringify({
+		Title: updatedData.titulo,
+		Description: updatedData.descripcion,
+		StartDate: updatedData.fechaInicio,
+		EndDate: updatedData.fechaFinalizacion,
+		Address: updatedData.direccion,
+		Visibility:
+		  updatedData.visibilidad === "público"
+			? "public"
+			: updatedData.visibilidad === "privado"
+			? "private"
+			: "invite_only",
+		Categories: updatedData.categorias?.join(","),
+		Capacity: updatedData.capacidad,
+		Status: updatedData.estado,
+		Latitude: updatedData.ubicacion?.lat,
+		Longitude: updatedData.ubicacion?.lng,
+		BannerUrl: updatedData.bannerUrl,
+		VideoUrl: updatedData.videoUrl,
+	  }),
+	})
+  
+	if (!response.ok) {
+	  throw new Error("No se pudo actualizar el evento")
+	}
+  }
+  

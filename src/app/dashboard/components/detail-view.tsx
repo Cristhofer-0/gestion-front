@@ -39,7 +39,7 @@ export function DetailView({ item }: DetailViewProps) {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>{item.nombre}</CardTitle>
+          <CardTitle>{item.titulo}</CardTitle>
           <Badge variant={getStatusBadgeVariant(item.estado) as any}>{item.estado || "Sin estado"}</Badge>
         </div>
       </CardHeader>

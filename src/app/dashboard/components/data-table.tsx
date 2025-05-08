@@ -10,8 +10,9 @@ import { ReloadIcon } from "./ui/iconos"
 import { fetchEventos } from "../utils/eventos"
 
 export type ItemData = {
+  Latitude: string
   id: string
-  nombre: string
+  titulo: string
   descripcion: string
   categoria: string
   fechaInicio?: string
@@ -25,7 +26,8 @@ export type ItemData = {
     lat: number
     lng: number
   }
-  // Otros campos que puedan venir de la API
+  bannerUrl?: string
+  videoUrl?: string
 }
 
 export function DataTable() {

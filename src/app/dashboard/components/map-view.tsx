@@ -56,7 +56,7 @@ export function MapView({ item }: MapViewProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ubicación de {item.nombre}</CardTitle>
+        <CardTitle>Ubicación de {item.titulo}</CardTitle>
       </CardHeader>
       <CardContent>
         <div ref={mapContainerRef} className="h-[400px] w-full bg-muted rounded-md flex items-center justify-center">
