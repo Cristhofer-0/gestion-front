@@ -1,103 +1,368 @@
+"use client"
+
+import type React from "react"
+
 import { useState, useEffect } from "react"
-import type { ItemData } from "./data-table"
-import type { EditEventFormData } from "../utils/types" // si lo extraes
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import { CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { editarEvento } from "../utils/eventos"
+import type { ItemData } from "./data-table"
+import type { EventFormData } from "./create-event-dialog"
 
 interface EditEventDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  event: ItemData
-  onSubmit: (data: EditEventFormData) => void
+  onSubmit: (data: EventFormData) => void
+  eventData: ItemData | null
 }
 
-export function EditEventDialog({ open, onOpenChange, event, onSubmit }: EditEventDialogProps) {
-  const [formData, setFormData] = useState<EditEventFormData>({
-    titulo: "",
-    descripcion: "",
-    direccion: "",
-    fechaInicio: "",
-    fechaFinalizacion: "",
-    visibilidad: "público",
-    estado: "draft",
-    categorias: [],
-    capacidad: 0,
-    bannerUrl: "",
-    videoUrl: "",
-    ubicacion: { lat: 0, lng: 0 },
-  })
-
-  // Actualiza formData cuando el evento cambie
-  useEffect(() => {
-    if (event) {
-      setFormData({
-        titulo: event.titulo || "",
-        descripcion: event.descripcion || "",
-        direccion: event.direccion || "",
-        fechaInicio: event.fechaInicio || "",
-        fechaFinalizacion: event.fechaFinalizacion || "",
-        visibilidad: event.visibilidad || "público",
-        estado: event.estado || "draft",
-        categorias: event.categorias || [],
-        capacidad: event.capacidad || 0,
-        bannerUrl: event.bannerUrl || "", // Asignar el Banner URL
-        videoUrl: event.videoUrl || "", // Asignar el Video URL
-        ubicacion: {
-          lat: event.ubicacion?.lat || 0, // Asignar la Latitud
-          lng: event.ubicacion?.lng || 0, // Asignar la Longitud
-        },
-      })
+// Función para adaptar ItemData a EventFormData
+const adaptItemDataToFormData = (item: ItemData | null): EventFormData => {
+  if (!item) {
+    return {
+      organizerId: "",
+      title: "",
+      description: "",
+      startDate: null,
+      endDate: null,
+      address: "",
+      latitude: "",
+      longitude: "",
+      visibility: "public",
+      categories: [],
+      bannerUrl: "",
+      videoUrl: "",
+      status: "draft",
+      capacity: "",
     }
-  }, [event]) // Solo se ejecutará cuando `event` cambie
+  }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  return {
+    organizerId: item.organizerId || "",
+    title: item.titulo || "",
+    description: item.descripcion || "",
+    startDate: item.fechaInicio ? new Date(item.fechaInicio) : null,
+    endDate: item.fechaFinalizacion ? new Date(item.fechaFinalizacion) : null,
+    address: item.direccion || "",
+    latitude: item.Latitude || item.ubicacion?.lat?.toString() || "",
+    longitude: item.ubicacion?.lng?.toString() || "",
+    visibility: item.visibilidad === "público" ? "public" : item.visibilidad === "privado" ? "private" : "public",
+    categories: item.categorias || [],
+    bannerUrl: item.bannerUrl || "",
+    videoUrl: item.videoUrl || "",
+    status: item.estado || "draft",
+    capacity: item.capacidad?.toString() || "",
+  }
+}
+
+// Función para adaptar EventFormData a ItemData para actualización
+const adaptFormDataToItemData = (data: EventFormData, originalId: string): ItemData => ({
+  id: originalId,
+  organizerId: data.organizerId,
+  titulo: data.title,
+  descripcion: data.description,
+  categoria: data.categories[0] || "",
+  fechaInicio: data.startDate?.toISOString(),
+  fechaFinalizacion: data.endDate?.toISOString(),
+  direccion: data.address,
+  visibilidad: data.visibility === "public" ? "público" : "privado",
+  categorias: data.categories,
+  capacidad: Number(data.capacity),
+  estado: data.status === "published" ? "publicado" : data.status === "draft" ? "borrador" : undefined,
+  ubicacion: {
+    lat: Number(data.latitude),
+    lng: Number(data.longitude),
+  },
+  Latitude: data.latitude,
+  bannerUrl: data.bannerUrl,
+  videoUrl: data.videoUrl,
+})
+
+export function EditEventDialog({ open, onOpenChange, onSubmit, eventData }: EditEventDialogProps) {
+  const [formData, setFormData] = useState<EventFormData>(adaptItemDataToFormData(eventData))
+  const [categoryInput, setCategoryInput] = useState("")
+
+  // Actualizar el formulario cuando cambian los datos del evento
+  useEffect(() => {
+    if (open) {
+      setFormData(adaptItemDataToFormData(eventData))
+    }
+  }, [eventData, open])
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleDateChange = (name: "startDate" | "endDate", date: Date | undefined) => {
+    setFormData((prev) => ({ ...prev, [name]: date }))
+  }
+
+  const handleAddCategory = () => {
+    if (categoryInput.trim() && !formData.categories.includes(categoryInput.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        categories: [...prev.categories, categoryInput.trim()],
+      }))
+      setCategoryInput("")
+    }
+  }
+
+  const handleRemoveCategory = (category: string) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "latitude" || name === "longitude" ? parseFloat(value) || 0 : value,
+      categories: prev.categories.filter((c) => c !== category),
     }))
   }
 
-  const handleSelectChange = (value: "público" | "privado" | "solo invitación") => {
-    setFormData((prev) => ({ ...prev, visibilidad: value }))
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      if (!eventData?.id) {
+        console.error("No se puede actualizar un evento sin ID")
+        return
+      }
 
-  const handleSubmit = () => {
-    onSubmit(formData)
-    onOpenChange(false)
+      const itemData = adaptFormDataToItemData(formData, eventData.id)
+      console.log("Datos a enviar para actualización:", itemData)
+      await editarEvento(eventData.id, itemData)
+      onSubmit(formData)
+      onOpenChange(false)
+    } catch (error) {
+      console.error("Error al actualizar el evento:", error)
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar Evento</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <Input name="titulo" value={formData.titulo} onChange={handleChange} placeholder="Título" />
-          <Input name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Descripción" />
-          <Input name="direccion" value={formData.direccion} onChange={handleChange} placeholder="Dirección" />
-          <Input name="fechaInicio" type="date" value={formData.fechaInicio} onChange={handleChange} />
-          <Input name="fechaFinalizacion" type="date" value={formData.fechaFinalizacion} onChange={handleChange} />
-          <Input name="capacidad" type="number" value={formData.capacidad} onChange={handleChange} />
-          <Select value={formData.visibilidad} onValueChange={handleSelectChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar visibilidad" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="público">Público</SelectItem>
-              <SelectItem value="privado">Privado</SelectItem>
-              <SelectItem value="solo invitación">Solo invitación</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input name="bannerUrl" value={formData.bannerUrl} onChange={handleChange} placeholder="URL del Banner" />
-            <Input name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="URL del Video" />
-            <Input name="latitude" value={formData.ubicacion?.lat} onChange={handleChange} placeholder="Latitud" />
-            <Input name="longitude" value={formData.ubicacion?.lng} onChange={handleChange} placeholder="Longitud" />
-          <Button onClick={handleSubmit}>Guardar Cambios</Button>
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="organizerId">ID del Organizador</Label>
+              <Input
+                id="organizerId"
+                name="organizerId"
+                value={formData.organizerId}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="title">Título</Label>
+              <Input id="title" name="title" value={formData.title} onChange={handleInputChange} required />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Descripción</Label>
+            <Textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              rows={3}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Fecha de Inicio</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.startDate && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.startDate ? (
+                      format(formData.startDate, "PPP", { locale: es })
+                    ) : (
+                      <span>Seleccionar fecha</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={formData.startDate || undefined}
+                    onSelect={(date) => handleDateChange("startDate", date)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-2">
+              <Label>Fecha de Finalización</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.endDate && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.endDate ? (
+                      format(formData.endDate, "PPP", { locale: es })
+                    ) : (
+                      <span>Seleccionar fecha</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={formData.endDate || undefined}
+                    onSelect={(date) => handleDateChange("endDate", date)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="address">Dirección</Label>
+            <Input id="address" name="address" value={formData.address} onChange={handleInputChange} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="latitude">Latitud</Label>
+              <Input
+                id="latitude"
+                name="latitude"
+                value={formData.latitude}
+                onChange={handleInputChange}
+                type="number"
+                step="0.000001"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="longitude">Longitud</Label>
+              <Input
+                id="longitude"
+                name="longitude"
+                value={formData.longitude}
+                onChange={handleInputChange}
+                type="number"
+                step="0.000001"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="visibility">Visibilidad</Label>
+              <Select value={formData.visibility} onValueChange={(value) => handleSelectChange("visibility", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar visibilidad" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">Público</SelectItem>
+                  <SelectItem value="private">Privado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">Estado</Label>
+              <Select value={formData.status} onValueChange={(value) => handleSelectChange("status", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Borrador</SelectItem>
+                  <SelectItem value="published">Publicado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="categories">Categorías</Label>
+            <div className="flex gap-2">
+              <Input
+                id="categoryInput"
+                value={categoryInput}
+                onChange={(e) => setCategoryInput(e.target.value)}
+                placeholder="Añadir categoría"
+              />
+              <Button type="button" onClick={handleAddCategory}>
+                Añadir
+              </Button>
+            </div>
+            {formData.categories.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.categories.map((category, index) => (
+                  <div key={index} className="flex items-center bg-muted rounded-md px-2 py-1">
+                    <span className="text-sm">{category}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0 ml-1"
+                      onClick={() => handleRemoveCategory(category)}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="bannerUrl">URL del Banner</Label>
+              <Input id="bannerUrl" name="bannerUrl" value={formData.bannerUrl} onChange={handleInputChange} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="videoUrl">URL del Video</Label>
+              <Input id="videoUrl" name="videoUrl" value={formData.videoUrl} onChange={handleInputChange} />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="capacity">Capacidad</Label>
+            <Input
+              id="capacity"
+              name="capacity"
+              value={formData.capacity}
+              onChange={handleInputChange}
+              type="number"
+              min="0"
+            />
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit">Guardar Cambios</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

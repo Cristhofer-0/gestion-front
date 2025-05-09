@@ -42,7 +42,7 @@ export interface EventFormData {
 }
 
 const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
-  orgId: data.organizerId,
+  organizerId: data.organizerId,
   titulo: data.title,
   descripcion: data.description,
   categoria: data.categories[0], // Ajusta según tu lógica
@@ -124,8 +124,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     console.error("Error al crear el evento:", error)
   }
 }
-
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

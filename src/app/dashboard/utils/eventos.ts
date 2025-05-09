@@ -43,7 +43,7 @@ export async function crearEvento(nuevoEvento: ItemData): Promise<void> {
 		},
 		body: JSON.stringify({
 
-			OrganizerId: nuevoEvento.orgId,
+			OrganizerId: nuevoEvento.organizerId,
 			Title: nuevoEvento.titulo,
 			Description: nuevoEvento.descripcion,
 			StartDate: nuevoEvento.fechaInicio,
@@ -64,3 +64,34 @@ export async function crearEvento(nuevoEvento: ItemData): Promise<void> {
 		throw new Error("No se pudo crear el evento")
 	}
 }  
+
+export async function editarEvento(eventoId: string, eventoActualizado: ItemData): Promise<void> {
+	const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
+	const response = await fetch(`${API_BASE_URL}/eventos/${eventoId}`, {
+		method: "PUT",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			OrganizerId: eventoActualizado.organizerId,
+			Title: eventoActualizado.titulo,
+			Description: eventoActualizado.descripcion,
+			StartDate: eventoActualizado.fechaInicio,
+			EndDate: eventoActualizado.fechaFinalizacion,
+			Address: eventoActualizado.direccion,
+			Visibility: eventoActualizado.visibilidad,
+			Categories: eventoActualizado.categorias?.join(",") || "",
+			Capacity: eventoActualizado.capacidad,
+			Status: eventoActualizado.estado,
+			Latitude: eventoActualizado.ubicacion?.lat,
+			Longitude: eventoActualizado.ubicacion?.lng,
+			BannerUrl: eventoActualizado.bannerUrl,
+			VideoUrl: eventoActualizado.videoUrl,
+		}),
+	})
+
+	if (!response.ok) {
+		throw new Error("No se pudo editar el evento")
+	}
+}

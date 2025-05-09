@@ -10,7 +10,7 @@ import { ReloadIcon } from "./ui/iconos"
 import { fetchEventos } from "../utils/eventos"
 
 export type ItemData = {
-  orgId: String
+  organizerId: string
   Latitude: string
   id?: string
   titulo: string

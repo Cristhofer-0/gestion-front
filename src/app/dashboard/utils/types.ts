@@ -1,4 +1,5 @@
 export interface EditEventFormData {
+  organizerId: string
   titulo: string
   descripcion: string
   direccion: string
