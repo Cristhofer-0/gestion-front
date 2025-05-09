@@ -77,7 +77,7 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit }: CreateEventD
     categories: [],
     bannerUrl: "",
     videoUrl: "",
-    status: "draft",
+    status: "published",
     capacity: "",
   })
 
@@ -119,6 +119,22 @@ const handleSubmit = async (e: React.FormEvent) => {
     const itemData = adaptFormDataToItemData(formData)
     console.log("Datos a enviar al backend:", itemData) // 👈 Imprime aquí
     await crearEvento(itemData)
+     setFormData({ // ← aquí se reinicia
+      organizerId: "",
+      title: "",
+      description: "",
+      startDate: null,
+      endDate: null,
+      address: "",
+      latitude: "",
+      longitude: "",
+      visibility: "public",
+      categories: [],
+      bannerUrl: "",
+      videoUrl: "",
+      status: "published",
+      capacity: "",
+    })
     onOpenChange(false)
   } catch (error) {
     console.error("Error al crear el evento:", error)
@@ -272,8 +288,8 @@ const handleSubmit = async (e: React.FormEvent) => {
                   <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Borrador</SelectItem>
                   <SelectItem value="published">Publicado</SelectItem>
+                  <SelectItem value="draft">Borrador</SelectItem>
                 </SelectContent>
               </Select>
             </div>
