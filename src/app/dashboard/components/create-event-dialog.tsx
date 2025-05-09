@@ -261,7 +261,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 <SelectContent>
                   <SelectItem value="public">Público</SelectItem>
                   <SelectItem value="private">Privado</SelectItem>
-
+                  <SelectItem value="invite-only">Solo invitación</SelectItem>
                 </SelectContent>
               </Select>
             </div>
