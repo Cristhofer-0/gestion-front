@@ -49,7 +49,7 @@ export default function Login() {
                 const errorData = await response.json();
                 throw new Error(errorData.message);
             }
-            router.push("/");
+            router.push("/dashboard");
 
         } catch (error: unknown) {
             console.error("Error:", error);
