@@ -38,17 +38,17 @@ export function EditEventDialog({ open, onOpenChange, event, onSubmit }: EditEve
         titulo: event.titulo || "",
         descripcion: event.descripcion || "",
         direccion: event.direccion || "",
-        fechaInicio: event.fechaInicio || "",
-        fechaFinalizacion: event.fechaFinalizacion || "",
+        fechaInicio: event.fechaInicio?.split("T")[0] || "",
+        fechaFinalizacion: event.fechaFinalizacion?.split("T")[0] || "",
         visibilidad: event.visibilidad || "público",
         estado: event.estado || "draft",
         categorias: event.categorias || [],
         capacidad: event.capacidad || 0,
-        bannerUrl: event.bannerUrl || "", // Asignar el Banner URL
-        videoUrl: event.videoUrl || "", // Asignar el Video URL
+        bannerUrl: event.bannerUrl || "",
+        videoUrl: event.videoUrl || "",
         ubicacion: {
-          lat: event.ubicacion?.lat || 0, // Asignar la Latitud
-          lng: event.ubicacion?.lng || 0, // Asignar la Longitud
+          lat: event.ubicacion?.lat || 0,
+          lng: event.ubicacion?.lng || 0,
         },
       })
     }
