@@ -45,7 +45,6 @@ const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
   organizerId: data.organizerId,
   titulo: data.title,
   descripcion: data.description,
-  categoria: data.categories[0], // Ajusta según tu lógica
   fechaInicio: data.startDate?.toISOString(),
   fechaFinalizacion: data.endDate?.toISOString(),
   direccion: data.address,
