@@ -84,14 +84,16 @@ export async function editarEvento(eventoId: string, eventoActualizado: ItemData
 			Categories: eventoActualizado.categorias?.join(",") || "",
 			Capacity: eventoActualizado.capacidad,
 			Status: eventoActualizado.estado,
-			Latitude: eventoActualizado.ubicacion?.lat,
-			Longitude: eventoActualizado.ubicacion?.lng,
+			Latitude: eventoActualizado.ubicacion?.lat || 0,
+    		Longitude: eventoActualizado.ubicacion?.lng || 0,
 			BannerUrl: eventoActualizado.bannerUrl,
 			VideoUrl: eventoActualizado.videoUrl,
 		}),
 	})
 
 	if (!response.ok) {
-		throw new Error("No se pudo editar el evento")
+		const errorText = await response.text();
+		console.error("Error en la respuesta de la API:", errorText);
+		throw new Error("No se pudo editar el evento");
 	}
 }

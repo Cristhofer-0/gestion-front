@@ -6,7 +6,7 @@ export interface EditEventFormData {
   fechaInicio: string
   fechaFinalizacion: string
   visibilidad: "público" | "privado" | "solo invitación"
-  estado: string
+  estado: "borrador" | "publicado" | undefined
   categorias: string[]
   capacidad: number
   bannerUrl?: string

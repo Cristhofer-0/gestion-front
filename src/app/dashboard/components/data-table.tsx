@@ -12,6 +12,7 @@ import { fetchEventos } from "../utils/eventos"
 export type ItemData = {
   organizerId: string
   Latitude: string
+  Longitude: string
   id?: string
   titulo: string
   descripcion: string
@@ -22,7 +23,7 @@ export type ItemData = {
   visibilidad?: "público" | "privado" | "solo invitación"
   categorias?: string[]
   capacidad?: number
-  estado?: "publicado" | "borrador"
+  estado?: "draft" | "published"
   ubicacion?: {
     lat: number
     lng: number
