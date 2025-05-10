@@ -58,6 +58,7 @@ const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
     lng: Number(data.longitude),
   },
   Latitude: data.latitude,
+  Longitude: data.longitude,
   bannerUrl: data.bannerUrl,
   videoUrl: data.videoUrl,
 })
