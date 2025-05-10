@@ -50,20 +50,44 @@ export function EditEventDialog({ open, onOpenChange, event, onSubmit }: EditEve
         bannerUrl: event.bannerUrl || "",
         videoUrl: event.videoUrl || "",
         ubicacion: {
-          lat: event.ubicacion?.lat || 0,
-          lng: event.ubicacion?.lng || 0,
-        },
+          lat: event.ubicacion?.lat ?? 0,
+          lng: event.ubicacion?.lng ?? 0, 
+        }
       })
     }
   }, [event]) // Solo se ejecutará cuando `event` cambie
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "latitude" || name === "longitude" ? parseFloat(value) || 0 : value,
-    }))
+
+    if (name === "latitude" || name === "longitude") {
+      const parsedValue = parseFloat(value)
+      if (name === "latitude" || name === "longitude") {
+        const parsedValue = parseFloat(value)
+        if (!isNaN(parsedValue)) {
+          setFormData((prev) => ({
+            ...prev,
+            ubicacion: {
+              lat: name === "latitude" ? parsedValue : prev.ubicacion?.lat ?? 0,
+              lng: name === "longitude" ? parsedValue : prev.ubicacion?.lng ?? 0,
+            },
+          }))
+        }
+      }
+    }
+    else if (name === "capacidad") {
+      setFormData((prev) => ({
+        ...prev,
+        capacidad: parseInt(value) || 0,
+      }))
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
   }
+
 
   const handleSelectChange = (value: "público" | "privado" | "solo invitación") => {
     setFormData((prev) => ({ ...prev, visibilidad: value }))
@@ -100,33 +124,38 @@ export function EditEventDialog({ open, onOpenChange, event, onSubmit }: EditEve
   }
 
   const handleSubmit = async () => {
-    if (!event.id) {
-      console.error("ID del evento no definido")
-      return
-    }
-
-    try {
-      await editarEvento(event.id, {
-        organizerId: formData.organizerId,
-        titulo: formData.titulo,
-        descripcion: formData.descripcion,
-        fechaInicio: formData.fechaInicio,
-        fechaFinalizacion: formData.fechaFinalizacion,
-        direccion: formData.direccion,
-        visibilidad: formData.visibilidad,
-        categoria: formData.categorias?.join(",") || "",
-        capacidad: formData.capacidad,
-        estado: formData.estado === "borrador" ? "draft" : "published",
-        Latitude: String(formData.ubicacion?.lat || 0),
-        Longitude: String(formData.ubicacion?.lng || 0),
-        bannerUrl: formData.bannerUrl,
-        videoUrl: formData.videoUrl,
-      })
-      onOpenChange(false)
-    } catch (error) {
-      console.error("Error al editar el evento:", error)
-    }
+  if (!event.id) {
+    console.error("ID del evento no definido");
+    return;
   }
+
+  try {
+    // Asegúrate de que `formData.ubicacion` nunca sea `undefined`
+    const ubicacion = formData.ubicacion ?? { lat: 0, lng: 0 };
+
+    await editarEvento(event.id, {
+      organizerId: formData.organizerId,
+      titulo: formData.titulo,
+      descripcion: formData.descripcion,
+      fechaInicio: formData.fechaInicio,
+      fechaFinalizacion: formData.fechaFinalizacion,
+      direccion: formData.direccion,
+      visibilidad: formData.visibilidad,
+      categorias: formData.categorias,
+      capacidad: formData.capacidad,
+      estado: formData.estado === "borrador" ? "draft" : "published",
+      ubicacion: ubicacion,
+      Latitude: String(ubicacion.lat),
+      Longitude: String(ubicacion.lng),
+      bannerUrl: formData.bannerUrl,
+      videoUrl: formData.videoUrl,
+    });
+
+    onOpenChange(false);
+  } catch (error) {
+    console.error("Error al editar el evento:", error);
+  }
+};
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -141,28 +170,37 @@ export function EditEventDialog({ open, onOpenChange, event, onSubmit }: EditEve
           <Input name="fechaInicio" type="date" value={formData.fechaInicio} onChange={handleChange} />
           <Input name="fechaFinalizacion" type="date" value={formData.fechaFinalizacion} onChange={handleChange} />
           <Input name="capacidad" type="number" value={formData.capacidad} onChange={handleChange} />
-          <Input name="categoryInput" value={categoryInput} onChange={(e) => setCategoryInput(e.target.value)}placeholder="Añadir categoría"/>
-          {formData.categorias.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {formData.categorias.map((category, index) => (
-                            <div key={index} className="flex items-center bg-muted rounded-md px-2 py-1">
-                              <span className="text-sm">{category}</span>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="h-5 w-5 p-0 ml-1"
-                                onClick={() => handleRemoveCategory(category)}
-                              >
-                                ×
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-          <Button type="button" onClick={handleAddCategory}>
-            Añadir
-          </Button>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Input
+                id="categoryInput"
+                value={categoryInput}
+                onChange={(e) => setCategoryInput(e.target.value)}
+                placeholder="Añadir categoría"
+              />
+              <Button type="button" onClick={handleAddCategory}>
+                Añadir
+              </Button>
+            </div>
+            {formData.categorias.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.categorias.map((category, index) => (
+                  <div key={index} className="flex items-center bg-muted rounded-md px-2 py-1">
+                    <span className="text-sm">{category}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0 ml-1"
+                      onClick={() => handleRemoveCategory(category)}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <Select value={formData.visibilidad} onValueChange={handleSelectChange}>
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar visibilidad" />

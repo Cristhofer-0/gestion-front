@@ -16,7 +16,6 @@ export type ItemData = {
   id?: string
   titulo: string
   descripcion: string
-  categoria: string
   fechaInicio?: string
   fechaFinalizacion?: string
   direccion?: string
@@ -24,7 +23,7 @@ export type ItemData = {
   categorias?: string[]
   capacidad?: number
   estado?: "draft" | "published"
-  ubicacion?: {
+  ubicacion: {
     lat: number
     lng: number
   }
@@ -67,11 +66,11 @@ export function DataTable() {
       <Card className="w-full mb-6">
         <CardHeader>
           <CardTitle>Gestión de Eventos</CardTitle>
-          <CardDescription>Visualiza y gestiona todas las ubicaciones disponibles</CardDescription>
+          <CardDescription>Visualiza y gestiona todos los eventos disponibles</CardDescription>
           <div className="flex gap-2">
             <Button onClick={fetchData} disabled={isLoading}>
               {isLoading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
-              Cargar datos de API
+              Cargar datos de la API
             </Button>
           </div>
         </CardHeader>

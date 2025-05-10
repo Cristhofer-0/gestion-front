@@ -14,7 +14,7 @@ export async function fetchEventos(): Promise<ItemData[]> {
 		orgId: event.OrganizerId.toString(),
 		titulo: event.Title,
 		descripcion: event.Description,
-		categoria: "General", // Puedes ajustar esto si tu evento tiene una categoría real
+		//categoria: "General", // Puedes ajustar esto si tu evento tiene una categoría real
 		fechaInicio: event.StartDate,
 		fechaFinalizacion: event.EndDate,
 		direccion: event.Address,
@@ -68,6 +68,14 @@ export async function crearEvento(nuevoEvento: ItemData): Promise<void> {
 export async function editarEvento(eventoId: string, eventoActualizado: ItemData): Promise<void> {
 	const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
+	if (
+		!eventoActualizado.ubicacion ||
+		typeof eventoActualizado.ubicacion.lat !== "number" ||
+		typeof eventoActualizado.ubicacion.lng !== "number"
+	) {
+		throw new Error("Ubicación inválida: latitud y longitud son obligatorias.");
+	}
+
 	const response = await fetch(`${API_BASE_URL}/eventos/${eventoId}`, {
 		method: "PUT",
 		headers: {
@@ -84,8 +92,8 @@ export async function editarEvento(eventoId: string, eventoActualizado: ItemData
 			Categories: eventoActualizado.categorias?.join(",") || "",
 			Capacity: eventoActualizado.capacidad,
 			Status: eventoActualizado.estado,
-			Latitude: eventoActualizado.ubicacion?.lat || 0,
-    		Longitude: eventoActualizado.ubicacion?.lng || 0,
+			Latitude: eventoActualizado.ubicacion.lat,
+    		Longitude: eventoActualizado.ubicacion.lng,
 			BannerUrl: eventoActualizado.bannerUrl,
 			VideoUrl: eventoActualizado.videoUrl,
 		}),
