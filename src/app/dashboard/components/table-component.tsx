@@ -34,7 +34,6 @@ export function TableComponent({
   const filteredItems = items.filter(
     (item) =>
       item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.direccion && item.direccion.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (item.categorias && item.categorias.some((cat) => cat.toLowerCase().includes(searchTerm.toLowerCase()))),
   )
