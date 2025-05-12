@@ -6,10 +6,10 @@ import { Badge } from "@/components/ui/badge"
 import { Clock, Edit, PlusCircle, Trash2, RefreshCw } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { fetchEventHistory } from "../utils/eventos"
 import type { EventHistoryItem } from "../utils/eventos"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
+import { fetchEventos, generarHistorialDesdeEventos } from "../utils/eventos"
 
 interface EventHistoryProps {
   limit?: number
@@ -22,16 +22,18 @@ export function EventHistory({ limit = 10, onRefresh }: EventHistoryProps) {
   const [activeTab, setActiveTab] = useState("all")
 
   const loadHistory = async () => {
-    setIsLoading(true)
-    try {
-      const data = await fetchEventHistory()
-      setHistory(data)
-    } catch (error) {
-      console.error("Error al cargar el historial:", error)
-    } finally {
-      setIsLoading(false)
-    }
+  setIsLoading(true)
+  try {
+    const eventos = await fetchEventos()
+    const historial = generarHistorialDesdeEventos(eventos)
+    setHistory(historial.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()))
+  } catch (error) {
+    console.error("Error al generar historial desde eventos:", error)
+  } finally {
+    setIsLoading(false)
   }
+}
+
 
   useEffect(() => {
     loadHistory()
