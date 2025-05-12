@@ -34,10 +34,10 @@ export interface TicketFormData {
 
 const adaptFormDataToItemData = (data: TicketFormData): ItemData => ({
     eventoId: data.eventId,
-    tipo: data.type,
-    precio: data.price,
+    tipo: data.type as "normal" | "VIP", // Ensure type matches the expected union type
+    precio: parseFloat(data.price), // Convert price to a number
     descripcion: data.description,
-    stockDisponible: data.stockAvailable,
+    stockDisponible: parseInt(data.stockAvailable, 10), // Convert stockAvailable to a number
 })
 
 
