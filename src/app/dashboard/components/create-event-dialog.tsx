@@ -17,6 +17,7 @@ import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { crearEvento } from "../utils/eventos"
 import { ItemData } from "../components/data-table"
+
 import MapLibreMap from "@/components/principales/mapa"
 
 
@@ -311,6 +312,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               setLoni={setLon}
               setDireccion={setDirec}
               direccion={formData.address}
+              initialCenter={[-76.971028,-12.018419]}
             />
 
           </div>

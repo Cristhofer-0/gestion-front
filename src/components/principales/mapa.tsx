@@ -5,6 +5,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 
 type propsMap = {
+    initialCenter: [number,number]
     setLati: (lat: number) => void;
     setLoni: (lon: number) => void;
     setDireccion: (direccion: string) => void; //direccion : String {Recibe parametro}
@@ -56,7 +57,7 @@ export interface MapLibreMapHandle {
 }
 
 const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap(
-    { setLati, setLoni, setDireccion, direccion },
+    { setLati, setLoni, setDireccion, direccion, initialCenter },
     ref) { //DECLARAR TODO
 
     const mapContainer = useRef<HTMLDivElement>(null); //REFERENCIA AL DIV DONDE VA EL MAPA
@@ -72,11 +73,12 @@ const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap
             mapRef.current = new maplibregl.Map({
                 container: mapContainer.current,
                 style: 'https://api.maptiler.com/maps/streets/style.json?key=FCrNwS2mCghhtRMFYe7X', //TIENE API
-                center: [-76.971028, -12.018419], //COORDENADAS
-                zoom: 22, //ZOOM MAXIMO
+                center: initialCenter, //COORDENADAS
+                zoom: 16, //ZOOM MAXIMO
             });
 
             mapRef.current.addControl(new maplibregl.NavigationControl(), 'top-right');
+            
         }
 
         return () => {
@@ -94,8 +96,6 @@ const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap
         try {
             const data = await converseGeoCode(query); //obtiene la direccion
 
-
-
             if (data.length > 0) {
                 const { lat, lon, display_name } = data[0]; //obtiene el primer dato 
 
@@ -107,6 +107,8 @@ const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap
 
                 if (markerRef.current) { //SI EL MARCADOR YA EXISTE
                     markerRef.current.setLngLat([lon, lat]); //MUEVELO A ESAS CORDS
+
+
                 } else {
                     markerRef.current = new maplibregl.Marker({ draggable: true }) //CREA EL MARKADOR
                         //QUE TAMBIEN ES DRAGGABLE (movible)
@@ -136,6 +138,7 @@ const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap
                     });
                 }
 
+                
                 if (popupRef.current) popupRef.current.remove(); //si existe el aviso, botalo
                 popupRef.current = new maplibregl.Popup() //generar nuevo aviso con =>
                     .setLngLat([lon, lat])
