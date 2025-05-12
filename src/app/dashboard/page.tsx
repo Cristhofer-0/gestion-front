@@ -16,9 +16,6 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 //LA TABLA DE HISTORIAL
 import { EventHistory } from "./components/event-history"
 
-//EJEMPLO DE LOS DATOS
-import data from "./data.json"
-
 export default function Dashboard() {
     const [refreshKey, setRefreshKey] = useState(0)
     

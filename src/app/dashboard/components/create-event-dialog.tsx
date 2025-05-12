@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +17,8 @@ import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { crearEvento } from "../utils/eventos"
 import { ItemData } from "../components/data-table"
+import MapLibreMap from "@/components/principales/mapa"
+
 
 interface CreateEventDialogProps {
   open: boolean
@@ -41,6 +43,7 @@ export interface EventFormData {
   capacity: string
 }
 
+
 const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
   organizerId: data.organizerId,
   titulo: data.title,
@@ -62,8 +65,12 @@ const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
   videoUrl: data.videoUrl,
 })
 
+interface MapLibreMapHandle {
+  handleSearch: () => void;
+}
 
-export function CreateEventDialog({ open, onOpenChange, onSubmit }: CreateEventDialogProps) {
+export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps) {
+  const mapRef = useRef<MapLibreMapHandle>(null);
   const [formData, setFormData] = useState<EventFormData>({
     organizerId: "",
     title: "",
@@ -82,6 +89,9 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit }: CreateEventD
   })
 
   const [categoryInput, setCategoryInput] = useState("")
+  const [lat, setLat] = useState(0);
+  const [lon, setLon] = useState(0);
+  const [direc, setDirec] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -96,15 +106,25 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit }: CreateEventD
     setFormData((prev) => ({ ...prev, [name]: date }))
   }
 
+  useEffect(() => {
+
+    setFormData((prev) => ({
+      ...prev,
+      latitude: lat.toString(),
+      longitude: lon.toString(),
+      address: direc
+    }));
+  }, [lat, lon, direc]);
+
   const handleAddCategory = () => {
     if (categoryInput.trim() && !formData.categories.includes(categoryInput.trim())) {
       setFormData((prev) => ({
         ...prev,
         categories: [...prev.categories, categoryInput.trim()],
-      }))
-      setCategoryInput("")
+      }));
+      setCategoryInput("");
     }
-  }
+  };
 
   const handleRemoveCategory = (category: string) => {
     setFormData((prev) => ({
@@ -113,33 +133,33 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit }: CreateEventD
     }))
   }
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
- try {
-    const itemData = adaptFormDataToItemData(formData)
-    console.log("Datos a enviar al backend:", itemData) // 👈 Imprime aquí
-    await crearEvento(itemData)
-     setFormData({ // ← aquí se reinicia
-      organizerId: "",
-      title: "",
-      description: "",
-      startDate: null,
-      endDate: null,
-      address: "",
-      latitude: "",
-      longitude: "",
-      visibility: "public",
-      categories: [],
-      bannerUrl: "",
-      videoUrl: "",
-      status: "published",
-      capacity: "",
-    })
-    onOpenChange(false)
-  } catch (error) {
-    console.error("Error al crear el evento:", error)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const itemData = adaptFormDataToItemData(formData)
+      console.log("Datos a enviar al backend:", itemData) // 👈 Imprime aquí
+      await crearEvento(itemData)
+      setFormData({ // ← aquí se reinicia
+        organizerId: "",
+        title: "",
+        description: "",
+        startDate: null,
+        endDate: null,
+        address: "",
+        latitude: "",
+        longitude: "",
+        visibility: "public",
+        categories: [],
+        bannerUrl: "",
+        videoUrl: "",
+        status: "published",
+        capacity: "",
+      })
+      onOpenChange(false)
+    } catch (error) {
+      console.error("Error al crear el evento:", error)
+    }
   }
-}
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -239,7 +259,21 @@ const handleSubmit = async (e: React.FormEvent) => {
 
           <div className="space-y-2">
             <Label htmlFor="address">Dirección</Label>
-            <Input id="address" name="address" value={formData.address} onChange={handleInputChange} />
+            <div className="flex gap-2">
+              <Input
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={handleInputChange}
+                required
+              />
+              <Button
+                type="button"
+                onClick={() => mapRef.current?.handleSearch()}
+              >
+                Buscar
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -250,6 +284,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 name="latitude"
                 value={formData.latitude}
                 onChange={handleInputChange}
+                placeholder={lat.toString()}
                 type="number"
                 step="0.000001"
               />
@@ -261,12 +296,24 @@ const handleSubmit = async (e: React.FormEvent) => {
                 name="longitude"
                 value={formData.longitude}
                 onChange={handleInputChange}
+                placeholder={lon.toString()}
                 type="number"
                 step="0.000001"
               />
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="map">MAPA</Label>
+            <MapLibreMap
+              ref={mapRef}
+              setLati={setLat}
+              setLoni={setLon}
+              setDireccion={setDirec}
+              direccion={formData.address}
+            />
+
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="visibility">Visibilidad</Label>
