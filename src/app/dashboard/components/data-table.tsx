@@ -29,6 +29,8 @@ export type ItemData = {
   }
   bannerUrl?: string
   videoUrl?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export function DataTable() {
