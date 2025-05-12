@@ -37,6 +37,20 @@ export const reverseGeocode = async (lat: number, lon: number) => {
     }
 }; //DEJAR
 
+export const mapByLanLon = (lat: number, lon: number, container: HTMLElement) => {
+  const map = new maplibregl.Map({
+    container,
+    style: 'https://api.maptiler.com/maps/streets/style.json?key=FCrNwS2mCghhtRMFYe7X',
+    center: [lon, lat],
+    zoom: 16,
+  });
+
+  new maplibregl.Marker().setLngLat([lon, lat]).addTo(map);
+  map.addControl(new maplibregl.NavigationControl(), 'top-right');
+};
+
+
+
 export interface MapLibreMapHandle {
     handleSearch: () => void;
 }

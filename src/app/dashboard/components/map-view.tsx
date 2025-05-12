@@ -6,6 +6,9 @@ import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert"
 import { InfoIcon } from "lucide-react"
 import type { ItemData } from "./data-table"
 
+import { mapByLanLon } from "@/components/principales/mapa"
+
+
 interface MapViewProps {
   item: ItemData
 }
@@ -37,9 +40,14 @@ export function MapView({ item }: MapViewProps) {
     // })
 
     // Función de limpieza que se ejecutará cuando el componente se desmonte
+
+    mapByLanLon(item.ubicacion.lat, item.ubicacion.lng, mapContainerRef.current)
+
+
     return () => {
       // Limpiar recursos del mapa si es necesario
       // map.remove() // Para Leaflet
+
     }
   }, [item])
 
@@ -59,9 +67,10 @@ export function MapView({ item }: MapViewProps) {
         <CardTitle>Ubicación de {item.titulo}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div ref={mapContainerRef} className="h-[400px] w-full bg-muted rounded-md flex items-center justify-center">
-          <p className="text-muted-foreground">
-            Aquí se mostrará el mapa con la ubicación: Lat: {item.ubicacion.lat}, Lng: {item.ubicacion.lng}
+        <div className="h-[400px] w-full bg-muted rounded-md flex flex-col gap-2">
+          <div ref={mapContainerRef} className="h-full w-full rounded-md" />
+          <p className="text-muted-foreground text-sm text-center">
+            Coordenadas: Lat: {item.ubicacion.lat}, Lng: {item.ubicacion.lng}
           </p>
         </div>
       </CardContent>
