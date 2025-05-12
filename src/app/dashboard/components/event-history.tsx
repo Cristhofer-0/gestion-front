@@ -96,11 +96,12 @@ export function EventHistory({ limit = 10, onRefresh }: EventHistoryProps) {
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 mb-4">
+          <TabsList className="flex justify-between gap-2 mb-4">
             <TabsTrigger value="all">Todos</TabsTrigger>
             <TabsTrigger value="created">Creados</TabsTrigger>
             <TabsTrigger value="updated">Actualizados</TabsTrigger>
-            <TabsTrigger value="deleted">Eliminados</TabsTrigger>
+
+            {/*<TabsTrigger value="deleted">Eliminados</TabsTrigger>*/}
           </TabsList>
           <TabsContent value={activeTab} className="mt-0">
             <ScrollArea className="h-[300px] pr-4">
@@ -123,7 +124,7 @@ export function EventHistory({ limit = 10, onRefresh }: EventHistoryProps) {
                         </div>
                         <p className="text-sm text-muted-foreground">{item.description}</p>
                         <div className="flex items-center justify-between">
-                          <p className="text-xs text-muted-foreground">Por: {item.user}</p>
+                          {/*<p className="text-xs text-muted-foreground">Por: {item.user}</p>*/}
                           <p className="text-xs text-muted-foreground">{formatTimeAgo(item.timestamp)}</p>
                         </div>
                       </div>

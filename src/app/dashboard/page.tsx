@@ -36,7 +36,7 @@ export default function Dashboard() {
                         {/* <ChartAreaInteractive /> */}
                         
                         {/* Tabla de datos */}
-                        <DataTable key={refreshKey} />
+                        <DataTable />
                         
                         {/* Historial de eventos */}
                         <div className="rounded-lg border bg-card shadow">
