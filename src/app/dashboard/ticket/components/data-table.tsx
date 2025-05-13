@@ -11,7 +11,7 @@ import { fetchTickets } from "../utils/tickets"
 export type ItemData = {
   id?: string
   eventoId: string
-  tipo: "normal" | "VIP"
+  tipo: "General" | "VIP"
   titulo: string
   precio: number
   descripcion: string

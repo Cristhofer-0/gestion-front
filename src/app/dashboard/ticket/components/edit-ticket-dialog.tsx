@@ -19,7 +19,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
   const [categoryInput, setCategoryInput] = useState("") 
   const [formData, setFormData] = useState<EditTicketFormData>({
     eventoId: ticket.eventoId,
-    tipo: "normal",
+    tipo: "General",
     precio: 0,
     descripcion: "",
     stockDisponible: 0, 
@@ -30,7 +30,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
     if (ticket) {
       setFormData({
         eventoId:  ticket.eventoId,
-        tipo: ticket.tipo || "normal",
+        tipo: ticket.tipo || "General",
         precio: ticket.precio || 0,
         descripcion: ticket.descripcion || "",
         stockDisponible: ticket.stockDisponible || 0,
@@ -49,7 +49,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
   }
 
 
-  const handleSelectChange = (value: "normal" | "VIP") => {
+  const handleSelectChange = (value: "General" | "VIP") => {
     setFormData((prev) => ({ ...prev, tipo: value }))
   }
   
@@ -75,6 +75,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
         eventoId: formData.eventoId,
         tipo: formData.tipo,
         precio: formData.precio,
+        titulo: ticket.titulo,
         descripcion: formData.descripcion,
         stockDisponible: formData.stockDisponible,
     });
@@ -97,7 +98,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
               <SelectValue placeholder="Seleccionar Tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="normal">Normal</SelectItem>
+              <SelectItem value="General">General</SelectItem>
               <SelectItem value="VIP">VIP</SelectItem>
             </SelectContent>
           </Select>

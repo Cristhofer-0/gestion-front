@@ -1,6 +1,6 @@
 export interface EditTicketFormData {
   eventoId: string
-  tipo: "normal" | "VIP"
+  tipo: "General" | "VIP"
   precio: number
   descripcion: string
   stockDisponible: number

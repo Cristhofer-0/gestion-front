@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,7 +25,7 @@ interface CreateTicketDialogProps {
 }
 
 export interface TicketFormData {
-    eventId: string
+    EventId: string
     type: string
     price: string
     description: string
@@ -33,8 +33,8 @@ export interface TicketFormData {
 }
 
 const adaptFormDataToItemData = (data: TicketFormData): ItemData => ({
-    eventoId: data.eventId,
-    tipo: data.type as "normal" | "VIP", // Ensure type matches the expected union type
+    eventoId: data.EventId,
+    tipo: data.type as "General" | "VIP", // Ensure type matches the expected union type
     precio: parseFloat(data.price), // Convert price to a number
     descripcion: data.description,
     titulo: "Sin título", // Placeholder, adjust as needed
@@ -44,12 +44,25 @@ const adaptFormDataToItemData = (data: TicketFormData): ItemData => ({
 
 export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicketDialogProps) {
     const [formData, setFormData] = useState<TicketFormData>({
-        eventId: "",
-        type: "normal",
+        EventId: "",
+        type: "General",
         price: "",
         description: "",
         stockAvailable: "",
     })
+
+    const [eventos, setEventos] = useState<{ EventId: string; Title: string }[]>([])
+
+    useEffect(() => {
+        const fetchEventos = async () => {
+            const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+            const response = await fetch(`${API_BASE_URL}/eventos`) // o tu endpoint real
+            const data = await response.json()
+            setEventos(data)
+        }
+        fetchEventos()
+    }, [])
+
 
     const [categoryInput, setCategoryInput] = useState("")
 
@@ -73,8 +86,8 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
             console.log("Datos a enviar al backend:", itemData) // 👈 Imprime aquí
             await crearTicket(itemData)
             setFormData({ // ← aquí se reinicia
-                eventId: "",
-                type: "normal",
+                EventId: "",
+                type: "General",
                 price: "",
                 description: "",
                 stockAvailable: "",
@@ -94,14 +107,27 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="eventId">ID Evento</Label>
-                            <Input
-                                id="eventId"
-                                name="eventId"
-                                value={formData.eventId}
-                                onChange={handleInputChange}
-                                required
-                            />
+                            <Label htmlFor="EventId">Evento</Label>
+                            <Select
+                                value={formData.EventId}
+                                onValueChange={(value) => handleSelectChange("EventId", value)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue
+                                        placeholder={
+                                            eventos.find((e) => String(e.EventId) === String(formData.EventId))?.Title ||
+                                            "Seleccionar evento"
+                                        }
+                                    />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {eventos.map((evento) => (
+                                        <SelectItem key={evento.EventId} value={String(evento.EventId)}>
+                                            {evento.Title}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="type">Tipo</Label>
@@ -110,8 +136,8 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
                                     <SelectValue placeholder="Seleccionar tipo" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="normal">Normal</SelectItem>
-                                    <SelectItem value="vip">VIP</SelectItem>
+                                    <SelectItem value="General">General</SelectItem>
+                                    <SelectItem value="VIP">VIP</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -160,4 +186,4 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
             </DialogContent>
         </Dialog>
     )
-}
+} 
