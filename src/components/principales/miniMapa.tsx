@@ -89,26 +89,34 @@ const MapLibreMapPe = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreM
             if (data.length > 0) {
                 const { lat, lon, display_name } = data[0];
 
-                setLati(lat);
-                setLoni(lon);
+               const parsedLat = parseFloat(lat);
+                const parsedLon = parseFloat(lon);
+
+                setLati(parsedLat);
+                setLoni(parsedLon);
                 setDireccion(display_name);
 
-                mapRef.current?.flyTo({ center: [lon, lat], zoom: 16 });
+                mapRef.current?.flyTo({ center: [parsedLon, parsedLat], zoom: 16 });
 
                 if (markerRef.current) {
-                    markerRef.current.setLngLat([lon, lat]);
+                    markerRef.current.setLngLat([parsedLon, parsedLat]);
                     attachDragEnd();
                 } else {
                     markerRef.current = new maplibregl.Marker({ draggable: true })
-                        .setLngLat([lon, lat])
+                        .setLngLat([parsedLon, parsedLat])
                         .addTo(mapRef.current!);
                     attachDragEnd();
                 }
 
                 popupRef.current?.remove();
                 popupRef.current = new maplibregl.Popup()
-                    .setLngLat([lon, lat])
-                    .setHTML(`<strong>Dirección:</strong><br>${display_name}<br>`)
+                    .setLngLat([parsedLon, parsedLat])
+                    .setHTML(`
+                        <strong>Dirección:</strong><br>${display_name}<br>
+                        <strong>Coordenadas:</strong><br>
+                        Lat: ${parsedLat}<br>
+                        Lon: ${parsedLon}
+                    `)
                     .addTo(mapRef.current!);
             } else {
                 alert('No se encontró la ubicación.');
@@ -126,7 +134,7 @@ const MapLibreMapPe = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreM
         <div style={{ height: '30dvh', position: 'relative' }}>
             <div ref={mapContainer} style={{ height: '100%' }} />
         </div>
-    )
-})
+    );
+});
 
 export default MapLibreMapPe;
