@@ -12,6 +12,7 @@ export type ItemData = {
   id?: string
   eventoId: string
   tipo: "normal" | "VIP"
+  titulo: string
   precio: number
   descripcion: string
   stockDisponible: number

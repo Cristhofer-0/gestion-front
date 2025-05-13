@@ -37,6 +37,7 @@ const adaptFormDataToItemData = (data: TicketFormData): ItemData => ({
     tipo: data.type as "normal" | "VIP", // Ensure type matches the expected union type
     precio: parseFloat(data.price), // Convert price to a number
     descripcion: data.description,
+    titulo: "Sin título", // Placeholder, adjust as needed
     stockDisponible: parseInt(data.stockAvailable, 10), // Convert stockAvailable to a number
 })
 

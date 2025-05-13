@@ -33,7 +33,8 @@ export function TableComponent({
   // Filtrar los elementos según el término de búsqueda
   const filteredItems = items.filter(
     (item) =>
-      item.tipo.toLowerCase().includes(searchTerm.toLowerCase()),
+    item.tipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.titulo.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   // Función para formatear fechas
@@ -89,6 +90,12 @@ export function TableComponent({
           <TableHeader>
             <TableRow>
               <TableHead>Tipo de entrada</TableHead>
+                            <TableHead className="hidden md:table-cell">
+                <div className="flex items-center gap-1">
+                  <Currency className="h-4 w-4" />
+                  <span>Evento</span>
+                </div>
+              </TableHead>  
               <TableHead className="hidden md:table-cell">
                 <div className="flex items-center gap-1">
                   <Currency className="h-4 w-4" />
@@ -136,6 +143,7 @@ export function TableComponent({
                         {item.tipo}
                       </div>
                     </TableCell>
+                    <TableCell className="hidden md:table-cell">{(item.titulo)}</TableCell>
                     <TableCell className="hidden md:table-cell">{(item.precio)}</TableCell>
                     <TableCell className="hidden md:table-cell">{(item.descripcion)}</TableCell>
                     <TableCell className="hidden sm:table-cell">{(item.stockDisponible)}</TableCell>
