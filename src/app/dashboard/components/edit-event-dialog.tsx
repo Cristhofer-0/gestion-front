@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { editarEvento } from "../utils/eventos" // Asegúrate de que esta función esté definida
 
-import MiniMapaVista from "@/components/principales/miniMapa"
 import MapLibreMap from "@/components/principales/mapa"
 
 interface EditEventDialogProps {
@@ -269,10 +268,9 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
           <Input name="longitude" value={formData.ubicacion?.lng} onChange={handleChange} placeholder="Longitud" />
 
           <div className="space-y-2">
+            <MapLibreMap direccion={formData.direccion} lat={lat} lon={lon} setDireccion={setDirec} setLati={setLat} setLoni={setLon} ref={mapRef} mode="editar"    ></MapLibreMap>
 
-            {  /* <MiniMapaVista lat={lat} lon={lon} setDireccion={setDirec} setLati={setLat} setLoni={setLon} direccion={formData.direccion} ref={mapRef} />
-         */} </div>
-          <MapLibreMap direccion={formData.direccion} lat={lat} lon={lon} setDireccion={setDirec} setLati={setLat} setLoni={setLon} ref={mapRef} mode="editar"   ></MapLibreMap>
+          </div>
 
 
           <Button onClick={handleSubmit}>Guardar Cambios</Button>
