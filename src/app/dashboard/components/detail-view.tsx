@@ -1,13 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, MapPin, Eye, Users, Tag, Info } from "lucide-react"
+import { Calendar, MapPin, Eye, Users, Tag, Info, Ticket } from "lucide-react"
 import type { ItemData } from "./data-table"
+import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 interface DetailViewProps {
   item: ItemData
 }
 
 export function DetailView({ item }: DetailViewProps) {
+   const router = useRouter()
   // Función para formatear fechas
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-"
@@ -35,12 +38,23 @@ export function DetailView({ item }: DetailViewProps) {
     return "outline"
   }
 
+    const navigateToTickets = () => {
+    router.push(`/dashboard/ticket`)
+  }
+
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>{item.titulo}</CardTitle>
-          <Badge variant={getStatusBadgeVariant(item.estado) as any}>{item.estado || "Sin estado"}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={getStatusBadgeVariant(item.estado) as any}>{item.estado || "Sin estado"}</Badge>
+            <Button onClick={navigateToTickets} size="sm" className="flex items-center gap-1">
+              <Ticket className="h-4 w-4" />
+              Ver tickets
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

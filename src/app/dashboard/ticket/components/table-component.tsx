@@ -33,7 +33,8 @@ export function TableComponent({
   // Filtrar los elementos según el término de búsqueda
   const filteredItems = items.filter(
     (item) =>
-      item.tipo.toLowerCase().includes(searchTerm.toLowerCase()),
+      item.tipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.titulo.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   // Función para formatear fechas
@@ -72,7 +73,7 @@ export function TableComponent({
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Buscar por nombre, categoría, dirección..."
+            placeholder="Ingrese el nombre del evento"
             className="pl-8"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -80,7 +81,7 @@ export function TableComponent({
         </div>
         <Button onClick={() => setIsDialogOpen(true)} className="flex items-center gap-2">
           <PlusCircle className="h-4 w-4" />
-          <span className="hidden sm:inline">Crear Evento</span>
+          <span className="hidden sm:inline">Crear Ticket</span>
         </Button>
       </div>
 
@@ -92,9 +93,15 @@ export function TableComponent({
               <TableHead className="hidden md:table-cell">
                 <div className="flex items-center gap-1">
                   <Currency className="h-4 w-4" />
+                  <span>Evento</span>
+                </div>
+              </TableHead>
+              <TableHead className="hidden md:table-cell">
+                <div className="flex items-center gap-1">
+                  <Currency className="h-4 w-4" />
                   <span>Precio</span>
                 </div>
-              </TableHead>   
+              </TableHead>
               <TableHead className="hidden lg:table-cell">
                 <div className="flex items-center gap-1">
                   <Pen className="h-4 w-4" />
@@ -106,7 +113,7 @@ export function TableComponent({
                   <Users className="h-4 w-4" />
                   <span>Stock Disponible</span>
                 </div>
-              </TableHead>        
+              </TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -122,9 +129,8 @@ export function TableComponent({
                 <>
                   <TableRow key={item.id} className={selectedItemId === item.id ? "bg-muted/50 border-b-0" : ""}>
                     <TableCell
-                      className={`font-medium cursor-pointer hover:text-blue-600 hover:underline ${
-                        selectedItemId === item.id ? "text-blue-600" : ""
-                      }`}
+                      className={`font-medium cursor-pointer hover:text-blue-600 hover:underline ${selectedItemId === item.id ? "text-blue-600" : ""
+                        }`}
                       onClick={() => onItemClick(item)}
                     >
                       <div className="flex items-center gap-2">
@@ -136,26 +142,27 @@ export function TableComponent({
                         {item.tipo}
                       </div>
                     </TableCell>
+                    <TableCell className="hidden md:table-cell">{(item.titulo)}</TableCell>
                     <TableCell className="hidden md:table-cell">{(item.precio)}</TableCell>
                     <TableCell className="hidden md:table-cell">{(item.descripcion)}</TableCell>
                     <TableCell className="hidden sm:table-cell">{(item.stockDisponible)}</TableCell>
                     <TableCell className="text-right">
-                    <Button onClick={() => {
-                      setTicketToEdit(item) // Este `item` debería venir directo desde la API
-                      setEditOpen(true)
-                    }}>
-                      Editar
-                    </Button>
-                    {ticketToEdit && (
-                      <EditTicketDialog
-                        open={editOpen}
-                        onOpenChange={setEditOpen}
-                        ticket={ticketToEdit}
-                        onSubmit={(data) => {
-                          console.log("Actualizar ticket:", data)
-                        }}
-                      />
-                    )}
+                      <Button onClick={() => {
+                        setTicketToEdit(item) // Este `item` debería venir directo desde la API
+                        setEditOpen(true)
+                      }}>
+                        Editar
+                      </Button>
+                      {ticketToEdit && (
+                        <EditTicketDialog
+                          open={editOpen}
+                          onOpenChange={setEditOpen}
+                          ticket={ticketToEdit}
+                          onSubmit={(data) => {
+                            console.log("Actualizar ticket:", data)
+                          }}
+                        />
+                      )}
                     </TableCell>
                   </TableRow>
                   {selectedItemId === item.id && renderDetails && (

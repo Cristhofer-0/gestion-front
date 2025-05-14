@@ -16,6 +16,7 @@ export async function fetchTickets(): Promise<ItemData[]> {
         eventoId: ticket.EventId.toString(),
         tipo: ticket.Type,
         precio: ticket.Price,
+        titulo: ticket.Event?.Title ?? "Sin título" ,
         //categoria: "General", // Puedes ajustar esto si tu evento tiene una categoría real
         descripcion: ticket.Description,
         stockDisponible: ticket.StockAvailable,  
