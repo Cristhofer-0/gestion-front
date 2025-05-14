@@ -312,7 +312,9 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               setLoni={setLon}
               setDireccion={setDirec}
               direccion={formData.address}
-              initialCenter={[-76.971028,-12.018419]}
+              lat={-12.018419}
+              lon={-76.971028}
+              mode="crear"
             />
 
           </div>

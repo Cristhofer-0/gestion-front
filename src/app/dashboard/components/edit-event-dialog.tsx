@@ -8,6 +8,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { editarEvento } from "../utils/eventos" // Asegúrate de que esta función esté definida
 
 import MiniMapaVista from "@/components/principales/miniMapa"
+import MapLibreMap from "@/components/principales/mapa"
 
 interface EditEventDialogProps {
   open: boolean
@@ -22,7 +23,7 @@ interface MapLibreMapHandle {
   handleSearch: () => void;
 }
 
-export function EditEventDialog({ open, onOpenChange, event}: EditEventDialogProps) {
+export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogProps) {
   const mapRef = useRef<MapLibreMapHandle>(null)
   const [categoryInput, setCategoryInput] = useState("")
   const [lat, setLat] = useState(0);
@@ -158,7 +159,7 @@ export function EditEventDialog({ open, onOpenChange, event}: EditEventDialogPro
       console.error("ID del evento no definido");
       return;
     }
-    
+
     try {
       // Asegúrate de que `formData.ubicacion` nunca sea `undefined`
       const ubicacion = formData.ubicacion ?? { lat: 0, lng: 0 };
@@ -196,11 +197,11 @@ export function EditEventDialog({ open, onOpenChange, event}: EditEventDialogPro
         <div className="space-y-4">
           <Input name="titulo" value={formData.titulo} onChange={handleChange} placeholder="Título" />
           <Input name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Descripción" />
-          
+
           <div className="flex gap-2">
             <Input name="direccion" value={formData.direccion} onChange={handleChange} placeholder="Dirección" />
             <Button type="button"
-                onClick={() => mapRef.current?.handleSearch()}  >
+              onClick={() => mapRef.current?.handleSearch()}  >
               Buscar
             </Button>
           </div>
@@ -269,8 +270,9 @@ export function EditEventDialog({ open, onOpenChange, event}: EditEventDialogPro
 
           <div className="space-y-2">
 
-            <MiniMapaVista lat={lat} lon={lon} setDireccion={setDirec} setLati={setLat} setLoni={setLon} direccion={formData.direccion} ref={mapRef} />
-          </div>
+            {  /* <MiniMapaVista lat={lat} lon={lon} setDireccion={setDirec} setLati={setLat} setLoni={setLon} direccion={formData.direccion} ref={mapRef} />
+         */} </div>
+          <MapLibreMap direccion={formData.direccion} lat={lat} lon={lon} setDireccion={setDirec} setLati={setLat} setLoni={setLon} ref={mapRef} mode="editar"   ></MapLibreMap>
 
 
           <Button onClick={handleSubmit}>Guardar Cambios</Button>

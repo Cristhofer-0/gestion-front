@@ -5,12 +5,15 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 
 type propsMap = {
-    initialCenter: [number,number]
+    mode: "crear" | "editar";
+    lat: number;
+    lon: number;
     setLati: (lat: number) => void;
     setLoni: (lon: number) => void;
     setDireccion: (direccion: string) => void; //direccion : String {Recibe parametro}
     direccion: string;
 }
+
 
 export const converseGeoCode = async (direccion: string) => {
     try {
@@ -39,15 +42,15 @@ export const reverseGeocode = async (lat: number, lon: number) => {
 }; //DEJAR
 
 export const mapByLanLon = (lat: number, lon: number, container: HTMLElement) => {
-  const map = new maplibregl.Map({
-    container,
-    style: 'https://api.maptiler.com/maps/streets/style.json?key=FCrNwS2mCghhtRMFYe7X',
-    center: [lon, lat],
-    zoom: 16,
-  });
+    const map = new maplibregl.Map({
+        container,
+        style: 'https://api.maptiler.com/maps/streets/style.json?key=FCrNwS2mCghhtRMFYe7X',
+        center: [lon, lat],
+        zoom: 16,
+    });
 
-  new maplibregl.Marker().setLngLat([lon, lat]).addTo(map);
-  map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    new maplibregl.Marker().setLngLat([lon, lat]).addTo(map);
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
 };
 
 
@@ -57,7 +60,7 @@ export interface MapLibreMapHandle {
 }
 
 const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap(
-    { setLati, setLoni, setDireccion, direccion, initialCenter },
+    { setLati, setLoni, setDireccion, direccion, lat, lon, mode },
     ref) { //DECLARAR TODO
 
     const mapContainer = useRef<HTMLDivElement>(null); //REFERENCIA AL DIV DONDE VA EL MAPA
@@ -72,20 +75,24 @@ const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap
         if (mapContainer.current) {
             mapRef.current = new maplibregl.Map({
                 container: mapContainer.current,
-                style: 'https://api.maptiler.com/maps/streets/style.json?key=FCrNwS2mCghhtRMFYe7X', //TIENE API
-                center: initialCenter, //COORDENADAS
-                zoom: 16, //ZOOM MAXIMO
+                style: 'https://api.maptiler.com/maps/streets/style.json?key=FCrNwS2mCghhtRMFYe7X',
+                center: [lon, lat],
+                zoom: 16,
             });
 
             mapRef.current.addControl(new maplibregl.NavigationControl(), 'top-right');
-            
-        }
 
+            if (mode === "editar") {
+                markerRef.current = new maplibregl.Marker({ draggable: true })
+                    .setLngLat([lon, lat])
+                    .addTo(mapRef.current);
+
+            }
+        }
         return () => {
             mapRef.current?.remove();
         };
     }, []);
-
 
 
     const handleSearch = async () => {
@@ -99,8 +106,12 @@ const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap
             if (data.length > 0) {
                 const { lat, lon, display_name } = data[0]; //obtiene el primer dato 
 
-                setLati(lat); //setea la latitud
-                setLoni(lon); //setea la longitud
+                const parsedLat = parseFloat(lat);
+                const parsedLon = parseFloat(lon);
+
+                setLati(parsedLat); //setea la latitud
+                setLoni(parsedLon); //setea la longitud
+                setDireccion(display_name);
 
 
                 mapRef.current?.flyTo({ center: [lon, lat], zoom: 16 }); //CENTRA COMO VUELO A ESOS DATOS
@@ -138,7 +149,7 @@ const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap
                     });
                 }
 
-                
+
                 if (popupRef.current) popupRef.current.remove(); //si existe el aviso, botalo
                 popupRef.current = new maplibregl.Popup() //generar nuevo aviso con =>
                     .setLngLat([lon, lat])
