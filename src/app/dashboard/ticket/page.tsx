@@ -5,7 +5,7 @@ import { AppSidebar } from "@/components/AppSideBar/app-sidebar"
 ///////import { ChartAreaInteractive } from "@/components/custom/chart-area-interactive"
 
 //LA TABLA DE LOS DATOS
-import { DataTable } from "@/components/DataTable/data-table"
+import { DataTable } from "@/components/DataTable/data-table-tickets"
 //LAS CARTAS DE LA PARTE SUPERIOR
 
 ////import { SectionCards } from "@/components/Historial/section-cards"

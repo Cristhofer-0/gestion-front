@@ -15,6 +15,7 @@ export interface EventFormData {
   capacity: string
 }
 
+// para mostrar los datos en el formulario de edición en español
 export interface EditEventFormData {
   organizerId: string
   titulo: string
