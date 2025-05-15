@@ -21,8 +21,8 @@ export interface EditEventFormData {
   titulo: string
   descripcion: string
   direccion: string
-  fechaInicio: string
-  fechaFinalizacion: string
+  fechaInicio: Date
+  fechaFinalizacion: Date
   visibilidad: "público" | "privado" | "solo invitación"
   estado: "borrador" | "publicado" | undefined
   categorias: string[]

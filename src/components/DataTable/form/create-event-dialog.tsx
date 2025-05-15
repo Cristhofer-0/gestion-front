@@ -73,6 +73,7 @@ interface MapLibreMapHandle {
 
 export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps) {
   const mapRef = useRef<MapLibreMapHandle>(null);
+  const [direccionError, setDireccionError] = useState<string | null>(null);
   const [formData, setFormData] = useState<EventFormData>({
     organizerId: "",
     title: "",
@@ -224,6 +225,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                     selected={formData.startDate || undefined}
                     onSelect={(date) => handleDateChange("startDate", date)}
                     initialFocus
+                    disabled={{ before: new Date() }} // <-- aquí
                   />
                 </PopoverContent>
               </Popover>
@@ -253,6 +255,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                     selected={formData.endDate || undefined}
                     onSelect={(date) => handleDateChange("endDate", date)}
                     initialFocus
+                    disabled={{ before: new Date() }} // <-- aquí
                   />
                 </PopoverContent>
               </Popover>
@@ -276,6 +279,9 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                 Buscar
               </Button>
             </div>
+            {direccionError && (
+              <p className="text-sm text-red-500">{direccionError}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -316,6 +322,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               lat={-12.018419}
               lon={-76.971028}
               mode="crear"
+              setDireccionError={setDireccionError}
             />
 
           </div>

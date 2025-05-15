@@ -11,6 +11,7 @@ type propsMap = {
     setLati: (lat: number) => void;
     setLoni: (lon: number) => void;
     setDireccion: (direccion: string) => void;
+    setDireccionError?: (error: string | null) => void;
     direccion: string;
 };
 
@@ -59,7 +60,7 @@ export interface MapLibreMapHandle {
 }
 
 const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap(
-    { setLati, setLoni, setDireccion, direccion, lat, lon, mode },
+    { setLati, setLoni, setDireccion, setDireccionError, direccion, lat, lon, mode },
     ref
 ) {
     const mapContainer = useRef<HTMLDivElement>(null); //CONTENEDOR DEL MAPA
@@ -151,6 +152,7 @@ const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap
                 setLati(parsedLat);
                 setLoni(parsedLon);
                 setDireccion(display_name);
+                setDireccionError?.(null);
 
                 mapRef.current?.flyTo({ center: [parsedLon, parsedLat], zoom: 16 });
 
@@ -160,7 +162,7 @@ const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap
                     Lat: ${parsedLat}<br>Lon: ${parsedLon}
                 `);
             } else {
-                alert('No se encontró la ubicación.');
+                setDireccionError?.("No se encontró la ubicación."); // ❌ Muestra error
             }
         } catch (error) {
             console.error('Error al buscar dirección:', error);

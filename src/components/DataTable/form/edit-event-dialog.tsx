@@ -9,6 +9,13 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { editarEvento } from "../../../services/eventos" // Asegúrate de que esta función esté definida
 
 import MapLibreMap from "@/components/principales/mapa"
+import { Label } from "recharts"
+import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover"
+import { cn } from "@/lib/utils"
+import { es } from "date-fns/locale"
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
 
 interface EditEventDialogProps {
   open: boolean
@@ -24,7 +31,9 @@ interface MapLibreMapHandle {
 }
 
 export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogProps) {
+  const [formattedFecha, setFormattedFecha] = useState("");
   const mapRef = useRef<MapLibreMapHandle>(null)
+  const [direccionError, setDireccionError] = useState<string | null>(null);
   const [categoryInput, setCategoryInput] = useState("")
   const [lat, setLat] = useState(0);
   const [lon, setLon] = useState(0);
@@ -35,8 +44,8 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
     titulo: "",
     descripcion: "",
     direccion: "",
-    fechaInicio: "",
-    fechaFinalizacion: "",
+    fechaInicio: new Date(),
+    fechaFinalizacion: new Date(),
     visibilidad: "público",
     estado: "borrador",
     categorias: [],
@@ -55,8 +64,8 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
         titulo: event.titulo || "",
         descripcion: event.descripcion || "",
         direccion: event.direccion || "",
-        fechaInicio: event.fechaInicio?.split("T")[0] || "",
-        fechaFinalizacion: event.fechaFinalizacion?.split("T")[0] || "",
+        fechaInicio: event.fechaInicio ? new Date(event.fechaInicio) : new Date(),
+        fechaFinalizacion: event.fechaFinalizacion ? new Date(event.fechaFinalizacion) : new Date(),
         visibilidad: event.visibilidad || "público",
         estado: event.estado || "draft" ? "borrador" : event.estado === "published" ? "publicado" : undefined,
         categorias: event.categorias || [],
@@ -75,6 +84,9 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
   }, [event]) // Solo se ejecutará cuando `event` cambie
 
   useEffect(() => {
+      if (formData.fechaInicio) {
+      setFormattedFecha(format(new Date(formData.fechaInicio), "PPP", { locale: es }));
+    }
     setFormData((prev) => ({
       ...prev,
       direccion: direc,
@@ -154,6 +166,10 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
     }))
   }
 
+  const handleDateChange = (name: "fechaInicio" | "fechaFinalizacion", date: Date | undefined) => {
+    setFormData((prev) => ({ ...prev, [name]: date }))
+  }
+
   const handleSubmit = async () => {
     if (!event.id) {
       console.error("ID del evento no definido");
@@ -168,8 +184,8 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
         organizerId: formData.organizerId,
         titulo: formData.titulo,
         descripcion: formData.descripcion,
-        fechaInicio: formData.fechaInicio,
-        fechaFinalizacion: formData.fechaFinalizacion,
+        fechaInicio: formData.fechaInicio ? new Date(formData.fechaInicio).toISOString() : "",
+        fechaFinalizacion: formData.fechaFinalizacion ? new Date(formData.fechaFinalizacion).toISOString() : "",
         direccion: formData.direccion,
         visibilidad: formData.visibilidad,
         categorias: formData.categorias,
@@ -187,6 +203,7 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
       console.error("Error al editar el evento:", error);
     }
   };
+  const today = new Date().toISOString().split("T")[0];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -200,14 +217,86 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
 
           <div className="flex gap-2">
             <Input name="direccion" value={formData.direccion} onChange={handleChange} placeholder="Dirección" />
+            
             <Button type="button"
               onClick={() => mapRef.current?.handleSearch()}  >
               Buscar
             </Button>
+            
           </div>
+          {direccionError && (
+                        <p className="text-sm text-red-500">{direccionError}</p>
+                      )}
+          <div className="space-y-2">
+          <Label>Fecha de Inicio</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !formData.fechaInicio && "text-muted-foreground",
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {formData.fechaInicio ? (
+                  format(new Date(formData.fechaInicio), "PPP", { locale: es })
+                ) : (
+                  <span>Seleccionar fecha</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-white shadow-md rounded-md">
+              <Calendar
+                mode="single"
+                selected={formData.fechaInicio ? new Date(formData.fechaInicio) : undefined}
+                onSelect={(date) => handleDateChange("fechaInicio", date)}
+                initialFocus
+                disabled={{ before: new Date() }}  // 🔒 No permitir fechas pasadas
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
 
-          <Input name="fechaInicio" type="date" value={formData.fechaInicio} onChange={handleChange} />
-          <Input name="fechaFinalizacion" type="date" value={formData.fechaFinalizacion} onChange={handleChange} />
+        {/* Fecha de Finalización */}
+        <div className="space-y-2">
+  <Label>Fecha de Finalización</Label>
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button
+        variant="outline"
+        className={cn("w-full justify-start text-left font-normal")}
+      >
+        <CalendarIcon className="mr-2 h-4 w-4" />
+        {formData.fechaFinalizacion ? (
+          format(new Date(formData.fechaFinalizacion), "PPP", { locale: es })
+        ) : (
+          <span>Seleccionar fecha</span>
+        )}
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent className="w-auto p-0 bg-white shadow-md rounded-md">
+      <Calendar
+        mode="single"
+        selected={
+          formData.fechaFinalizacion
+            ? new Date(formData.fechaFinalizacion)
+            : undefined
+        }
+        onSelect={(date) =>
+          handleDateChange("fechaFinalizacion", date ? new Date(date) : undefined)
+        }
+        initialFocus
+        disabled={{
+          before: formData.fechaInicio
+            ? new Date(formData.fechaInicio)
+            : new Date(),
+        }}
+      />
+    </PopoverContent>
+  </Popover>
+</div>
+
           <Input name="capacidad" type="number" value={formData.capacidad} onChange={handleChange} />
           <div className="space-y-2">
             <div className="flex gap-2">
@@ -269,7 +358,17 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
           <Input name="longitude" value={formData.ubicacion?.lng} onChange={handleChange} placeholder="Longitud" />
 
           <div className="space-y-2">
-            <MapLibreMap direccion={formData.direccion} lat={lat} lon={lon} setDireccion={setDirec} setLati={setLat} setLoni={setLon} ref={mapRef} mode="editar"    ></MapLibreMap>
+            <MapLibreMap 
+            direccion={formData.direccion} 
+            lat={lat} 
+            lon={lon} 
+            setDireccion={setDirec} 
+            setLati={setLat} 
+            setLoni={setLon} 
+            ref={mapRef} 
+            mode="editar"
+            setDireccionError={setDireccionError}
+            ></MapLibreMap>
 
           </div>
 
