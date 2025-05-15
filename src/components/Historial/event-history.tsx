@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Clock, Edit, PlusCircle, Trash2, RefreshCw } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { EventHistoryItem } from "../utils/eventos"
+import { Clock, Edit, PlusCircle, Trash2, RefreshCw } from "lucide-react"
+import type { EventHistoryItem } from "../../services/eventos"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
-import { fetchEventos, generarHistorialDesdeEventos } from "../utils/eventos"
+import { fetchEventos, generarHistorialDesdeEventos } from "../../services/eventos"
 
 interface EventHistoryProps {
   limit?: number

@@ -1,9 +1,12 @@
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, MapPin, Eye, Users, Tag, Info, Ticket } from "lucide-react"
-import type { ItemData } from "./data-table"
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
+import { Calendar, MapPin, Eye, Users, Tag, Info, Ticket } from "lucide-react"
+
+import type { ItemData } from "../types/ItemData"
+
+
 
 interface DetailViewProps {
   item: ItemData

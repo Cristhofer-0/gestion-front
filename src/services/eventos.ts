@@ -1,4 +1,4 @@
-import { ItemData } from "../components/data-table"
+import { ItemData } from "@/components/DataTable/types/ItemData"
 
 // Tipo para los elementos del historial
 export interface EventHistoryItem {

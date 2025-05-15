@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react"
-import type { ItemData } from "./data-table"
-import type { EditEventFormData } from "../utils/types" // si lo extraes
+import type { ItemData } from "../types/ItemData"
+
+import type { EditEventFormData } from "./types/EventFormData"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { editarEvento } from "../utils/eventos" // Asegúrate de que esta función esté definida
+import { editarEvento } from "../../../services/eventos" // Asegúrate de que esta función esté definida
 
 import MapLibreMap from "@/components/principales/mapa"
 

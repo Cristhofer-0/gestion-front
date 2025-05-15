@@ -15,8 +15,9 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { crearEvento } from "../utils/eventos"
-import { ItemData } from "../components/data-table"
+import { crearEvento } from "../../../services/eventos"
+
+import type { ItemData } from "../types/ItemData"
 
 import MapLibreMap from "@/components/principales/mapa"
 

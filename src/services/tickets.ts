@@ -1,8 +1,8 @@
-import { Type } from "lucide-react"
-import { ItemData } from "../components/data-table"
-import { Description } from "@radix-ui/react-dialog"
+//import { Type } from "lucide-react"
+import { TicketData } from "@/components/DataTable/types/TicketData"
+//import { Description } from "@radix-ui/react-dialog"
 
-export async function fetchTickets(): Promise<ItemData[]> {
+export async function fetchTickets(): Promise<TicketData[]> {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
     const response = await fetch(`${API_BASE_URL}/tickets`)
     if (!response.ok) {
@@ -11,7 +11,7 @@ export async function fetchTickets(): Promise<ItemData[]> {
 
     const rawData = await response.json()
 
-    const transformedData: ItemData[] = rawData.map((ticket: any) => ({
+    const transformedData: TicketData[] = rawData.map((ticket: any) => ({
         id: ticket.TicketId.toString(),
         eventoId: ticket.EventId.toString(),
         tipo: ticket.Type,
@@ -25,7 +25,7 @@ export async function fetchTickets(): Promise<ItemData[]> {
     return transformedData
 }
 
-export async function crearTicket(nuevoTicket: ItemData): Promise<void> {
+export async function crearTicket(nuevoTicket: TicketData): Promise<void> {
 	const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 	const response = await fetch(`${API_BASE_URL}/tickets`, {
@@ -48,7 +48,7 @@ export async function crearTicket(nuevoTicket: ItemData): Promise<void> {
 	}
 }  
 
-export async function editarTicket(ticketId: string, ticketActualizado: ItemData): Promise<void> {
+export async function editarTicket(ticketId: string, ticketActualizado: TicketData): Promise<void> {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
     const response = await fetch(`${API_BASE_URL}/tickets/${ticketId}`, {

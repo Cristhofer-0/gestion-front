@@ -2,21 +2,17 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { TableComponent } from "./table-component"
-import { DetailView } from "./detail-view"
 import { Button } from "@/components/ui/button"
-import { ReloadIcon } from "./ui/iconos"
-import { fetchTickets } from "../utils/tickets"
 
-export type ItemData = {
-  id?: string
-  eventoId: string
-  tipo: "General" | "VIP"
-  titulo: string
-  precio: number
-  descripcion: string
-  stockDisponible: number
-}
+import { TableComponent } from "./form/table-component"
+import { DetailView } from "./details/detail-view"
+import { MapView } from "./details/map-view"
+
+import { ReloadIcon } from "../custom/iconos"
+import { fetchEventos } from "../../services/eventos"
+
+import { ItemData } from "./types/ItemData"
+
 
 export function DataTable() {
   const [items, setItems] = useState<ItemData[]>([])
@@ -28,7 +24,7 @@ export function DataTable() {
     setIsLoading(true)
     try {
       // Aquí se reemplazaría con la llamada real a la API
-      const data = await fetchTickets()
+      const data = await fetchEventos()
       setItems(data)
     } catch (error) {
       console.error("Error al cargar los datos:", error)
@@ -52,8 +48,8 @@ export function DataTable() {
     <div className="container mx-auto py-6">
       <Card className="w-full mb-6">
         <CardHeader>
-          <CardTitle>Gestión de Tickets</CardTitle>
-          <CardDescription>Visualiza y gestiona todos los tickets disponibles</CardDescription>
+          <CardTitle>Gestión de Eventos</CardTitle>
+          <CardDescription>Visualiza y gestiona todos los eventos disponibles</CardDescription>
           <div className="flex gap-2">
             <Button onClick={fetchData} disabled={isLoading}>
               {isLoading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
@@ -70,6 +66,7 @@ export function DataTable() {
             renderDetails={(item) => (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/30 rounded-lg">
                 <DetailView item={item} />
+                <MapView item={item} />
               </div>
             )}
           />

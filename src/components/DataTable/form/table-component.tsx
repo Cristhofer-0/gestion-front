@@ -7,8 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Search, Calendar, MapPin, Eye, Users, Tag, FileText, PlusCircle, ChevronDown, ChevronUp } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { CreateEventDialog, type EventFormData } from "./create-event-dialog"
-import type { ItemData } from "./data-table"
 import { EditEventDialog } from "./edit-event-dialog"
+
+
+
+import type { ItemData } from "../types/ItemData"
+
+
 
 interface TableComponentProps {
   items?: ItemData[]

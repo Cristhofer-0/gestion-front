@@ -2,19 +2,19 @@
 import { useState } from "react"
 
 //BARRA IZQUIERDA
-import { AppSidebar } from "./components/app-sidebar"
+import { AppSidebar } from "@/components/AppSideBar/app-sidebar"
 // EL GRAFICO DE LOS DATOS
 //import { ChartAreaInteractive } from "./components/chart-area-interactive"
 //LA TABLA DE LOS DATOS
-import { DataTable } from "./components/data-table"
+import { DataTable } from "@/components/DataTable/data-table"
 //LAS CARTAS DE LA PARTE SUPERIOR
 //import { SectionCards } from "./components/section-cards"
 //TOPNAV QUE SE ENCARGA DE MOSTRAR/OCULTAR LA BARRA LATERAL
-import { SiteHeader } from "./components/site-header"
+import { SiteHeader } from "@/components/custom/site-header"
 //DOCUMENTACION DE SHADCN
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 //LA TABLA DE HISTORIAL
-import { EventHistory } from "./components/event-history"
+import { EventHistory } from "@/components/Historial/event-history"
 
 export default function Dashboard() {
     const [refreshKey, setRefreshKey] = useState(0)

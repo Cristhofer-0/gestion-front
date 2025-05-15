@@ -1,20 +1,19 @@
 //BARRA IZQUIERDA
-import { AppSidebar } from "./components/app-sidebar"
+import { AppSidebar } from "@/components/AppSideBar/app-sidebar"
 // EL GRAFICO DE LOS DATOS
-import { ChartAreaInteractive } from "./components/chart-area-interactive"
+
+///////import { ChartAreaInteractive } from "@/components/custom/chart-area-interactive"
+
 //LA TABLA DE LOS DATOS
-import { DataTable } from "./components/data-table"
+import { DataTable } from "@/components/DataTable/data-table"
 //LAS CARTAS DE LA PARTE SUPERIOR
-import { SectionCards } from "./components/section-cards"
+
+////import { SectionCards } from "@/components/Historial/section-cards"
+
 //TOPNAV QUE SE ENCARGA DE MOSTRAR/OCULTAR LA BARRA LATERAL
-import { SiteHeader } from "./components/site-header"
+import { SiteHeader } from "@/components/custom/site-header"
 //DOCUMENTACION DE SHADCN
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-
-//EJEMPLO DE LOS DATOS
-import data from "../data.json"
-
-
 
 export default function dashboard() {
     return (

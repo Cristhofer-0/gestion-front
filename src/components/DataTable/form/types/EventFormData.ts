@@ -1,3 +1,20 @@
+export interface EventFormData {
+  organizerId: string
+  title: string
+  description: string
+  startDate: Date | null
+  endDate: Date | null
+  address: string
+  latitude: string
+  longitude: string
+  visibility: string
+  categories: string[]
+  bannerUrl: string
+  videoUrl: string
+  status: string
+  capacity: string
+}
+
 export interface EditEventFormData {
   organizerId: string
   titulo: string

@@ -19,10 +19,10 @@ import {
     UsersIcon,
 } from "lucide-react"
 
-import { NavDocuments } from "./nav-documents"
-import { NavMain } from "./nav-main"
-import { NavSecondary } from "./nav-secondary"
-import { NavUser } from "./nav-user"
+import { NavDocuments } from "./Nav/nav-documents"
+import { NavMain } from "./Nav/nav-main"
+import { NavSecondary } from "./Nav/nav-secondary"
+import { NavUser } from "./Nav/nav-user"
 import {
     Sidebar,
     SidebarContent,

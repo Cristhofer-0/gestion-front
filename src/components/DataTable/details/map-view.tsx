@@ -2,9 +2,9 @@
 
 import { useEffect, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "../../custom/alert"
 import { InfoIcon } from "lucide-react"
-import type { ItemData } from "./data-table"
+import type { ItemData } from "../types/ItemData"
 
 import { mapByLanLon } from "@/components/principales/mapa"
 
