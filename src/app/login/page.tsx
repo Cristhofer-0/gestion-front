@@ -29,32 +29,37 @@ export default function Login() {
     }, [valorEmail]);
 
 
-    async function verificarCorreo(data: LoginData): Promise<void> {
-        try {
-            const url = new URL("http://localhost:3000/usuarios/login");
+async function verificarCorreo(data: LoginData): Promise<void> {
+    try {
+        const url = new URL("http://localhost:3000/usuarios/login");
 
-            //ENVIA LA SOLICITUD POST AL BACKEND
-            const response = await fetch(url.toString(), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: data.email,
-                    password: data.password
-                }),
-            });
+        const response = await fetch(url.toString(), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email: data.email,
+                password: data.password
+            }),
+        });
 
-            if (!response.ok || response.json() === null) {
-                const errorData = await response.json();
-                throw new Error(errorData.message);
-            }
-            router.push("/dashboard");
+        const responseData = await response.json(); // ✅ LÉELO UNA SOLA VEZ
 
-        } catch (error: unknown) {
-            console.error("Error:", error);
+        if (!response.ok || !responseData) {
+            throw new Error(responseData?.message || "Error desconocido al iniciar sesión");
         }
+
+        // Guardar cookie básica (puedes reemplazar con JWT o HttpOnly cookie más adelante)
+        document.cookie = `loggedUser=true; path=/`;
+
+        localStorage.setItem("user", JSON.stringify(responseData));
+        router.push("/dashboard");
+
+    } catch (error: unknown) {
+        console.error("Error:", error);
     }
+}
 
     //FUNCION PARA MOSTRAR/OCULTAR LA CONTRASEÑA
     function verContaseña() {
