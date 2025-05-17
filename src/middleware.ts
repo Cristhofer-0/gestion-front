@@ -1,15 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(req: NextRequest) {
-    const isLoggedIn = req.cookies.get('loggedUser');
+export function middleware(request: NextRequest) {
+  const loggedUser = request.cookies.get("loggedUser");
 
-    if (!isLoggedIn) {
-        return NextResponse.redirect(new URL('/login', req.url));
-    }
+  // Si NO hay cookie, redirige a la página de login
+  if (!loggedUser) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
 
-    return NextResponse.next();
+  // Si hay cookie, permite el acceso
+  return NextResponse.next();
 }
 
 export const config = {
-    matcher: ['/dashboard/:path*'],
+  matcher: ["/dashboard/:path*", "/dashboard"],
 };

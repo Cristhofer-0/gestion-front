@@ -28,6 +28,8 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
 
 export function NavUser({
     user,
@@ -39,6 +41,19 @@ export function NavUser({
     }
 }) {
     const { isMobile } = useSidebar()
+
+      const router = useRouter()  // Hook
+
+    function cerrarSesion() {
+        // Borrar la cookie
+        document.cookie = "loggedUser=; path=/; max-age=0";
+        // Limpiar localStorage si guardas algo de sesión
+        localStorage.removeItem("user");
+
+        // Redirigir al login
+        router.push("/login");
+    }
+    
 
     return (
         <SidebarMenu>
@@ -98,9 +113,9 @@ export function NavUser({
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
+                       <DropdownMenuItem onClick={cerrarSesion} className="cursor-pointer text-red-600 hover:bg-red-100 flex items-center gap-2">
                             <LogOutIcon />
-                            Cerrar sesion
+                            Cerrar sesión
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

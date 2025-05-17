@@ -66,6 +66,7 @@ async function verificarCorreo(data: LoginData): Promise<void> {
         setMostrarPassword(prev => !prev);
     }
 
+  
 
     return (
         <div className="flex justify-center items-center bg-slate-100 h-full md:min-h-screen p-4">
