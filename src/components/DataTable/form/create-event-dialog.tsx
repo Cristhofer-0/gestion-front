@@ -71,6 +71,36 @@ interface MapLibreMapHandle {
   handleSearch: () => void;
 }
 
+
+
+// Function UploadImage
+async function uploadImage(file: File): Promise<string | null> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await fetch('http://localhost:3000/api/multimedia/upload-image', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const text = await response.text(); 
+      throw new Error('Error al subir la imagen');
+    }
+
+    const data = await response.json();
+    console.log('Respuesta del backend OK:', data);
+    return data.url;
+  } catch (error) {
+    console.error('Error al subir la imagen:', error);
+    return null;
+  }
+}
+
+
+
+
 export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps) {
   const mapRef = useRef<MapLibreMapHandle>(null);
   const [direccionError, setDireccionError] = useState<string | null>(null);
@@ -387,16 +417,48 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="bannerUrl">URL del Banner</Label>
-              <Input id="bannerUrl" name="bannerUrl" value={formData.bannerUrl} onChange={handleInputChange} />
+              <Input
+                id="bannerUrl"
+                name="bannerUrl"
+                value={formData.bannerUrl}
+                onChange={handleInputChange}
+                placeholder="URL de la imagen subida"
+                readOnly 
+              />
+              <input
+                type="file"
+                accept="image/*"
+                id="fileInput"
+                style={{ display: "none" }} 
+                onChange={async (e) => {
+                  if (!e.target.files?.length) return;
+                  const file = e.target.files[0];
+                  const imageUrl = await uploadImage(file);
+                  console.log("URL imagen subida:", imageUrl); 
+                  if (imageUrl) {
+                    setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                onClick={() => {
+                  document.getElementById("fileInput")?.click();
+                }}
+              >
+                Seleccionar imagen
+              </Button>
             </div>
             <div className="space-y-2">
               <Label htmlFor="videoUrl">URL del Video</Label>
               <Input id="videoUrl" name="videoUrl" value={formData.videoUrl} onChange={handleInputChange} />
             </div>
-          </div>
+        </div>
+
 
           <div className="space-y-2">
             <Label htmlFor="capacity">Capacidad</Label>
