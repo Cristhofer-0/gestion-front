@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from "react"
 import type { ItemData } from "../types/ItemData"
-
 import type { EditEventFormData } from "./types/EventFormData"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { editarEvento } from "../../../services/eventos" // Asegúrate de que esta función esté definida
-
 import MapLibreMap from "@/components/principales/mapa"
 import { Label } from "recharts"
 import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover"
@@ -59,13 +57,6 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
 
 
 
-
-
-
-
-
-
-
   // Actualiza formData cuando el evento cambie
   useEffect(() => {
     if (event) {
@@ -113,7 +104,7 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
   const file = e.target.files?.[0];
   if (!file) return;
 
-  const url = await uploadImage(file); // Usas tu función personalizada
+  const url = await uploadImage(file); 
   if (url) {
     setFormData((prev) => ({
       ...prev,
@@ -380,35 +371,34 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
           </Select>
 
 
-<div className="mb-6">
-  <label htmlFor="banner" className="block text-sm font-medium text-gray-700 mb-1">
-    Imagen del Banner
-  </label>
+      <div className="mb-6">
+        <label htmlFor="banner" className="block text-sm font-medium text-gray-700 mb-1">
+          Imagen del Banner
+        </label>
 
-  {/* Vista previa elegante */}
-  {formData.bannerUrl && (
-    <div className="mb-3">
-      <img
-        src={formData.bannerUrl}
-        alt="Vista previa"
-        className="w-full h-48 object-cover rounded shadow"
-      />
-    </div>
-  )}
+        {formData.bannerUrl && (
+          <div className="mb-3">
+            <img
+              src={formData.bannerUrl}
+              alt="Vista previa"
+              className="w-full h-48 object-cover rounded shadow"
+            />
+          </div>
+        )}
 
-  <input
-    type="file"
-    id="banner"
-    accept="image/*"
-    onChange={handleImageChange}
-    className="block w-full text-sm text-gray-500
-               file:mr-4 file:py-2 file:px-4
-               file:rounded-md file:border-0
-               file:text-sm file:font-semibold
-               file:bg-blue-50 file:text-blue-700
-               hover:file:bg-blue-100"
-  />
-</div>
+        <input
+          type="file"
+          id="banner"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100"
+            />
+          </div>
 
 
           <Input name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="URL del Video" />
