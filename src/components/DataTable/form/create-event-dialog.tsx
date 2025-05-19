@@ -394,8 +394,6 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               </div>
             )}
           </div>
-
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="bannerUrl">URL del Banner</Label>
@@ -414,21 +412,35 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                   style={{ maxWidth: "100%", marginTop: "1rem" }}
                 />
               )}
-              <input
-                type="file"
-                accept="image/*"
-                id="fileInput"
-                style={{ display: "none" }} 
-                onChange={async (e) => {
-                  if (!e.target.files?.length) return;
-                  const file = e.target.files[0];
-                  const imageUrl = await uploadImage(file);
-                  console.log("URL imagen subida:", imageUrl); 
-                  if (imageUrl) {
-                    setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
-                  }
-                }}
-              />
+            <input
+              type="file"
+              accept="image/*"
+              id="fileInput"
+              style={{ display: "none" }}
+              onChange={async (e) => {
+                if (!e.target.files?.length) return;
+                const file = e.target.files[0];
+
+                const maxSizeInMB = 10;
+                const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+
+                if (file.size > maxSizeInBytes) {
+                  const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+                  alert(
+                    `El archivo pesa ${sizeInMB} MB y supera el límite de ${maxSizeInMB} MB permitido. Por favor, selecciona una imagen más liviana.`
+                  );
+                  return;
+                }
+
+                const imageUrl = await uploadImage(file);
+                console.log("URL imagen subida:", imageUrl);
+                if (imageUrl) {
+                  setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
+                } else {
+                  alert("Error al subir imagen");
+                }
+              }}
+            />
               <Button
                 type="button"
                 onClick={() => {

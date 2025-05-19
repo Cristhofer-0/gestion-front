@@ -104,6 +104,16 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
   const file = e.target.files?.[0];
   if (!file) return;
 
+  
+  const maxSizeInMB = 10;
+  const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+
+  if (file.size > maxSizeInBytes) {
+    const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+    alert(`El archivo pesa ${sizeInMB} MB y supera el límite de ${maxSizeInMB} MB permitido. Por favor, selecciona una imagen más liviana.`);
+    return;
+  }
+
   const url = await uploadImage(file); 
   if (url) {
     setFormData((prev) => ({
