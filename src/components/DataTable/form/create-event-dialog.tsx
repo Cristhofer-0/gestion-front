@@ -74,29 +74,7 @@ interface MapLibreMapHandle {
 
 
 // Function UploadImage
-async function uploadImage(file: File): Promise<string | null> {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  try {
-    const response = await fetch('http://localhost:3000/api/multimedia/upload-image', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const text = await response.text(); 
-      throw new Error('Error al subir la imagen');
-    }
-
-    const data = await response.json();
-    console.log('Respuesta del backend OK:', data);
-    return data.url;
-  } catch (error) {
-    console.error('Error al subir la imagen:', error);
-    return null;
-  }
-}
+import { uploadImage } from "@/lib/uploadImage.";
 
 
 
@@ -429,6 +407,13 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                 placeholder="URL de la imagen subida"
                 readOnly 
               />
+              {formData.bannerUrl && (
+              <img
+                  src={formData.bannerUrl}
+                  alt="Vista previa del banner"
+                  style={{ maxWidth: "100%", marginTop: "1rem" }}
+                />
+              )}
               <input
                 type="file"
                 accept="image/*"
