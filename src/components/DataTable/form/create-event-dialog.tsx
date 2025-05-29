@@ -97,7 +97,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
     categories: [],
     bannerUrl: "",
     videoUrl: "",
-    status: "published",
+    status: "draft",
     capacity: "",
   };
 
@@ -360,20 +360,18 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="visibility">Visibilidad</Label>
-              <Select value={formData.visibility} onValueChange={(value) => handleSelectChange("visibility", value)}>
+              <Select value={formData.visibility} onValueChange={(value) => handleSelectChange("visibility", value)} disabled>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar visibilidad" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="public">Público</SelectItem>
-                  <SelectItem value="private">Privado</SelectItem>
-                  <SelectItem value="invite-only">Solo invitación</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Estado</Label>
-              <Select value={formData.status} onValueChange={(value) => handleSelectChange("status", value)}>
+              <Select value={formData.status} onValueChange={(value) => handleSelectChange("status", value)} disabled>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
