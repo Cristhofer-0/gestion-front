@@ -82,7 +82,7 @@ import { uploadImage } from "@/lib/uploadImage.";
 export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps) {
   const mapRef = useRef<MapLibreMapHandle>(null);
   const [direccionError, setDireccionError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<EventFormData>({
+  const initialFormData: EventFormData = {
     organizerId: "",
     title: "",
     description: "",
@@ -97,12 +97,32 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
     videoUrl: "",
     status: "published",
     capacity: "",
-  })
+  };
+
+  const [formData, setFormData] = useState<EventFormData>(initialFormData);
+
 
   const [categoryInput, setCategoryInput] = useState("")
   const [lat, setLat] = useState(0);
   const [lon, setLon] = useState(0);
   const [direc, setDirec] = useState("");
+
+  const resetForm = () => {
+    setFormData(initialFormData);
+    setCategoryInput("");
+    setLat(0);
+    setLon(0);
+    setDirec("");
+    setDireccionError(null);
+  };
+
+  // ⬇️ Escucha cambios en el estado 'open'
+  useEffect(() => {
+    if (!open) {
+      resetForm(); // Si el dialog se cierra, reiniciar todo
+    }
+  }, [open]);
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -319,7 +339,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="h-[300px] overflow-hidden mt-4">
             <Label htmlFor="map">MAPA</Label>
             <MapLibreMap
               ref={mapRef}
@@ -332,8 +352,8 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               mode="crear"
               setDireccionError={setDireccionError}
             />
-
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="visibility">Visibilidad</Label>
@@ -394,29 +414,29 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               </div>
             )}
           </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="bannerUrl">URL del Banner</Label>
-              <Input
-                id="bannerUrl"
-                name="bannerUrl"
-                value={formData.bannerUrl}
-                onChange={handleInputChange}
-                placeholder="URL de la imagen subida"
-                readOnly 
-              />
-              {formData.bannerUrl && (
-              <img
+
+
+          <div className="mb-6">
+            <Label htmlFor="bannerUrl">URL del Banner</Label>
+            {formData.bannerUrl && (
+              <div className="mb-3">
+                <img
                   src={formData.bannerUrl}
                   alt="Vista previa del banner"
                   style={{ maxWidth: "100%", marginTop: "1rem" }}
                 />
-              )}
+              </div>
+            )}
             <input
               type="file"
               accept="image/*"
               id="fileInput"
-              style={{ display: "none" }}
+              className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100"
               onChange={async (e) => {
                 if (!e.target.files?.length) return;
                 const file = e.target.files[0];
@@ -441,20 +461,11 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                 }
               }}
             />
-              <Button
-                type="button"
-                onClick={() => {
-                  document.getElementById("fileInput")?.click();
-                }}
-              >
-                Seleccionar imagen
-              </Button>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="videoUrl">URL del Video</Label>
-              <Input id="videoUrl" name="videoUrl" value={formData.videoUrl} onChange={handleInputChange} />
-            </div>
-        </div>
+          </div>
+          <Label htmlFor="videoUrl">URL del Video</Label>
+          <Input id="videoUrl" name="videoUrl" value={formData.videoUrl} onChange={handleInputChange} />
+
+
 
 
           <div className="space-y-2">
