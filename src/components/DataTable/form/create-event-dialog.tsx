@@ -80,6 +80,8 @@ import { uploadImage } from "@/lib/uploadImage.";
 
 
 export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const mapRef = useRef<MapLibreMapHandle>(null);
   const [direccionError, setDireccionError] = useState<string | null>(null);
   const initialFormData: EventFormData = {
@@ -114,6 +116,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
     setLon(0);
     setDirec("");
     setDireccionError(null);
+    setUploadError(null);
   };
 
   // ⬇️ Escucha cambios en el estado 'open'
@@ -428,6 +431,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               </div>
             )}
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               id="fileInput"
@@ -438,30 +442,53 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                     file:bg-blue-50 file:text-blue-700
                     hover:file:bg-blue-100"
               onChange={async (e) => {
+                setUploadError(null); // Limpiar errores anteriores
                 if (!e.target.files?.length) return;
-                const file = e.target.files[0];
 
+                const file = e.target.files[0];
                 const maxSizeInMB = 10;
                 const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
 
+                let errorMsg = "";
+
+                // Verificar formato
+                if (file.type !== "image/webp") {
+                  errorMsg += "Solo se permiten imágenes en formato .webp. \n";
+                }
+
+                // Verificar tamaño
                 if (file.size > maxSizeInBytes) {
                   const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-                  alert(
-                    `El archivo pesa ${sizeInMB} MB y supera el límite de ${maxSizeInMB} MB permitido. Por favor, selecciona una imagen más liviana.`
-                  );
+                  errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB. \n`;
+                }
+
+                if (errorMsg) {
+                  setUploadError(errorMsg.trim());
+                  setFormData((prev) => ({ ...prev, bannerUrl: "" }));
+                  fileInputRef.current && (fileInputRef.current.value = "");
                   return;
                 }
 
+                // Subida
                 const imageUrl = await uploadImage(file);
-                console.log("URL imagen subida:", imageUrl);
                 if (imageUrl) {
                   setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
+                  setUploadError(null);
                 } else {
-                  alert("Error al subir imagen");
+                  setUploadError("Error al subir imagen. \n");
+                  fileInputRef.current && (fileInputRef.current.value = "");
                 }
               }}
+
             />
-          </div>
+            {uploadError && (
+              <ul className="text-sm text-red-500 mt-2 space-y-1">
+                {uploadError.split("\n").map((msg, index) => (
+                  <li key={index}>• {msg}</li>
+                ))}
+              </ul>
+            )}
+          </div>          
           <Label htmlFor="videoUrl">URL del Video</Label>
           <Input id="videoUrl" name="videoUrl" value={formData.videoUrl} onChange={handleInputChange} />
 

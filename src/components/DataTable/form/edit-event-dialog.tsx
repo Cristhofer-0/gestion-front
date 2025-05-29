@@ -32,6 +32,8 @@ interface MapLibreMapHandle {
 }
 
 export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [formattedFecha, setFormattedFecha] = useState("");
   const mapRef = useRef<MapLibreMapHandle>(null)
   const [direccionError, setDireccionError] = useState<string | null>(null);
@@ -106,30 +108,40 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
 
 
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  setUploadError(null);
+  if (!e.target.files?.length) return;
 
+  const file = e.target.files[0];
+  const maxSizeInMB = 10;
+  const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+  let errorMsg = "";
 
-    const maxSizeInMB = 10;
-    const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+  if (file.type !== "image/webp") {
+    errorMsg += "Solo se permiten imágenes en formato .webp.\n";
+  }
 
-    if (file.size > maxSizeInBytes) {
-      const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-      alert(`El archivo pesa ${sizeInMB} MB y supera el límite de ${maxSizeInMB} MB permitido. Por favor, selecciona una imagen más liviana.`);
-      return;
-    }
+  if (file.size > maxSizeInBytes) {
+    const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+    errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB.`;
+  }
 
-    const url = await uploadImage(file);
-    if (url) {
-      setFormData((prev) => ({
-        ...prev,
-        bannerUrl: url,
-      }));
-    } else {
-      alert("Error al subir imagen");
-    }
-  };
+  if (errorMsg) {
+    setUploadError(errorMsg.trim());
+    setFormData((prev) => ({ ...prev, bannerUrl: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    return;
+  }
+
+  const imageUrl = await uploadImage(file);
+  if (imageUrl) {
+    setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
+    setUploadError(null);
+  } else {
+    setUploadError("Error al subir imagen.");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+};
 
 
 
@@ -391,6 +403,7 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
               </div>
             )}
           </div>
+
           {/* Banner y Video URL */}
           <div className="mb-6">
             <label htmlFor="banner" className="block text-sm font-medium text-gray-700 mb-1">
@@ -408,6 +421,7 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
             )}
 
             <input
+              ref={fileInputRef}
               type="file"
               id="banner"
               accept="image/*"
@@ -419,8 +433,14 @@ export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogPr
                     file:bg-blue-50 file:text-blue-700
                     hover:file:bg-blue-100"
             />
+            {uploadError && (
+              <ul className="text-sm text-red-500 mt-2 space-y-1">
+                {uploadError.split("\n").map((msg, index) => (
+                  <li key={index}>• {msg}</li>
+                ))}
+              </ul>
+            )}
           </div>
-
           <Label htmlFor="videoUrl">URL del Video</Label>
           <Input name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="URL del Video" />
 
