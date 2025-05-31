@@ -16,20 +16,20 @@ interface EditTicketDialogProps {
 
 
 export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditTicketDialogProps) {
-  const [categoryInput, setCategoryInput] = useState("") 
+  const [categoryInput, setCategoryInput] = useState("")
   const [formData, setFormData] = useState<EditTicketFormData>({
     eventoId: ticket.eventoId,
     tipo: "General",
     precio: 0,
     descripcion: "",
-    stockDisponible: 0, 
+    stockDisponible: 0,
   })
 
   // Actualiza formData cuando el ticket cambie
   useEffect(() => {
     if (ticket) {
       setFormData({
-        eventoId:  ticket.eventoId,
+        eventoId: ticket.eventoId,
         tipo: ticket.tipo || "General",
         precio: ticket.precio || 0,
         descripcion: ticket.descripcion || "",
@@ -52,7 +52,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
   const handleSelectChange = (value: "General" | "VIP") => {
     setFormData((prev) => ({ ...prev, tipo: value }))
   }
-  
+
   const handleStatusChange = (value: "draft" | "published") => {
   };
 
@@ -63,28 +63,29 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
   const handleRemoveCategory = (category: string) => {
   }
 
-  const handleSubmit = async () => {
-  if (!ticket.id) {
-    console.error("ID del ticket no definido");
-    return;
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!ticket.id) {
+      console.error("ID del ticket no definido");
+      return;
+    }
 
-  try {
-    // Asegúrate de que `formData.ubicacion` nunca sea `undefined`
-    await editarTicket(ticket.id, {
+    try {
+      // Asegúrate de que `formData.ubicacion` nunca sea `undefined`
+      await editarTicket(ticket.id, {
         eventoId: formData.eventoId,
         tipo: formData.tipo,
         precio: formData.precio,
         titulo: ticket.titulo,
         descripcion: formData.descripcion,
         stockDisponible: formData.stockDisponible,
-    });
+      });
 
-    onOpenChange(false);
-  } catch (error) {
-    console.error("Error al editar el evento:", error);
-  }
-};
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error al editar el evento:", error);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -104,7 +105,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
           </Select>
           <Input name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Descripción" />
           <Input name="precio" value={formData.precio} onChange={handleChange} placeholder="Precio" />
-          <Input name="stockDisponible" value={formData.stockDisponible} onChange={handleChange} placeholder="Stock disponible" /> 
+          <Input name="stockDisponible" value={formData.stockDisponible} onChange={handleChange} placeholder="Stock disponible" />
           <Button onClick={handleSubmit}>Guardar Cambios</Button>
         </div>
       </DialogContent>

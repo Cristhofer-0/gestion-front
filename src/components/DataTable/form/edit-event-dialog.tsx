@@ -229,6 +229,7 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault()
     if (!event.id) {
       console.error("ID del evento no definido");
       return;
