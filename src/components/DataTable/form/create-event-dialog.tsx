@@ -21,7 +21,6 @@ import type { ItemData } from "../types/ItemData"
 
 import MapLibreMap from "@/components/principales/mapa"
 
-
 interface CreateEventDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -45,7 +44,6 @@ export interface EventFormData {
   capacity: string
 }
 
-
 const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
   organizerId: data.organizerId,
   titulo: data.title,
@@ -68,22 +66,17 @@ const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
 })
 
 interface MapLibreMapHandle {
-  handleSearch: () => void;
+  handleSearch: () => void
 }
 
-
-
-// Function UploadImage
-import { uploadImage } from "@/lib/uploadImage.";
-
-
-
+// Función UploadImage
+import { uploadImage } from "@/lib/uploadImage."
 
 export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const mapRef = useRef<MapLibreMapHandle>(null);
-  const [direccionError, setDireccionError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const mapRef = useRef<MapLibreMapHandle>(null)
+  const [direccionError, setDireccionError] = useState<string | null>(null)
   const initialFormData: EventFormData = {
     organizerId: "",
     title: "",
@@ -99,66 +92,84 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
     videoUrl: "",
     status: "draft",
     capacity: "",
-  };
+  }
 
-  const [formData, setFormData] = useState<EventFormData>(initialFormData);
-
+  const [formData, setFormData] = useState<EventFormData>(initialFormData)
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   const [categoryInput, setCategoryInput] = useState("")
-  const [lat, setLat] = useState(0);
-  const [lon, setLon] = useState(0);
-  const [direc, setDirec] = useState("");
+  const [lat, setLat] = useState(0)
+  const [lon, setLon] = useState(0)
+  const [direc, setDirec] = useState("")
 
   const resetForm = () => {
-    setFormData(initialFormData);
-    setCategoryInput("");
-    setLat(0);
-    setLon(0);
-    setDirec("");
-    setDireccionError(null);
-    setUploadError(null);
-  };
+    setFormData(initialFormData)
+    setCategoryInput("")
+    setLat(0)
+    setLon(0)
+    setDirec("")
+    setDireccionError(null)
+    setUploadError(null)
+    setFormErrors({})
+  }
 
   // ⬇️ Escucha cambios en el estado 'open'
   useEffect(() => {
     if (!open) {
-      resetForm(); // Si el dialog se cierra, reiniciar todo
+      resetForm() // Si el dialog se cierra, reiniciar todo
     }
-  }, [open]);
+  }, [open])
 
+  // Función para limpiar errores específicos cuando el usuario empieza a escribir
+  const clearFieldError = (fieldName: string) => {
+    if (formErrors[fieldName]) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[fieldName]
+        return newErrors
+      })
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    // Limpiar error del campo cuando el usuario empieza a escribir
+    clearFieldError(name)
   }
 
   const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
+    // Limpiar error del campo cuando el usuario selecciona un valor
+    clearFieldError(name)
   }
 
   const handleDateChange = (name: "startDate" | "endDate", date: Date | undefined) => {
     setFormData((prev) => ({ ...prev, [name]: date }))
+    // Limpiar error del campo cuando el usuario selecciona una fecha
+    clearFieldError(name)
   }
 
   useEffect(() => {
-
     setFormData((prev) => ({
       ...prev,
       latitude: lat.toString(),
       longitude: lon.toString(),
-      address: direc
-    }));
-  }, [lat, lon, direc]);
+      address: direc,
+    }))
+  }, [lat, lon, direc])
 
   const handleAddCategory = () => {
     if (categoryInput.trim() && !formData.categories.includes(categoryInput.trim())) {
       setFormData((prev) => ({
         ...prev,
         categories: [...prev.categories, categoryInput.trim()],
-      }));
-      setCategoryInput("");
+      }))
+      setCategoryInput("")
+      // Limpiar error de categorías cuando se añade una categoría
+      clearFieldError("categories")
     }
-  };
+  }
 
   const handleRemoveCategory = (category: string) => {
     setFormData((prev) => ({
@@ -169,11 +180,63 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Resetear los errores
+    setFormErrors({})
+
+    // Campos Obligatorios
+    const requiredFields: (keyof EventFormData)[] = [
+      "organizerId",
+      "title",
+      "description",
+      "address",
+      "bannerUrl",
+      "videoUrl",
+    ]
+    const newErrors: Record<string, string> = {}
+
+    requiredFields.forEach((field) => {
+      if (!formData[field]) {
+        newErrors[field] = "Este campo es obligatorio"
+      }
+    })
+
+    if (!formData.startDate) {
+      newErrors.startDate = "La fecha de inicio es obligatoria"
+    }
+
+    if (!formData.endDate) {
+      newErrors.endDate = "La fecha de finalización es obligatoria"
+    }
+
+    // Categorias obligatorias
+    if (formData.categories.length === 0) {
+      newErrors.categories = "Debe añadir al menos una categoría"
+    }
+
+    // Validar que la capacidad sea un número positivo
+    if (formData.capacity) {
+      const capacityNum = Number(formData.capacity)
+      if (isNaN(capacityNum)) {
+        newErrors.capacity = "La capacidad debe ser un número"
+      } else if (capacityNum <= 0) {
+        newErrors.capacity = "La capacidad debe ser un número positivo"
+      }
+    } else {
+      newErrors.capacity = "La capacidad es obligatoria"
+    }
+
+    // Si hay errores, no se permite crear un evento
+    if (Object.keys(newErrors).length > 0) {
+      setFormErrors(newErrors)
+      return
+    }
+
     try {
       const itemData = adaptFormDataToItemData(formData)
-      console.log("Datos a enviar al backend:", itemData) // 👈 Imprime aquí
+      console.log("Datos a enviar al backend:", itemData)
       await crearEvento(itemData)
-      setFormData({ // ← aquí se reinicia
+      setFormData({
         organizerId: "",
         title: "",
         description: "",
@@ -209,13 +272,23 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                 id="organizerId"
                 name="organizerId"
                 value={formData.organizerId}
-                onChange={handleInputChange}
+                onChange={handleInputChange}                
                 required
+                className={formErrors.organizerId ? "border-red-500" : ""}                
               />
+              {formErrors.organizerId && <p className="text-sm text-red-500">{formErrors.organizerId}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="title">Título</Label>
-              <Input id="title" name="title" value={formData.title} onChange={handleInputChange} required />
+              <Input
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                required
+                className={formErrors.title ? "border-red-500" : ""}
+              />
+              {formErrors.title && <p className="text-sm text-red-500">{formErrors.title}</p>}
             </div>
           </div>
 
@@ -227,7 +300,10 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               value={formData.description}
               onChange={handleInputChange}
               rows={3}
+              required
+              className={formErrors.description ? "border-red-500" : ""}
             />
+            {formErrors.description && <p className="text-sm text-red-500">{formErrors.description}</p>}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -240,6 +316,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                     className={cn(
                       "w-full justify-start text-left font-normal",
                       !formData.startDate && "text-muted-foreground",
+                      formErrors.startDate && "border-red-500",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -256,10 +333,11 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                     selected={formData.startDate || undefined}
                     onSelect={(date) => handleDateChange("startDate", date)}
                     initialFocus
-                    disabled={{ before: new Date() }} // <-- aquí
+                    disabled={{ before: new Date() }}
                   />
                 </PopoverContent>
               </Popover>
+              {formErrors.startDate && <p className="text-sm text-red-500">{formErrors.startDate}</p>}
             </div>
             <div className="space-y-2">
               <Label>Fecha de Finalización</Label>
@@ -270,6 +348,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                     className={cn(
                       "w-full justify-start text-left font-normal",
                       !formData.endDate && "text-muted-foreground",
+                      formErrors.endDate && "border-red-500",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -286,10 +365,11 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                     selected={formData.endDate || undefined}
                     onSelect={(date) => handleDateChange("endDate", date)}
                     initialFocus
-                    disabled={{ before: new Date() }} // <-- aquí
+                    disabled={{ before: new Date() }}
                   />
                 </PopoverContent>
               </Popover>
+              {formErrors.endDate && <p className="text-sm text-red-500">{formErrors.endDate}</p>}
             </div>
           </div>
 
@@ -302,17 +382,14 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                 value={formData.address}
                 onChange={handleInputChange}
                 required
+                className={formErrors.address ? "border-red-500" : ""}
               />
-              <Button
-                type="button"
-                onClick={() => mapRef.current?.handleSearch()}
-              >
+              <Button type="button" onClick={() => mapRef.current?.handleSearch()}>
                 Buscar
               </Button>
             </div>
-            {direccionError && (
-              <p className="text-sm text-red-500">{direccionError}</p>
-            )}
+            {formErrors.address && <p className="text-sm text-red-500">{formErrors.address}</p>}
+            {direccionError && <p className="text-sm text-red-500">{direccionError}</p>}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -360,7 +437,11 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="visibility">Visibilidad</Label>
-              <Select value={formData.visibility} onValueChange={(value) => handleSelectChange("visibility", value)} disabled>
+              <Select
+                value={formData.visibility}
+                onValueChange={(value) => handleSelectChange("visibility", value)}
+                disabled
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar visibilidad" />
                 </SelectTrigger>
@@ -391,11 +472,13 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                 value={categoryInput}
                 onChange={(e) => setCategoryInput(e.target.value)}
                 placeholder="Añadir categoría"
+                className={formErrors.categories ? "border-red-500" : ""}
               />
               <Button type="button" onClick={handleAddCategory}>
                 Añadir
               </Button>
             </div>
+            {formErrors.categories && <p className="text-sm text-red-500">{formErrors.categories}</p>}
             {formData.categories.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {formData.categories.map((category, index) => (
@@ -416,7 +499,6 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
             )}
           </div>
 
-
           <div className="mb-6">
             <Label htmlFor="bannerUrl">URL del Banner</Label>
             {formData.bannerUrl && (
@@ -433,52 +515,55 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               type="file"
               accept="image/*"
               id="fileInput"
-              className="block w-full text-sm text-gray-500
+              required
+              className={`block w-full text-sm text-gray-500
                     file:mr-4 file:py-2 file:px-4
                     file:rounded-md file:border-0
                     file:text-sm file:font-semibold
                     file:bg-blue-50 file:text-blue-700
-                    hover:file:bg-blue-100"
+                    hover:file:bg-blue-100 ${formErrors.bannerUrl ? "border-red-500" : ""}`}
               onChange={async (e) => {
-                setUploadError(null); // Limpiar errores anteriores
-                if (!e.target.files?.length) return;
+                setUploadError(null) // Limpiar errores anteriores
+                clearFieldError("bannerUrl") // Limpiar error cuando el usuario selecciona un archivo
 
-                const file = e.target.files[0];
-                const maxSizeInMB = 10;
-                const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+                if (!e.target.files?.length) return
 
-                let errorMsg = "";
+                const file = e.target.files[0]
+                const maxSizeInMB = 10
+                const maxSizeInBytes = maxSizeInMB * 1024 * 1024
+
+                let errorMsg = ""
 
                 // Verificar formato
                 if (file.type !== "image/webp") {
-                  errorMsg += "Solo se permiten imágenes en formato .webp. \n";
+                  errorMsg += "Solo se permiten imágenes en formato .webp. \n"
                 }
 
                 // Verificar tamaño
                 if (file.size > maxSizeInBytes) {
-                  const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-                  errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB. \n`;
+                  const sizeInMB = (file.size / (1024 * 1024)).toFixed(2)
+                  errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB. \n`
                 }
 
                 if (errorMsg) {
-                  setUploadError(errorMsg.trim());
-                  setFormData((prev) => ({ ...prev, bannerUrl: "" }));
-                  fileInputRef.current && (fileInputRef.current.value = "");
-                  return;
+                  setUploadError(errorMsg.trim())
+                  setFormData((prev) => ({ ...prev, bannerUrl: "" }))
+                  fileInputRef.current && (fileInputRef.current.value = "")
+                  return
                 }
 
                 // Subida
-                const imageUrl = await uploadImage(file);
+                const imageUrl = await uploadImage(file)
                 if (imageUrl) {
-                  setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
-                  setUploadError(null);
+                  setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }))
+                  setUploadError(null)
                 } else {
-                  setUploadError("Error al subir imagen. \n");
-                  fileInputRef.current && (fileInputRef.current.value = "");
+                  setUploadError("Error al subir imagen. \n")
+                  fileInputRef.current && (fileInputRef.current.value = "")
                 }
               }}
-
             />
+            {formErrors.bannerUrl && <p className="text-sm text-red-500">{formErrors.bannerUrl}</p>}
             {uploadError && (
               <ul className="text-sm text-red-500 mt-2 space-y-1">
                 {uploadError.split("\n").map((msg, index) => (
@@ -486,12 +571,20 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
                 ))}
               </ul>
             )}
-          </div>          
-          <Label htmlFor="videoUrl">URL del Video</Label>
-          <Input id="videoUrl" name="videoUrl" value={formData.videoUrl} onChange={handleInputChange} />
+          </div>
 
-
-
+          <div className="space-y-2">
+            <Label htmlFor="videoUrl">URL del Video</Label>
+            <Input
+              id="videoUrl"
+              name="videoUrl"
+              value={formData.videoUrl}
+              onChange={handleInputChange}
+              required
+              className={formErrors.videoUrl ? "border-red-500" : ""}
+            />
+            {formErrors.videoUrl && <p className="text-sm text-red-500">{formErrors.videoUrl}</p>}
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="capacity">Capacidad</Label>
@@ -502,7 +595,9 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
               onChange={handleInputChange}
               type="number"
               min="0"
+              className={formErrors.capacity ? "border-red-500" : ""}
             />
+            {formErrors.capacity && <p className="text-sm text-red-500">{formErrors.capacity}</p>}
           </div>
 
           <DialogFooter>
