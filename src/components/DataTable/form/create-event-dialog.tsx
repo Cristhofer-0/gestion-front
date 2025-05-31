@@ -73,6 +73,8 @@ interface MapLibreMapHandle {
 import { uploadImage } from "@/lib/uploadImage."
 
 export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps) {
+   const user = useUser();
+  const isOrganizer = user?.Role === "organizer";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const mapRef = useRef<MapLibreMapHandle>(null);
