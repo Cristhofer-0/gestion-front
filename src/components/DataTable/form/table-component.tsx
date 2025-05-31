@@ -8,7 +8,7 @@ import { Search, Calendar, MapPin, Eye, Users, Tag, FileText, PlusCircle, Chevro
 import { Badge } from "@/components/ui/badge"
 import { CreateEventDialog, type EventFormData } from "./create-event-dialog"
 import { EditEventDialog } from "./edit-event-dialog"
-
+import { useUser } from "@/hooks/useUser";
 
 
 import type { ItemData } from "../types/ItemData"
@@ -30,6 +30,8 @@ export function TableComponent({
   selectedItemId,
   renderDetails,
 }: TableComponentProps) {
+  const user = useUser();
+  const isOrganizer = user?.Role === "organizer";
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [eventToEdit, setEventToEdit] = useState<ItemData | null>(null)
@@ -138,7 +140,9 @@ export function TableComponent({
                   <span>Estado</span>
                 </div>
               </TableHead>
+              {!isOrganizer && (
               <TableHead className="text-right">Acciones</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -153,9 +157,8 @@ export function TableComponent({
                 <>
                   <TableRow key={item.id} className={selectedItemId === item.id ? "bg-muted/50 border-b-0" : ""}>
                     <TableCell
-                      className={`font-medium cursor-pointer hover:text-blue-600 hover:underline ${
-                        selectedItemId === item.id ? "text-blue-600" : ""
-                      }`}
+                      className={`font-medium cursor-pointer hover:text-blue-600 hover:underline ${selectedItemId === item.id ? "text-blue-600" : ""
+                        }`}
                       onClick={() => onItemClick(item)}
                     >
                       <div className="flex items-center gap-2">
@@ -204,22 +207,24 @@ export function TableComponent({
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                    <Button onClick={() => {
-                      setEventToEdit(item) // Este `item` debería venir directo desde la API
-                      setEditOpen(true)
-                    }}>
-                      Editar
-                    </Button>
-                    {eventToEdit && (
-                      <EditEventDialog
-                        open={editOpen}
-                        onOpenChange={setEditOpen}
-                        event={eventToEdit}
-                        onSubmit={(data) => {
-                          console.log("Actualizar evento:", data)
-                        }}
-                      />
-                    )}
+                      {!isOrganizer && (
+  <Button onClick={() => {
+    setEventToEdit(item); // Este `item` debería venir directo desde la API
+    setEditOpen(true);   
+  }}>
+    Editar
+  </Button>
+)}
+                      {eventToEdit && (
+                        <EditEventDialog
+                          open={editOpen}
+                          onOpenChange={setEditOpen}
+                          event={eventToEdit}
+                          onSubmit={(data) => {
+                            console.log("Actualizar evento:", data)
+                          }}
+                        />
+                      )}
                     </TableCell>
                   </TableRow>
                   {selectedItemId === item.id && renderDetails && (

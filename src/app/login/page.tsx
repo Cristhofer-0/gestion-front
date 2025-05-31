@@ -21,6 +21,7 @@ export default function Login() {
     const router = useRouter();
     const [mostrarPassword, setMostrarPassword] = useState(false);
     const [emailLleno, setEmailLleno] = useState(false);
+     const [errorLogin, setErrorLogin] = useState<string | null>(null); 
 
     const valorEmail = watch("email");
 
@@ -29,44 +30,48 @@ export default function Login() {
     }, [valorEmail]);
 
 
-async function verificarCorreo(data: LoginData): Promise<void> {
-    try {
-        const url = new URL("http://localhost:3000/usuarios/login");
+    async function verificarCorreo(data: LoginData): Promise<void> {
+        try {
+            const url = new URL("http://localhost:3000/usuarios/login");
 
-        const response = await fetch(url.toString(), {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                email: data.email,
-                password: data.password
-            }),
-        });
+            const response = await fetch(url.toString(), {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: data.email,
+                    password: data.password
+                }),
+            });
 
-        const responseData = await response.json(); // ✅ LÉELO UNA SOLA VEZ
+            const responseData = await response.json();
 
-        if (!response.ok || !responseData) {
-            throw new Error(responseData?.message || "Error desconocido al iniciar sesión");
+            if (!response.ok || !responseData) {
+                throw new Error(responseData?.message || "Error desconocido al iniciar sesión");
+            }
+
+            // Verificar rol del usuario
+            if (responseData.user?.Role === "user") {
+                setErrorLogin("No tienes permisos para acceder al dashboard.");
+                return;
+            }
+
+            // Guardar cookie básica (puedes reemplazar con JWT o HttpOnly cookie más adelante)
+            document.cookie = `loggedUser=true; path=/`;
+            localStorage.setItem("user", JSON.stringify(responseData));
+            router.push("/dashboard");
+
+        } catch (error: unknown) {
+            console.error("Error:", error);
         }
-
-        // Guardar cookie básica (puedes reemplazar con JWT o HttpOnly cookie más adelante)
-        document.cookie = `loggedUser=true; path=/`;
-
-        localStorage.setItem("user", JSON.stringify(responseData));
-        router.push("/dashboard");
-
-    } catch (error: unknown) {
-        console.error("Error:", error);
     }
-}
-
     //FUNCION PARA MOSTRAR/OCULTAR LA CONTRASEÑA
     function verContaseña() {
         setMostrarPassword(prev => !prev);
     }
 
-  
+
 
     return (
         <div className="flex justify-center items-center bg-slate-100 h-full md:min-h-screen p-4">
@@ -163,6 +168,14 @@ async function verificarCorreo(data: LoginData): Promise<void> {
                             </div>
                         </div>
                     </div>
+
+                      {/* Span para mostrar error de login */}
+                    {errorLogin && (
+                        <div className="my-4">
+                            <span className="text-red-600 text-sm">{errorLogin}</span>
+                        </div>
+                    )}
+
 
                     <hr className="my-6 border-slate-300" />
 

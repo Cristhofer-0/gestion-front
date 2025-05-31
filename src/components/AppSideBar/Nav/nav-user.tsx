@@ -31,6 +31,7 @@ import {
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import React, { useEffect, useState } from "react";
+import { useUser } from "@/hooks/useUser";  
 
 interface User {
   UserId: number;
@@ -43,17 +44,9 @@ interface User {
   // otros campos...
 }
 export function NavUser() {
-   const [user, setUser] = useState<User | null>(null);
+    const user = useUser();
   const { isMobile } = useSidebar();
   const router = useRouter();
-
-  useEffect(() => {
- const storedUser = localStorage.getItem("user");
-if (storedUser) {
-  const parsed = JSON.parse(storedUser);
-  setUser(parsed.user); // <-- Aquí tomas solo el objeto "user"
-}
-  }, []);
 
   function cerrarSesion() {
     document.cookie = "loggedUser=; path=/; max-age=0";

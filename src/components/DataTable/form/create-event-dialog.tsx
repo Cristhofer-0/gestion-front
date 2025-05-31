@@ -16,7 +16,7 @@ import { es } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { crearEvento } from "../../../services/eventos"
-
+import { useUser } from "@/hooks/useUser";
 import type { ItemData } from "../types/ItemData"
 
 import MapLibreMap from "@/components/principales/mapa"
@@ -80,6 +80,8 @@ import { uploadImage } from "@/lib/uploadImage.";
 
 
 export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps) {
+  const user = useUser();
+   const isOrganizer = user?.Role === "organizer";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const mapRef = useRef<MapLibreMapHandle>(null);
@@ -360,7 +362,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="visibility">Visibilidad</Label>
-              <Select value={formData.visibility} onValueChange={(value) => handleSelectChange("visibility", value)} disabled>
+              <Select value={formData.visibility} onValueChange={(value) => handleSelectChange("visibility", value)} disabled={isOrganizer}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar visibilidad" />
                 </SelectTrigger>
@@ -371,7 +373,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Estado</Label>
-              <Select value={formData.status} onValueChange={(value) => handleSelectChange("status", value)} disabled>
+              <Select value={formData.status} onValueChange={(value) => handleSelectChange("status", value)} disabled={isOrganizer}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
