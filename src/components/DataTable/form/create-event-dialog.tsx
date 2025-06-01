@@ -73,7 +73,7 @@ interface MapLibreMapHandle {
 import { uploadImage } from "@/lib/uploadImage."
 
 export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps) {
-   const user = useUser();
+  const user = useUser();
   const isOrganizer = user?.Role === "organizer";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -117,10 +117,13 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
 
   // ⬇️ Escucha cambios en el estado 'open'
   useEffect(() => {
-    if (!open) {
-      resetForm() // Si el dialog se cierra, reiniciar todo
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        organizerId: String(user.UserId) // user.id o el campo correcto que tengas
+      }))
     }
-  }, [open])
+  }, [user])
 
   // Función para limpiar errores específicos cuando el usuario empieza a escribir
   const clearFieldError = (fieldName: string) => {
@@ -268,30 +271,20 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="organizerId">ID del Organizador</Label>
-              <Input
-                id="organizerId"
-                name="organizerId"
-                value={formData.organizerId}
-                onChange={handleInputChange}                
-                required
-                className={formErrors.organizerId ? "border-red-500" : ""}                
-              />
-              {formErrors.organizerId && <p className="text-sm text-red-500">{formErrors.organizerId}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="title">Título</Label>
-              <Input
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                required
-                className={formErrors.title ? "border-red-500" : ""}
-              />
-              {formErrors.title && <p className="text-sm text-red-500">{formErrors.title}</p>}
-            </div>
+            <input type="hidden" name="organizerId" value={formData.organizerId} />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="title">Título</Label>
+            <Input
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              required
+              className={formErrors.title ? "border-red-500" : ""}
+            />
+            {formErrors.title && <p className="text-sm text-red-500">{formErrors.title}</p>}
           </div>
 
           <div className="space-y-2">
