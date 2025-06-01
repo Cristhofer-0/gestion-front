@@ -17,6 +17,8 @@ import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { crearTicket } from "../../../services/tickets" // Asegúrate de que esta función esté definida
 import { ItemData } from "../data-table-tickets"
+import { useUser } from "@/hooks/useUser"  // IMPORTANTE
+import { fetchEventos, fetchEventosByOrganizador } from "../../../services/eventos" // Asegúrate de que esta función esté definida
 
 interface CreateTicketDialogProps {
     open: boolean
@@ -43,6 +45,8 @@ const adaptFormDataToItemData = (data: TicketFormData): ItemData => ({
 
 
 export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicketDialogProps) {
+    const user = useUser()
+
     const [formData, setFormData] = useState<TicketFormData>({
         EventId: "",
         type: "General",
@@ -54,14 +58,33 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
     const [eventos, setEventos] = useState<{ EventId: string; Title: string }[]>([])
 
     useEffect(() => {
-        const fetchEventos = async () => {
-            const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
-            const response = await fetch(`${API_BASE_URL}/eventos`) // o tu endpoint real
-            const data = await response.json()
-            setEventos(data)
-        }
-        fetchEventos()
-    }, [])
+        const cargarEventos = async () => {
+            if (!user) return;
+
+            try {
+                let eventosData = [];
+
+                if (user.Role === "organizer") {
+                    // Solo eventos del organizador
+                    eventosData = await fetchEventosByOrganizador(user.UserId.toString());
+                } else {
+                    // Admin u otros roles: traer todos los eventos
+                    eventosData = await fetchEventos();
+                }
+
+                const eventosParaSelect = eventosData.map((e) => ({
+                    EventId: String(e.id),
+                    Title: e.titulo,
+                }));
+
+                setEventos(eventosParaSelect);
+            } catch (error) {
+                console.error("Error cargando eventos:", error);
+            }
+        };
+
+        cargarEventos();
+    }, [user]);
 
 
     const [categoryInput, setCategoryInput] = useState("")
