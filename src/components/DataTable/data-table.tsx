@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button"
 import { TableComponent } from "./form/table-component"
 import { DetailView } from "./details/detail-view"
 import { MapView } from "./details/map-view"
-
 import { ReloadIcon } from "../custom/iconos"
-import { fetchEventos } from "../../services/eventos"
-
+import { fetchEventos, fetchEventosByOrganizador } from "../../services/eventos"
+import { useUser } from "@/hooks/useUser"  // IMPORTANTE
 import { ItemData } from "./types/ItemData"
 
 
 export function DataTable() {
+  const user = useUser();  // OBTENEMOS EL USUARIO
   const [items, setItems] = useState<ItemData[]>([])
   const [selectedItem, setSelectedItem] = useState<ItemData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -23,8 +23,14 @@ export function DataTable() {
   const fetchData = async () => {
     setIsLoading(true)
     try {
-      // Aquí se reemplazaría con la llamada real a la API
-      const data = await fetchEventos()
+      let data: ItemData[] = []
+      if (user?.Role === "organizer") {
+        // Si es organizador, filtrar por su ID
+        data = await fetchEventosByOrganizador(user.UserId.toString())
+      } else {
+        // Si no, obtener todos los eventos
+        data = await fetchEventos()
+      }
       setItems(data)
     } catch (error) {
       console.error("Error al cargar los datos:", error)

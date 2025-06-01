@@ -176,3 +176,37 @@ export async function editarEvento(eventoId: string, eventoActualizado: ItemData
 		throw new Error("No se pudo editar el evento");
 	}
 }
+
+export async function fetchEventosByOrganizador(organizadorId: string): Promise<ItemData[]> {
+	const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+	const response = await fetch(`${API_BASE_URL}/eventos/organizador/${organizadorId}`)
+	if (!response.ok) {
+		throw new Error("No se pudo obtener los eventos por organizador")
+	}
+
+	const rawData = await response.json()
+
+	const transformedData: ItemData[] = rawData.map((event: any) => ({
+		id: event.EventId.toString(),
+		orgId: event.OrganizerId.toString(),
+		titulo: event.Title,
+		descripcion: event.Description,
+		fechaInicio: event.StartDate,
+		fechaFinalizacion: event.EndDate,
+		direccion: event.Address,
+		visibilidad: event.Visibility,
+		categorias: event.Categories?.split(",").map((c: string) => c.trim()) || [],
+		capacidad: event.Capacity,
+		estado: event.Status,
+		ubicacion: {
+			lat: event.Latitude,
+			lng: event.Longitude,
+		},
+		bannerUrl: event.BannerUrl,
+		videoUrl: event.VideoUrl,
+		createdAt: event.createdAt,
+		updatedAt: event.updatedAt
+	}))
+
+	return transformedData
+}

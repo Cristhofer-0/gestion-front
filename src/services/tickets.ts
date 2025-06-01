@@ -71,3 +71,30 @@ export async function editarTicket(ticketId: string, ticketActualizado: TicketDa
         throw new Error("No se pudo editar el ticket");
     }
 }
+
+export async function fetchTicketsByOrganizador(organizadorId: string): Promise<TicketData[]> {
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+    if (!organizadorId) {
+        throw new Error("organizadorId es requerido");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/tickets/organizador/${organizadorId}`);
+    if (!response.ok) {
+        throw new Error("No se pudo obtener la lista de tickets del organizador");
+    }
+
+    const rawData = await response.json();
+
+    const transformedData: TicketData[] = rawData.map((ticket: any) => ({
+        id: ticket.TicketId.toString(),
+        eventoId: ticket.EventId.toString(),
+        tipo: ticket.Type,
+        precio: ticket.Price,
+        titulo: ticket.Event?.Title ?? "Sin título",
+        descripcion: ticket.Description,
+        stockDisponible: ticket.StockAvailable,
+    }));
+
+    return transformedData;
+}

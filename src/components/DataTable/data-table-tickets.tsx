@@ -6,7 +6,8 @@ import { TableComponent } from "../DataTable/form/table-component-tickets"
 import { DetailView } from "../DataTable/details/detail-view-tickets"
 import { Button } from "@/components/ui/button"
 import { ReloadIcon } from "../ui/iconos"
-import { fetchTickets } from "../../services/tickets"
+import { fetchTickets, fetchTicketsByOrganizador } from "../../services/tickets"
+import { useUser } from "@/hooks/useUser"
 
 export type ItemData = {
   id?: string
@@ -23,12 +24,22 @@ export function DataTable() {
   const [selectedItem, setSelectedItem] = useState<ItemData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  const user = useUser();
+
   // Función para cargar datos de la API
   const fetchData = async () => {
     setIsLoading(true)
     try {
-      // Aquí se reemplazaría con la llamada real a la API
-      const data = await fetchTickets()
+      let data: ItemData[] = []
+
+      if (user?.Role === "organizer") {
+        // Si es organizador, solo sus tickets
+        data = await fetchTicketsByOrganizador(user.UserId.toString())
+      } else {
+        // Si no es organizador (puede ser admin u otro rol), traer todos los tickets
+        data = await fetchTickets()
+      }
+
       setItems(data)
     } catch (error) {
       console.error("Error al cargar los datos:", error)
