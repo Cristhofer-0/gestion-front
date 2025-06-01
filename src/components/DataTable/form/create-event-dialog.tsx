@@ -439,7 +439,7 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="visibility">Visibilidad</Label>
-              <Select value={formData.visibility} onValueChange={(value) => handleSelectChange("visibility", value)} disabled>
+              <Select value={formData.visibility} onValueChange={(value) => handleSelectChange("visibility", value)} disabled={isOrganizer}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar visibilidad" />
                 </SelectTrigger>
