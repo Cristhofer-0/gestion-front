@@ -24,6 +24,8 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
     descripcion: "",
     stockDisponible: 0,
   })
+    
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
   // Actualiza formData cuando el ticket cambie
   useEffect(() => {
@@ -35,6 +37,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
         descripcion: ticket.descripcion || "",
         stockDisponible: ticket.stockDisponible || 0,
       })
+      setErrors({})
     }
   }, [ticket]) // Solo se ejecutará cuando `ticket` cambie
 
@@ -45,13 +48,34 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
       ...prev,
       [name]: name === "precio" || name === "stockDisponible" ? parseFloat(value) : value,
     }))
-
+    setErrors((prev) => ({ ...prev, [name]: "" }))
   }
 
 
   const handleSelectChange = (value: "General" | "VIP") => {
     setFormData((prev) => ({ ...prev, tipo: value }))
   }
+
+  const validate = () => {
+    const newErrors: typeof errors = {}
+
+
+    if (isNaN(formData.precio) || formData.precio <= 0) {
+      newErrors.precio = "El precio debe ser un número positivo."
+    }
+
+    if (formData.descripcion.length > 200) {
+      newErrors.descripcion = "La descripción no puede exceder 200 caracteres."
+    }
+
+    if (isNaN(formData.stockDisponible) || formData.stockDisponible < 0) {
+    newErrors.stockDisponible = "El stock debe ser un número entero igual o mayor a cero."
+  }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
 
   const handleStatusChange = (value: "draft" | "published") => {
   };
@@ -69,7 +93,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
       console.error("ID del ticket no definido");
       return;
     }
-
+    if (!validate()) return
     try {
       // Asegúrate de que `formData.ubicacion` nunca sea `undefined`
       await editarTicket(ticket.id, {
@@ -103,9 +127,31 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
               <SelectItem value="VIP">VIP</SelectItem>
             </SelectContent>
           </Select>
-          <Input name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Descripción" />
-          <Input name="precio" value={formData.precio} onChange={handleChange} placeholder="Precio" />
-          <Input name="stockDisponible" value={formData.stockDisponible} onChange={handleChange} placeholder="Stock disponible" />
+          <Input name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Descripción" 
+          />
+          {errors.descripcion && <p className="text-red-600 text-sm">{errors.descripcion}</p>}
+          <Input 
+            name="precio"
+            type="number"
+            min="0"
+            step="0.01"
+            value={formData.precio}
+            onChange={handleChange}
+            placeholder="Precio" 
+          />
+          {errors.precio && <p className="text-red-600 text-sm">{errors.precio}</p>}
+          <Input 
+            name="stockDisponible" 
+            type="number"
+            min="0"
+            step="1"
+            value={formData.stockDisponible} 
+            onChange={handleChange} 
+            placeholder="Stock disponible" 
+          />
+          {errors.stockDisponible && (
+            <p className="text-red-600 text-sm">{errors.stockDisponible}</p>
+          )}
           <Button onClick={handleSubmit}>Guardar Cambios</Button>
         </div>
       </DialogContent>

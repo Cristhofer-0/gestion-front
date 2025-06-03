@@ -57,6 +57,10 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
 
     const [eventos, setEventos] = useState<{ EventId: string; Title: string }[]>([])
 
+    // Estado para errores
+    const [errors, setErrors] = useState<{ [key: string]: string }>({})
+
+
     useEffect(() => {
         const cargarEventos = async () => {
             if (!user) return;
@@ -92,18 +96,58 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
         setFormData((prev) => ({ ...prev, [name]: value }))
+        setErrors((prev) => ({ ...prev, [name]: "" })) // Limpiar error del campo al modificar        
     }
 
     const handleSelectChange = (name: string, value: string) => {
         setFormData((prev) => ({ ...prev, [name]: value }))
+        setErrors((prev) => ({ ...prev, [name]: "" })) // Limpiar error del campo al modificar
+
     }
 
     const handleDateChange = (name: "startDate" | "endDate", date: Date | undefined) => {
         setFormData((prev) => ({ ...prev, [name]: date }))
     }
 
+    const validate = () => {
+        const newErrors: { [key: string]: string } = {}
+
+        // Validar evento seleccionado
+        if (!formData.EventId) {
+            newErrors.EventId = "Debe seleccionar un evento."
+        }
+
+        // Validar tipo
+        if (!["VIP", "General"].includes(formData.type)) {
+            newErrors.type = "Tipo de entrada inválido."
+        }
+
+        // Validar precio positivo
+        const priceNumber = parseFloat(formData.price)
+        if (isNaN(priceNumber) || priceNumber <= 0) {
+            newErrors.price = "El precio debe ser un número positivo."
+        }
+
+        // Validar descripción máximo 200 caracteres
+        if (formData.description.length > 200) {
+            newErrors.description = "La descripción no puede exceder 200 caracteres."
+        }
+
+        // Validar stock disponible >= 1
+        const stockNumber = parseInt(formData.stockAvailable, 10)
+        if (isNaN(stockNumber) || stockNumber < 0) {
+            newErrors.stockAvailable = "El stock debe ser un número entero igual o mayor a cero."
+        }
+
+        setErrors(newErrors)
+
+        return Object.keys(newErrors).length === 0
+    }
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (!validate()) return    
         try {
             const itemData = adaptFormDataToItemData(formData)
             console.log("Datos a enviar al backend:", itemData) // 👈 Imprime aquí
@@ -151,6 +195,7 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
                                     ))}
                                 </SelectContent>
                             </Select>
+                            {errors.EventId && <p className="text-red-600 text-sm">{errors.EventId}</p>}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="type">Tipo</Label>
@@ -163,6 +208,7 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
                                     <SelectItem value="VIP">VIP</SelectItem>
                                 </SelectContent>
                             </Select>
+                            {errors.type && <p className="text-red-600 text-sm">{errors.type}</p>}
                         </div>
                     </div>
 
@@ -175,6 +221,7 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
                             onChange={handleInputChange}
                             rows={3}
                         />
+                        {errors.description && <p className="text-red-600 text-sm">{errors.description}</p>}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -186,7 +233,9 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
                                 onChange={handleInputChange}
                                 type="number"
                                 step="0.01"
+                                min="0"
                             />
+                            {errors.price && <p className="text-red-600 text-sm">{errors.price}</p>}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="stockAvailable">Stock Disponible</Label>
@@ -196,7 +245,9 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
                                 value={formData.stockAvailable}
                                 onChange={handleInputChange}
                                 type="number"
+                                min="0"
                             />
+                            {errors.stockAvailable && <p className="text-red-600 text-sm">{errors.stockAvailable}</p>}
                         </div>
                     </div>
                     <DialogFooter>
