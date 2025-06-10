@@ -36,16 +36,10 @@ export default function Dashboard() {
             <SidebarInset>
                 <SiteHeader />
                 <div className="container mx-auto p-4 md:p-6">
-                    <div className="@container/main flex flex-col gap-6">
-                        {/* Tabla de datos según el rol */}
-                        {user.Role === "helper" ? (
-                            <OrderTable key={refreshKey} />
-                        ) : (
-                            <div className="px-4 lg:px-6">
-                                <ChartAreaInteractive />
-                            </div>
-                        )}
-                    </div>
+                    <DataTable key={refreshKey} />
+                </div>
+                <div className="rounded-lg border bg-card shadow">
+                    <EventHistory onRefresh={handleHistoryRefresh} />
                 </div>
             </SidebarInset>
         </SidebarProvider>
