@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { CreateTicketDialog, type TicketFormData } from "./create-ticket-dialog"
 import type { ItemData } from "../data-table-tickets"
 import { EditTicketDialog } from "./edit-ticket-dialog"
+import React from "react"
 
 interface TableComponentProps {
   items?: ItemData[]
@@ -126,7 +127,7 @@ export function TableComponent({
               </TableRow>
             ) : (
               filteredItems.map((item) => (
-                <>
+                <React.Fragment key={item.id}>
                   <TableRow key={item.id} className={selectedItemId === item.id ? "bg-muted/50 border-b-0" : ""}>
                     <TableCell
                       className={`font-medium cursor-pointer hover:text-blue-600 hover:underline ${selectedItemId === item.id ? "text-blue-600" : ""
@@ -172,7 +173,7 @@ export function TableComponent({
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </React.Fragment>
               ))
             )}
           </TableBody>

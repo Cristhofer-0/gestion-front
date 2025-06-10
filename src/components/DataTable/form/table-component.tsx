@@ -12,6 +12,7 @@ import { useUser } from "@/hooks/useUser";
 
 
 import type { ItemData } from "../types/ItemData"
+import React from "react"
 
 
 
@@ -141,7 +142,7 @@ export function TableComponent({
                 </div>
               </TableHead>
               {!isOrganizer && (
-              <TableHead className="text-right">Acciones</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -154,7 +155,7 @@ export function TableComponent({
               </TableRow>
             ) : (
               filteredItems.map((item) => (
-                <>
+                <React.Fragment key={item.id}>
                   <TableRow key={item.id} className={selectedItemId === item.id ? "bg-muted/50 border-b-0" : ""}>
                     <TableCell
                       className={`font-medium cursor-pointer hover:text-blue-600 hover:underline ${selectedItemId === item.id ? "text-blue-600" : ""
@@ -208,13 +209,13 @@ export function TableComponent({
                     </TableCell>
                     <TableCell className="text-right">
                       {!isOrganizer && (
-  <Button onClick={() => {
-    setEventToEdit(item); // Este `item` debería venir directo desde la API
-    setEditOpen(true);   
-  }}>
-    Editar
-  </Button>
-)}
+                        <Button onClick={() => {
+                          setEventToEdit(item); // Este `item` debería venir directo desde la API
+                          setEditOpen(true);
+                        }}>
+                          Editar
+                        </Button>
+                      )}
                       {eventToEdit && (
                         <EditEventDialog
                           open={editOpen}
@@ -234,7 +235,7 @@ export function TableComponent({
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                 </React.Fragment>
               ))
             )}
           </TableBody>

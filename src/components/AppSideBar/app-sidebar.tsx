@@ -5,6 +5,8 @@ import {
     ArrowUpCircleIcon,
     BarChartIcon,
     CameraIcon,
+    Circle,
+    CircleDot,
     ClipboardListIcon,
     DatabaseIcon,
     FileCodeIcon,
@@ -23,6 +25,8 @@ import { NavDocuments } from "./Nav/nav-documents"
 import { NavMain } from "./Nav/nav-main"
 import { NavSecondary } from "./Nav/nav-secondary"
 import { NavUser } from "./Nav/nav-user"
+import { useUser } from "@/hooks/useUser"
+import { PageTransition } from "@/components/principales/pageTransition"
 import {
     Sidebar,
     SidebarContent,
@@ -32,6 +36,17 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import Link from "next/link"
+
+interface User {
+  name: string
+  email: string
+  avatar: string
+}
+
+interface NavUserProps {
+  user: User
+}
 
 const data = {
     user: {
@@ -51,8 +66,8 @@ const data = {
             icon: ListIcon,
         },
         {
-            title: "Analitica",
-            url: "#",
+            title: "Ordenes",
+            url: "/dashboard/order",
             icon: BarChartIcon,
         },
         {
@@ -120,16 +135,6 @@ const data = {
             url: "#",
             icon: SettingsIcon,
         },
-        {
-            title: "Ayuda",
-            url: "#",
-            icon: HelpCircleIcon,
-        },
-        {
-            title: "Buscar",
-            url: "#",
-            icon: SearchIcon,
-        },
     ],
     documents: [
         {
@@ -151,7 +156,22 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+    const user = useUser()
+
+    // Si aún no hay usuario cargado, opcional: mostrar loader o null
+    if (!user) return null
+
+    // Filtrar el navMain según el rol
+    const navMainFiltered = data.navMain.filter((item) => {
+        if (user.Role === "admin") return true // ve todo
+        if (user.Role === "organizer") return ["Eventos", "Tickets"].includes(item.title)
+        if (user.Role === "helper") return item.title === "Ordenes"
+        return false
+    })
+
     return (
+          <PageTransition>
         <Sidebar collapsible="offcanvas" {...props}>
             <SidebarHeader>
                 <SidebarMenu>
@@ -160,22 +180,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             asChild
                             className="data-[slot=sidebar-menu-button]:!p-1.5"
                         >
-                            <a href="#">
-                                <ArrowUpCircleIcon className="h-5 w-5" />
-                                <span className="text-base font-semibold">Nombre Industria</span>
-                            </a>
+                            <Link href="/dashboard">
+                                <CircleDot className="h-5 w-5" />
+                                <span className="text-base font-semibold">JoinWithUs</span>
+                            </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
+                  <NavMain items={navMainFiltered} />
                 <NavDocuments items={data.documents} />
                 <NavSecondary items={data.navSecondary} className="mt-auto" />
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={data.user} />
+                <NavUser />
             </SidebarFooter>
         </Sidebar>
+        </PageTransition>
     )
 }
