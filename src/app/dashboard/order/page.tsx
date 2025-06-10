@@ -5,7 +5,7 @@ import { AppSidebar } from "@/components/AppSideBar/app-sidebar"
 ///////import { ChartAreaInteractive } from "@/components/custom/chart-area-interactive"
 
 //LA TABLA DE LOS DATOS
-import { DataTable } from "@/components/DataTable/data-table-orders"
+import { OrderTable } from "@/components/DataTable/data-table-orders"
 //LAS CARTAS DE LA PARTE SUPERIOR
 
 ////import { SectionCards } from "@/components/Historial/section-cards"
@@ -28,7 +28,7 @@ export default function dashboard() {
                             {/* <div className="px-4 lg:px-6">
                                 <ChartAreaInteractive />
                             </div> */}
-                            <DataTable />
+                            <OrderTable />
                         </div>
                     </div>
                 </div>
