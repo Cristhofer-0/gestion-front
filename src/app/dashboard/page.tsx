@@ -5,7 +5,7 @@ import { useUser } from "@/hooks/useUser"
 //BARRA IZQUIERDA
 import { AppSidebar } from "@/components/AppSideBar/app-sidebar"
 // EL GRAFICO DE LOS DATOS
-//import { ChartAreaInteractive } from "./components/chart-area-interactive"
+import { ChartAreaInteractive } from "@/components/custom/chart-area-interactive"
 //LA TABLA DE LOS DATOS
 import { DataTable } from "@/components/DataTable/data-table"
 import { OrderTable } from "@/components/DataTable/data-table-orders"
@@ -27,7 +27,7 @@ export default function Dashboard() {
     }
 
     if (!user) {
-        return <div>Cargando usuario...</div> // o puedes mostrar un loader/spinner
+        return // o puedes mostrar un loader/spinner
     }
 
     return (
@@ -36,6 +36,10 @@ export default function Dashboard() {
             <SidebarInset>
                 <SiteHeader />
                 <div className="container mx-auto p-4 md:p-6">
+
+                            <div className="px-4 lg:px-6">
+                                <ChartAreaInteractive />
+                            </div>
                     <div className="@container/main flex flex-col gap-6">
                         {/* Tabla de datos según el rol */}
                         {user.Role === "helper" ? (
@@ -48,6 +52,7 @@ export default function Dashboard() {
                         <div className="rounded-lg border bg-card shadow">
                             <EventHistory onRefresh={handleHistoryRefresh} />
                         </div>
+
                     </div>
                 </div>
             </SidebarInset>
