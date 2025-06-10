@@ -57,7 +57,7 @@ const data = {
     navMain: [
         {
             title: "Eventos",
-            url: "/dashboard",
+            url: "/dashboard/event",
             icon: LayoutDashboardIcon,
         },
         {
