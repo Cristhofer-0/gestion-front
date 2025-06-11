@@ -54,6 +54,10 @@ export function NavUser() {
     router.push("/login");
   }
 
+    function abrirPefil() {
+    router.push("/dashboard/account");
+  }
+
   if (!user) {
     // Opcional: mientras no haya usuario puedes mostrar un spinner, un placeholder o nada
     return null;
@@ -101,7 +105,7 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={abrirPefil}>
                 <UserCircleIcon />
                 Perfil
               </DropdownMenuItem>

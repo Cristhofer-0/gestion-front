@@ -39,13 +39,13 @@ import {
 import Link from "next/link"
 
 interface User {
-  name: string
-  email: string
-  avatar: string
+    name: string
+    email: string
+    avatar: string
 }
 
 interface NavUserProps {
-  user: User
+    user: User
 }
 
 const data = {
@@ -171,7 +171,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     })
 
     return (
-          <PageTransition>
+        /* <PageTransition>*/
         <Sidebar collapsible="offcanvas" {...props}>
             <SidebarHeader>
                 <SidebarMenu>
@@ -180,7 +180,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             asChild
                             className="data-[slot=sidebar-menu-button]:!p-1.5"
                         >
-                            <Link href={user.Role === "helper" ? "/dashboard/order" : "/dashboard"}>
+                            <Link href={
+                                user.Role === "helper"
+                                    ? "/dashboard/order"
+                                    : user.Role === "organizer"
+                                        ? "/dashboard/event"
+                                        : "/dashboard"
+                            }>
                                 <CircleDot className="h-5 w-5" />
                                 <span className="text-base font-semibold">JoinWithUs</span>
                             </Link>
@@ -189,7 +195,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
-                  <NavMain items={navMainFiltered} />
+                <NavMain items={navMainFiltered} />
                 <NavDocuments items={data.documents} />
                 <NavSecondary items={data.navSecondary} className="mt-auto" />
             </SidebarContent>
@@ -197,6 +203,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
-        </PageTransition>
+        /* </PageTransition>*/
     )
 }
