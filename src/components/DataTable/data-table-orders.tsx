@@ -17,6 +17,14 @@ export function OrderTable() {
 
     const user = useUser();
 
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const currentItems = items.slice(indexOfFirstItem, indexOfLastItem)
+    const totalPages = Math.ceil(items.length / itemsPerPage)
+
+
     // Función para cargar datos de la API
     const fetchData = async () => {
         setIsLoading(true)
@@ -68,6 +76,36 @@ export function OrderTable() {
                         items={items}
                         selectedItemId={selectedItem?.id}
                     />
+                    {items.length > 0 && (
+                        <div className="flex justify-center mt-6 gap-2 flex-wrap">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(1)}
+                                disabled={currentPage === 1}
+                            >
+                                {"<<"}
+                            </Button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                                <Button
+                                    key={pageNumber}
+                                    variant={pageNumber === currentPage ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => setCurrentPage(pageNumber)}
+                                >
+                                    {pageNumber}
+                                </Button>
+                            ))}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(totalPages)}
+                                disabled={currentPage === totalPages}
+                            >
+                                {">>"}
+                            </Button>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
