@@ -4,20 +4,10 @@ import { useUser } from "@/hooks/useUser"
 
 //BARRA IZQUIERDA
 import { AppSidebar } from "@/components/AppSideBar/app-sidebar"
-// EL GRAFICO DE LOS DATOS
-import { ChartAreaInteractive } from "@/components/custom/chart-area-interactive"
-//LA TABLA DE LOS DATOS
-import { DataTable } from "@/components/DataTable/data-table"
-import { OrderTable } from "@/components/DataTable/data-table-orders"
 import { AccountProfile} from "@/components/principales/perfil"
-//LAS CARTAS DE LA PARTE SUPERIOR
-//import { SectionCards } from "./components/section-cards"
-//TOPNAV QUE SE ENCARGA DE MOSTRAR/OCULTAR LA BARRA LATERAL
 import { SiteHeader } from "@/components/custom/site-header"
 //DOCUMENTACION DE SHADCN
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-//LA TABLA DE HISTORIAL
-import { EventHistory } from "@/components/Historial/event-history"
 
 export default function Dashboard() {
     const user = useUser()

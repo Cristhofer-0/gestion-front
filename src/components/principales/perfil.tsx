@@ -14,18 +14,10 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
+import { useUser } from "@/hooks/useUser"; 
 
 export function AccountProfile() {
-  const user = {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-    role: "Administrator",
-    bio: "Software developer with a passion for building beautiful interfaces and experiences.",
-    location: "San Francisco, CA",
-    timezone: "PST (UTC-8)",
-    language: "English",
-  }
+  const user = useUser();
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,15 +60,10 @@ export function AccountProfile() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex flex-col items-center gap-4 sm:flex-row">
-                <Avatar className="h-24 w-24 rounded-lg">
-                  <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                  <AvatarFallback className="rounded-lg text-lg">
-                    {user.name.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-lg font-medium">{user.name}</h3>
-                  <p className="text-sm text-muted-foreground">{user.role}</p>
+                  <h3 className="text-lg font-medium">{user?.FullName}</h3>
+                  <p className="text-sm text-muted-foreground">{user?.Role}</p>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" className="gap-1">
                       <PencilIcon className="h-3.5 w-3.5" />
@@ -93,58 +80,25 @@ export function AccountProfile() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" defaultValue={user.name} />
+                    <Input id="name" defaultValue={user?.FullName} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" defaultValue={user.email} />
+                    <Input id="email" type="email" defaultValue={user?.Email} />
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea id="bio" defaultValue={user.bio} rows={4} />
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
-                    <Input id="location" defaultValue={user.location} />
+                    <Label htmlFor="DNI">Documento de Identificación</Label>
+                    <Input id="DNI" defaultValue={user?.DNI} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Select defaultValue={user.timezone}>
-                      <SelectTrigger id="timezone">
-                        <SelectValue placeholder="Select timezone" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PST (UTC-8)">PST (UTC-8)</SelectItem>
-                        <SelectItem value="MST (UTC-7)">MST (UTC-7)</SelectItem>
-                        <SelectItem value="CST (UTC-6)">CST (UTC-6)</SelectItem>
-                        <SelectItem value="EST (UTC-5)">EST (UTC-5)</SelectItem>
-                        <SelectItem value="GMT (UTC+0)">GMT (UTC+0)</SelectItem>
-                        <SelectItem value="CET (UTC+1)">CET (UTC+1)</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="phone">Celular</Label>
+                    <Input id="phone" defaultValue={user?.Phone} />
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="language">Language</Label>
-                  <Select defaultValue={user.language}>
-                    <SelectTrigger id="language">
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="English">English</SelectItem>
-                      <SelectItem value="Spanish">Spanish</SelectItem>
-                      <SelectItem value="French">French</SelectItem>
-                      <SelectItem value="German">German</SelectItem>
-                      <SelectItem value="Japanese">Japanese</SelectItem>
-                      <SelectItem value="Chinese">Chinese</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  
               </form>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
@@ -153,35 +107,7 @@ export function AccountProfile() {
             </CardFooter>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Public Profile</CardTitle>
-              <CardDescription>Manage your public profile visibility</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="profile-visibility">Profile Visibility</Label>
-                  <p className="text-sm text-muted-foreground">Make your profile visible to other users</p>
-                </div>
-                <Switch id="profile-visibility" defaultChecked />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="show-email">Show Email Address</Label>
-                  <p className="text-sm text-muted-foreground">Allow others to see your email address</p>
-                </div>
-                <Switch id="show-email" />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="show-location">Show Location</Label>
-                  <p className="text-sm text-muted-foreground">Display your location on your profile</p>
-                </div>
-                <Switch id="show-location" defaultChecked />
-              </div>
-            </CardContent>
-          </Card>
+          
         </TabsContent>
 
         <TabsContent value="security" className="mt-6 space-y-6">
