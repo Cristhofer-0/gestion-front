@@ -263,6 +263,12 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
     }
   }
 
+    // Función para formatear la fecha para el input date
+  const formatDateForInput = (date: Date | null): string => {
+    if (!date) return ""
+    return date.toISOString().split("T")[0]
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -303,70 +309,35 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Fecha de Inicio</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.startDate && "text-muted-foreground",
-                      formErrors.startDate && "border-red-500",
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.startDate ? (
-                      format(formData.startDate, "PPP", { locale: es })
-                    ) : (
-                      <span>Seleccionar fecha</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={formData.startDate || undefined}
-                    onSelect={(date) => handleDateChange("startDate", date)}
-                    initialFocus
-                    disabled={{ before: new Date() }}
-                  />
-                </PopoverContent>
-              </Popover>
+              <Label htmlFor="startDate">Fecha de Inicio</Label>
+              <div className="relative">
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={formatDateForInput(formData.startDate)}
+                  onChange={(e) => handleDateChange("startDate", e.target.value ? new Date(e.target.value) : undefined)}
+                  className={cn(formErrors.startDate && "border-red-500")}
+                  min={formatDateForInput(new Date())}
+                />
+              </div>
               {formErrors.startDate && <p className="text-sm text-red-500">{formErrors.startDate}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Fecha de Finalización</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.endDate && "text-muted-foreground",
-                      formErrors.endDate && "border-red-500",
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.endDate ? (
-                      format(formData.endDate, "PPP", { locale: es })
-                    ) : (
-                      <span>Seleccionar fecha</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={formData.endDate || undefined}
-                    onSelect={(date) => handleDateChange("endDate", date)}
-                    initialFocus
-                    disabled={{ before: new Date() }}
-                  />
-                </PopoverContent>
-              </Popover>
+              <Label htmlFor="endDate">Fecha de Finalización</Label>
+              <div className="relative">
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={formatDateForInput(formData.endDate)}
+                  onChange={(e) => handleDateChange("endDate", e.target.value ? new Date(e.target.value) : undefined)}
+                  className={cn(formErrors.endDate && "border-red-500")}
+                  min={formatDateForInput(formData.startDate || new Date())}
+                />
+              </div>
               {formErrors.endDate && <p className="text-sm text-red-500">{formErrors.endDate}</p>}
             </div>
           </div>
+
 
           <div className="space-y-2">
             <Label htmlFor="address">Dirección</Label>
