@@ -35,6 +35,7 @@ interface MapLibreMapHandle {
 export function EditEventDialog({ open, onOpenChange, event, existeEvento }: EditEventDialogProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [formattedFecha, setFormattedFecha] = useState("");
     const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   
@@ -66,6 +67,7 @@ export function EditEventDialog({ open, onOpenChange, event, existeEvento }: Edi
 
   // Actualiza formData cuando el evento cambie
   useEffect(() => {
+      console.log("Cantidad de eventos en existeEvento:", existeEvento?.length);
     if (event) {
       const initialData = {
         organizerId: event.organizerId,
@@ -116,6 +118,7 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   if (!e.target.files?.length) return;
 
   const file = e.target.files[0];
+  setSelectedFileName(file.name); // Guarda el nombre
   const maxSizeInMB = 10;
   const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
   let errorMsg = "";
@@ -143,6 +146,7 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   } else {
     setUploadError("Error al subir imagen.");
     if (fileInputRef.current) fileInputRef.current.value = "";
+    setSelectedFileName(null);
   }
 };
 
@@ -271,8 +275,11 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const nuevaInicio = formData.fechaInicio;
       const nuevaFin = formData.fechaFinalizacion;
 
-      return nuevaInicio <= finExistente && nuevaFin >= inicioExistente;
-    });
+      // Verifica cualquier tipo de cruce de rangos
+      return (
+        nuevaInicio <= finExistente && nuevaFin >= inicioExistente
+      )
+    })
 
     if (eventoConflictivo) {
       const inicio = formatFechaLocal(eventoConflictivo.fechaInicio!);
@@ -346,47 +353,47 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Fecha de Inicio y Fecha de Finalización */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div className="space-y-2">
-    <Label htmlFor="fechaInicio">Fecha de Inicio</Label>
-    <div className="relative">
-      <Input
-        id="fechaInicio"
-        type="date"
-        value={formatDateForInput(formData.fechaInicio)}
-        onChange={(e) =>
-          handleDateChange("fechaInicio", e.target.value ? new Date(e.target.value) : undefined)
-        }
-        className={cn(formErrors.fechaInicio && "border-red-500")}
-        min={formatDateForInput(new Date())}
-      />
-    </div>
-    {formErrors.fechaInicio && (
-      <p className="text-sm text-red-500">{formErrors.fechaInicio}</p>
-    )}
-  </div>
+          <div className="space-y-2">
+            <Label htmlFor="fechaInicio">Fecha de Inicio</Label>
+            <div className="relative">
+              <Input
+                id="fechaInicio"
+                type="date"
+                value={formatDateForInput(formData.fechaInicio)}
+                onChange={(e) =>
+                  handleDateChange("fechaInicio", e.target.value ? new Date(e.target.value) : undefined)
+                }
+                className={cn(formErrors.fechaInicio && "border-red-500")}
+                min={formatDateForInput(new Date())}
+              />
+            </div>
+            {formErrors.fechaInicio && (
+              <p className="text-sm text-red-500">{formErrors.fechaInicio}</p>
+            )}
+          </div>
 
-  <div className="space-y-2">
-    <Label htmlFor="fechaFinalizacion">Fecha de Finalización</Label>
-    <div className="relative">
-      <Input
-        id="fechaFinalizacion"
-        type="date"
-        value={formatDateForInput(formData.fechaFinalizacion)}
-        onChange={(e) =>
-          handleDateChange(
-            "fechaFinalizacion",
-            e.target.value ? new Date(e.target.value) : undefined
-          )
-        }
-        className={cn(formErrors.fechaFinalizacion && "border-red-500")}
-        min={formatDateForInput(formData.fechaInicio || new Date())}
-      />
-    </div>
-    {formErrors.fechaFinalizacion && (
-      <p className="text-sm text-red-500">{formErrors.fechaFinalizacion}</p>
-    )}
-  </div>
-</div>
+          <div className="space-y-2">
+            <Label htmlFor="fechaFinalizacion">Fecha de Finalización</Label>
+            <div className="relative">
+              <Input
+                id="fechaFinalizacion"
+                type="date"
+                value={formatDateForInput(formData.fechaFinalizacion)}
+                onChange={(e) =>
+                  handleDateChange(
+                    "fechaFinalizacion",
+                    e.target.value ? new Date(e.target.value) : undefined
+                  )
+                }
+                className={cn(formErrors.fechaFinalizacion && "border-red-500")}
+                min={formatDateForInput(formData.fechaInicio || new Date())}
+              />
+            </div>
+            {formErrors.fechaFinalizacion && (
+              <p className="text-sm text-red-500">{formErrors.fechaFinalizacion}</p>
+            )}
+          </div>
+        </div>
 
           <div className="space-y-2">
             <Label htmlFor="address">Dirección</Label>
@@ -487,13 +494,18 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
               id="banner"
               accept="image/*"
               onChange={handleImageChange}
-              className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-md file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700
-                    hover:file:bg-blue-100"
+              className="hidden"
             />
+          <Button type="button" onClick={() => fileInputRef.current?.click()}>
+            {selectedFileName ? "Cambiar imagen" : "Seleccionar imagen"}
+          </Button>
+
+            {selectedFileName && (
+              <p className="text-sm text-gray-600 mt-1">
+                Archivo seleccionado: <strong>{selectedFileName}</strong>
+              </p>
+            )}
+
             {uploadError && (
               <ul className="text-sm text-red-500 mt-2 space-y-1">
                 {uploadError.split("\n").map((msg, index) => (

@@ -18,6 +18,7 @@ import React from "react"
 
 interface TableComponentProps {
   items?: ItemData[]
+  todos?: ItemData[] //Declaro todos
   onItemClick: (item: ItemData) => void
   onCreateEvent?: (data: EventFormData) => void
   selectedItemId?: string
@@ -26,6 +27,7 @@ interface TableComponentProps {
 
 export function TableComponent({
   items = [],
+  todos = [], //Uso "todos"
   onItemClick,
   onCreateEvent,
   selectedItemId,
@@ -222,7 +224,7 @@ export function TableComponent({
                           open={editOpen}
                           onOpenChange={setEditOpen}
                           event={eventToEdit}
-                          existeEvento={items} // Paso los eventos                          
+                          existeEvento={todos} // Paso los eventos                          
                           onSubmit={(data) => {
                             console.log("Actualizar evento:", data)
                           }}
@@ -248,7 +250,7 @@ export function TableComponent({
         open={isDialogOpen} 
         onOpenChange={setIsDialogOpen} 
         onSubmit={handleCreateEvent} 
-        existeEvento={items} // Validar fecha y ubicación
+        existeEvento={todos} // Validar fecha y ubicación
       />
     </div>
   )

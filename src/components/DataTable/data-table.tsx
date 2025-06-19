@@ -76,6 +76,7 @@ export function DataTable() {
         <CardContent>
           <TableComponent
             items={currentItems}
+            todos={items}  
             onItemClick={handleItemClick}
             selectedItemId={selectedItem?.id}
             //onCreateEvent={handleCreateEvent}

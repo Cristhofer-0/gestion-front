@@ -78,6 +78,7 @@ export function CreateEventDialog({ open, onOpenChange, existeEvento}: CreateEve
   const isOrganizer = user?.Role === "organizer";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const mapRef = useRef<MapLibreMapHandle>(null);
   const [direccionError, setDireccionError] = useState<string | null>(null);
   const initialFormData: EventFormData = {
@@ -512,79 +513,96 @@ if (eventoConflictivo) {
             )}
           </div>
 
-          <div className="mb-6">
-            <Label htmlFor="bannerUrl">URL del Banner</Label>
-            {formData.bannerUrl && (
-              <div className="mb-3">
-                <img
-                  src={formData.bannerUrl}
-                  alt="Vista previa del banner"
-                  style={{ maxWidth: "100%", marginTop: "1rem" }}
-                />
-              </div>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              id="fileInput"
-              required
-              className={`block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-md file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-blue-50 file:text-blue-700
-                    hover:file:bg-blue-100 ${formErrors.bannerUrl ? "border-red-500" : ""}`}
-              onChange={async (e) => {
-                setUploadError(null) // Limpiar errores anteriores
-                clearFieldError("bannerUrl") // Limpiar error cuando el usuario selecciona un archivo
+<div className="mb-6">
+  <Label htmlFor="bannerUrl">Imagen del Banner</Label>
 
-                if (!e.target.files?.length) return
+  {formData.bannerUrl && (
+    <div className="mb-3">
+      <img
+        src={formData.bannerUrl}
+        alt="Vista previa del banner"
+        style={{ maxWidth: "100%", marginTop: "1rem" }}
+      />
+    </div>
+  )}
 
-                const file = e.target.files[0]
-                const maxSizeInMB = 10
-                const maxSizeInBytes = maxSizeInMB * 1024 * 1024
+  {/* Input oculto */}
+  <input
+    ref={fileInputRef}
+    type="file"
+    accept="image/*"
+    id="fileInput"
+    className="sr-only"
+    onChange={async (e) => {
+      setUploadError(null);
+      clearFieldError("bannerUrl");
 
-                let errorMsg = ""
+      if (!e.target.files?.length) return;
 
-                // Verificar formato
-                if (file.type !== "image/webp") {
-                  errorMsg += "Solo se permiten imágenes en formato .webp. \n"
-                }
+      const file = e.target.files[0];
+      const maxSizeInMB = 10;
+      const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
 
-                // Verificar tamaño
-                if (file.size > maxSizeInBytes) {
-                  const sizeInMB = (file.size / (1024 * 1024)).toFixed(2)
-                  errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB. \n`
-                }
+      let errorMsg = "";
 
-                if (errorMsg) {
-                  setUploadError(errorMsg.trim())
-                  setFormData((prev) => ({ ...prev, bannerUrl: "" }))
-                  fileInputRef.current && (fileInputRef.current.value = "")
-                  return
-                }
+      if (file.type !== "image/webp") {
+        errorMsg += "Solo se permiten imágenes en formato .webp. \n";
+      }
 
-                // Subida
-                const imageUrl = await uploadImage(file)
-                if (imageUrl) {
-                  setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }))
-                  setUploadError(null)
-                } else {
-                  setUploadError("Error al subir imagen. \n")
-                  fileInputRef.current && (fileInputRef.current.value = "")
-                }
-              }}
-            />
-            {formErrors.bannerUrl && <p className="text-sm text-red-500">{formErrors.bannerUrl}</p>}
-            {uploadError && (
-              <ul className="text-sm text-red-500 mt-2 space-y-1">
-                {uploadError.split("\n").map((msg, index) => (
-                  <li key={index}>• {msg}</li>
-                ))}
-              </ul>
-            )}
-          </div>
+      if (file.size > maxSizeInBytes) {
+        const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+        errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB. \n`;
+      }
+
+      if (errorMsg) {
+        setUploadError(errorMsg.trim());
+        setFormData((prev) => ({ ...prev, bannerUrl: "" }));
+        fileInputRef.current && (fileInputRef.current.value = "");
+        setSelectedFileName(null);
+        return;
+      }
+
+      const imageUrl = await uploadImage(file);
+      if (imageUrl) {
+        setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
+        setSelectedFileName(file.name);
+        setUploadError(null);
+      } else {
+        setUploadError("Error al subir imagen. \n");
+        fileInputRef.current && (fileInputRef.current.value = "");
+        setSelectedFileName(null);
+      }
+    }}
+  />
+
+  {/* Botón personalizado para abrir el input */}
+  <Button
+    type="button"
+    onClick={() => fileInputRef.current?.click()}
+    className="mt-3 px-4 py-2 bg-blue-50 text-blue-700 rounded-md border border-blue-200 hover:bg-blue-100 text-sm font-semibold"
+  >
+    {selectedFileName ? "Cambiar imagen" : "Seleccionar imagen"}
+  </Button>
+
+  {/* Nombre del archivo seleccionado */}
+  {selectedFileName && (
+    <p className="text-sm text-gray-600 mt-1">
+      Archivo seleccionado: <strong>{selectedFileName}</strong>
+    </p>
+  )}
+
+  {/* Mensaje de error del formulario */}
+  {formErrors.bannerUrl && <p className="text-sm text-red-500">{formErrors.bannerUrl}</p>}
+
+  {/* Error de subida */}
+  {uploadError && (
+    <ul className="text-sm text-red-500 mt-2 space-y-1">
+      {uploadError.split("\n").map((msg, index) => (
+        <li key={index}>• {msg}</li>
+      ))}
+    </ul>
+  )}
+</div>
 
           <div className="space-y-2">
             <Label htmlFor="videoUrl">URL del Video</Label>
