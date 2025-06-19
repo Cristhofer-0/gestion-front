@@ -25,6 +25,7 @@ interface CreateEventDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (data: EventFormData) => void
+  existeEvento: ItemData[] // Agrego esto para ver si el evento ya existe dentro de las fechas
 }
 
 export interface EventFormData {
@@ -48,8 +49,8 @@ const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
   organizerId: data.organizerId,
   titulo: data.title,
   descripcion: data.description,
-  fechaInicio: data.startDate?.toISOString(),
-  fechaFinalizacion: data.endDate?.toISOString(),
+  fechaInicio: data.startDate ? `${data.startDate.toISOString().split("T")[0]}T00:00:00` : undefined, // mostrar correctamente las fechas en la tabla de datos de los eventos
+  fechaFinalizacion: data.endDate ? `${data.endDate.toISOString().split("T")[0]}T00:00:00` : undefined, // mostrar correctamente las fechas en la tabla de datos de los eventos
   direccion: data.address,
   visibilidad: data.visibility as any,
   categorias: data.categories,
@@ -72,7 +73,7 @@ interface MapLibreMapHandle {
 // Función UploadImage
 import { uploadImage } from "@/lib/uploadImage."
 
-export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps) {
+export function CreateEventDialog({ open, onOpenChange, existeEvento}: CreateEventDialogProps) {
   const user = useUser();
   const isOrganizer = user?.Role === "organizer";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -236,6 +237,56 @@ export function CreateEventDialog({ open, onOpenChange }: CreateEventDialogProps
       setFormErrors(newErrors)
       return
     }
+
+
+    // Función para formatear la fecha manualmente evitando desfase por zona horaria
+    const formatFechaLocal = (fechaStr: string) => {
+      const [y, m, d] = fechaStr.split("T")[0].split("-")
+      const fecha = new Date(Number(y), Number(m) - 1, Number(d))
+      return fecha.toLocaleDateString("es-PE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    }
+
+ // Validación de conflicto de evento por fecha y lugar
+const eventoConflictivo = existeEvento.find((ev) => {
+  if (
+    ev.direccion !== formData.address ||
+    !ev.fechaInicio ||
+    !ev.fechaFinalizacion ||
+    !formData.startDate ||
+    !formData.endDate
+  ) {
+    return false
+  }
+
+  const inicioExistente = new Date(ev.fechaInicio)
+  const finExistente = new Date(ev.fechaFinalizacion)
+  const nuevaInicio = formData.startDate
+  const nuevaFin = formData.endDate
+
+  // Verifica cualquier tipo de cruce de rangos
+  return (
+    nuevaInicio <= finExistente && nuevaFin >= inicioExistente
+  )
+})
+
+if (eventoConflictivo) {
+  const inicio = formatFechaLocal(eventoConflictivo.fechaInicio!)
+  const fin = formatFechaLocal(eventoConflictivo.fechaFinalizacion!)
+
+  setFormErrors((prev) => ({
+    ...prev,
+    startDate: `Ya existe un evento en esa ubicación entre el ${inicio} y el ${fin}`,
+  }))
+  return
+}
+
+
+
+
 
     try {
       const itemData = adaptFormDataToItemData(formData)

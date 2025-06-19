@@ -245,8 +245,8 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         organizerId: formData.organizerId,
         titulo: formData.titulo,
         descripcion: formData.descripcion,
-        fechaInicio: formData.fechaInicio ? new Date(formData.fechaInicio).toISOString() : "",
-        fechaFinalizacion: formData.fechaFinalizacion ? new Date(formData.fechaFinalizacion).toISOString() : "",
+        fechaInicio: `${formatDateForInput(formData.fechaInicio)}T00:00:00`, // Para editar y que se muestre correctamente la fecha en el bd y el form
+        fechaFinalizacion: `${formatDateForInput(formData.fechaFinalizacion)}T00:00:00`, // Para editarlo y que se muestre correctamente la fecha en el bd y el form
         direccion: formData.direccion,
         visibilidad: formData.visibilidad,
         categorias: formData.categorias,
@@ -469,3 +469,4 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
   )
 }
+
