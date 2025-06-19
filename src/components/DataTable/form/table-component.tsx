@@ -222,6 +222,7 @@ export function TableComponent({
                           open={editOpen}
                           onOpenChange={setEditOpen}
                           event={eventToEdit}
+                          existeEvento={items} // Paso los eventos                          
                           onSubmit={(data) => {
                             console.log("Actualizar evento:", data)
                           }}

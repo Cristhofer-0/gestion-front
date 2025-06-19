@@ -20,6 +20,7 @@ interface EditEventDialogProps {
   onOpenChange: (open: boolean) => void
   event: ItemData
   onSubmit: (data: EditEventFormData) => void
+  existeEvento: ItemData[] // Agrego esto para ver si el evento ya existe dentro de las fechas
 }
 
 // Function UploadImage
@@ -31,7 +32,7 @@ interface MapLibreMapHandle {
   handleSearch: () => void;
 }
 
-export function EditEventDialog({ open, onOpenChange, event }: EditEventDialogProps) {
+export function EditEventDialog({ open, onOpenChange, event, existeEvento }: EditEventDialogProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [formattedFecha, setFormattedFecha] = useState("");
@@ -237,6 +238,54 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       return;
     }
 
+    // Función para formatear la fecha manualmente evitando desfase por zona horaria
+    const formatFechaLocal = (fechaStr: string) => {
+      const [y, m, d] = fechaStr.split("T")[0].split("-")
+      const fecha = new Date(Number(y), Number(m) - 1, Number(d))
+      return fecha.toLocaleDateString("es-PE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    }
+      if (!existeEvento || !Array.isArray(existeEvento)) {
+    console.warn("existeEvento no está definido o no es un array");
+    return;
+  }
+
+    // Validación de conflicto de evento por fecha y lugar
+    const eventoConflictivo = existeEvento.find((ev) => {
+      if (
+        ev.id === event.id || // <- no comparar contra sí mismo
+        ev.direccion !== formData.direccion ||
+        !ev.fechaInicio ||
+        !ev.fechaFinalizacion ||
+        !formData.fechaInicio ||
+        !formData.fechaFinalizacion
+      ) {
+        return false;
+      }
+
+      const inicioExistente = new Date(ev.fechaInicio);
+      const finExistente = new Date(ev.fechaFinalizacion);
+      const nuevaInicio = formData.fechaInicio;
+      const nuevaFin = formData.fechaFinalizacion;
+
+      return nuevaInicio <= finExistente && nuevaFin >= inicioExistente;
+    });
+
+    if (eventoConflictivo) {
+      const inicio = formatFechaLocal(eventoConflictivo.fechaInicio!);
+      const fin = formatFechaLocal(eventoConflictivo.fechaFinalizacion!);
+
+      setFormErrors((prev) => ({
+        ...prev,
+        fechaInicio: `Ya existe un evento en esa ubicación entre el ${inicio} y el ${fin}`,
+      }));
+      return;
+    }
+
+
     try {
       // Asegúrate de que `formData.ubicacion` nunca sea `undefined`
       const ubicacion = formData.ubicacion ?? { lat: 0, lng: 0 };
@@ -265,6 +314,8 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     }
   };
   const today = new Date().toISOString().split("T")[0];
+
+
 
     // Función para formatear la fecha para el input date
   const formatDateForInput = (date: Date | null): string => {
