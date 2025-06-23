@@ -109,14 +109,6 @@ export function NavUser() {
                 <UserCircleIcon />
                 Perfil
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon />
-                Notificaciones
-              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={cerrarSesion} className="cursor-pointer text-red-600 hover:bg-red-100 flex items-center gap-2">

@@ -124,30 +124,7 @@ const data = {
             ],
         },
     ],
-    navSecondary: [
-        {
-            title: "Ajustes",
-            url: "#",
-            icon: SettingsIcon,
-        },
-    ],
-    documents: [
-        {
-            name: "Datos",
-            url: "#",
-            icon: DatabaseIcon,
-        },
-        {
-            name: "Reportes",
-            url: "#",
-            icon: ClipboardListIcon,
-        },
-        {
-            name: "OTros",
-            url: "#",
-            icon: FileIcon,
-        },
-    ],
+
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -190,9 +167,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={navMainFiltered} />
-                <NavDocuments items={data.documents} />
-                <NavSecondary items={data.navSecondary} className="mt-auto" />
+                <NavMain items={navMainFiltered} />              
             </SidebarContent>
             <SidebarFooter>
                 <NavUser />
