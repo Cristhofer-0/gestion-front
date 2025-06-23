@@ -13,6 +13,7 @@ export async function editarUsuario(usuario: UsuarioData): Promise<void> {
       FullName: usuario.fullName,
       Email: usuario.email,
       Phone: usuario.phone,
+      Role: usuario.role,
     }),
   })
 

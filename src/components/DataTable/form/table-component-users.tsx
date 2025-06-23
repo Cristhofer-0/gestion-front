@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, Eye, BadgeInfo, Users, Mail, UserCircle2, Phone } from "lucide-react"
 import { UsuarioData } from "../types/UsuarioData"
+import { EditUserDialog } from "./edit-users-dialog"
 
 interface TableComponentUsersProps {
   items?: UsuarioData[]
@@ -23,6 +24,8 @@ export function TableComponentUsers({
   renderDetails,
 }: TableComponentUsersProps) {
   const [searchTerm, setSearchTerm] = useState("")
+  const [userToEdit, setUserToEdit] = useState<UsuarioData | null>(null)
+  const [editOpen, setEditOpen] = useState(false)
 
   const filteredItems = items.filter(
     (user) =>
@@ -100,6 +103,29 @@ export function TableComponentUsers({
                     <TableCell className="hidden md:table-cell">{user.dni}</TableCell>
                     <TableCell className="hidden md:table-cell capitalize">{user.role}</TableCell>
                     <TableCell className="hidden lg:table-cell">{user.phone || "-"}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation() // ✅ Esto evita que el click se propague al <TableRow>
+                          setUserToEdit(user) // `user` representa al usuario a editar
+                          setEditOpen(true)
+                        }}
+                      >
+                        Editar
+                      </Button>
+
+                      {userToEdit && (
+                        <EditUserDialog
+                          open={editOpen}
+                          onOpenChange={setEditOpen}
+                          user={userToEdit}
+                          onSubmit={(updatedUser) => {
+                            console.log("Usuario actualizado:", updatedUser)
+                            // Opcional: refrescar datos o actualizar lista local aquí
+                          }}
+                        />
+                      )}
+                    </TableCell>
                   </TableRow>
                   {selectedItemId === user.userId && renderDetails && (
                     <TableRow className="bg-muted/30">
