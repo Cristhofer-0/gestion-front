@@ -36,7 +36,20 @@ export default function Dashboard() {
                 <SiteHeader />
                 <div className="container mx-auto p-4 md:p-6">
                     <div className="@container/main flex flex-col gap-6">
-                        <UserTable key={refreshKey} />
+                        {/* Tabla de datos según el rol */}
+                        {user.Role === "helper" ? (
+                            <UserTable key={refreshKey} />
+                        ) : user.Role === "organizer" ? (
+                            // Contenido específico para organizador
+                            <div className="px-4 lg:px-6">
+                                <UserTable key={refreshKey} /> {/* por ejemplo */}
+                            </div>
+                        ) : (
+                            // Resto de roles, como admin
+                            <div className="px-4 lg:px-6">
+                                <ChartAreaInteractive />
+                            </div>
+                        )}
                     </div>
                 </div>
             </SidebarInset>
