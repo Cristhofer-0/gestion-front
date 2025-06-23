@@ -43,3 +43,27 @@ export async function cambiarPassword(data: CambioPasswordData): Promise<void> {
     throw new Error("No se pudo cambiar la contraseña")
   }
 }
+
+export async function fetchUsuarios(): Promise<UsuarioData[]> {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
+  const response = await fetch(`${API_BASE_URL}/usuarios`)
+
+  if (!response.ok) {
+    throw new Error("No se pudo obtener la lista de usuarios")
+  }
+
+  const rawData = await response.json()
+
+  const usuarios: UsuarioData[] = rawData.map((user: any) => ({
+    userId: user.UserId.toString(),
+    fullName: user.FullName,
+    birthDate: user.BirthDate,
+    phone: user.Phone,
+    dni: user.DNI,
+    email: user.Email,
+    role: user.Role,
+  }))
+
+  return usuarios
+}

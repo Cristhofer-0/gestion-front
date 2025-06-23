@@ -1,6 +1,9 @@
 export type UsuarioData = {
   userId: string
   fullName: string
-  email: string
+  birthDate: string
   phone: string
+  dni: string
+  email: string
+  role: string
 }

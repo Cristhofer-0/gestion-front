@@ -71,13 +71,8 @@ const data = {
             icon: BarChartIcon,
         },
         {
-            title: "Texto2",
-            url: "#",
-            icon: FolderIcon,
-        },
-        {
             title: "Usuarios",
-            url: "#",
+            url: "/dashboard/users",
             icon: UsersIcon,
         },
     ],
