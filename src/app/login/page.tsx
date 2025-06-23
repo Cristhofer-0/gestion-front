@@ -155,14 +155,8 @@ export default function Login() {
                         </div>
                         {/* RECORDAR Y OLVIDAR */}
                         <div className="flex flex-wrap items-center justify-between gap-4">
-                            <div className="flex items-center">
-                                <input id="remember-me" name="remember-me" type="checkbox" className="h-4 w-4 shrink-0 text-blue-600 focus:ring-blue-500 border-slate-300 rounded" />
-                                <label htmlFor="remember-me" className="text-slate-800 ml-3 block text-sm">
-                                    Recuérdame
-                                </label>
-                            </div>
                             <div>
-                                <a href="javascript:void(0);" className="text-blue-600 text-sm font-medium hover:underline">
+                                <a href="/forgotPassword" className="text-blue-600 text-sm font-medium hover:underline">
                                     ¿Olvidaste la contraseña?
                                 </a>
                             </div>
