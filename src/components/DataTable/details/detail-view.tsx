@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Calendar, MapPin, Eye, Users, Tag, Info, Ticket } from "lucide-react"
 
 import type { ItemData } from "../types/ItemData"
+import { parseISO, format } from "date-fns"
+import { es } from "date-fns/locale"
 
 
 
@@ -15,16 +17,15 @@ interface DetailViewProps {
 export function DetailView({ item }: DetailViewProps) {
    const router = useRouter()
   // Función para formatear fechas
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-"
-    const date = new Date(dateString)
-    return date.toLocaleDateString("es-ES", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      weekday: "long",
-    })
-  }
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "-"
+
+  // Extrae solo la parte de la fecha (yyyy-mm-dd)
+  const [y, m, d] = dateString.split("T")[0].split("-")
+  const fechaLocal = new Date(Number(y), Number(m) - 1, Number(d)) // Crea sin hora, respeta zona local
+  return format(fechaLocal, "PPPP", { locale: es })
+}
+
 
   // Función para obtener el color del badge de estado
   const getStatusBadgeVariant = (estado?: string) => {
