@@ -31,7 +31,8 @@ export function TableComponentUsers({
     (user) =>
       user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.dni.toLowerCase().includes(searchTerm.toLowerCase())
+      user.dni.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (

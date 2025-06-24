@@ -67,6 +67,7 @@ export function UserTable() {
                 <p><strong>DNI:</strong> {user.dni}</p>
                 <p><strong>Teléfono:</strong> {user.phone}</p>
                 <p><strong>Rol:</strong> {user.role}</p>
+                <p><strong>Fecha de Nacimiento:</strong> {new Date(user.birthDate).toLocaleDateString()}</p>
               </div>
             )}
           />

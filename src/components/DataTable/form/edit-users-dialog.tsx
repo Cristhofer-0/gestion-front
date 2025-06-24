@@ -13,11 +13,11 @@ interface EditUserDialogProps {
 }
 
 export function EditUserDialog({ open, onOpenChange, user, onSubmit }: EditUserDialogProps) {
-  const [selectedRole, setSelectedRole] = useState<"admin" | "user" | "organizer">("user")
+  const [selectedRole, setSelectedRole] = useState<"admin" | "user" | "organizer"| "helper">("user")
 
   useEffect(() => {
     if (user?.role) {
-      setSelectedRole(user.role as "admin" | "user" | "organizer")
+      setSelectedRole(user.role as "admin" | "user" | "organizer" | "helper")
     }
   }, [user])
 
@@ -55,6 +55,7 @@ export function EditUserDialog({ open, onOpenChange, user, onSubmit }: EditUserD
             <SelectContent>
               <SelectItem value="admin">Admin</SelectItem>
               <SelectItem value="organizer">Organizer</SelectItem>
+              <SelectItem value="helper">Helper</SelectItem>
               <SelectItem value="user">User</SelectItem>
             </SelectContent>
           </Select>
