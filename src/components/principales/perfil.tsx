@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { useUser } from "@/hooks/useUser"
-import { editarUsuario } from "@/services/usuario"
+import { editarUsuarioPerfil } from "@/services/usuario"
 import { cambiarPassword } from "@/services/usuario"
 
 export function AccountProfile() {
@@ -48,7 +48,7 @@ export function AccountProfile() {
         return
       }
 
-      await editarUsuario({
+      await editarUsuarioPerfil({
         userId: String(user.UserId),
         fullName,
         email,
