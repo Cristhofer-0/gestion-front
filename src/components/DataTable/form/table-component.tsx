@@ -8,6 +8,7 @@ import { Search, Calendar, MapPin, Eye, Users, Tag, FileText, PlusCircle, Chevro
 import { Badge } from "@/components/ui/badge"
 import { CreateEventDialog, type EventFormData } from "./create-event-dialog"
 import { EditEventDialog } from "./edit-event-dialog"
+import type { EditEventFormData } from "./types/EventFormData"
 import { useUser } from "@/hooks/useUser";
 
 
@@ -21,6 +22,7 @@ interface TableComponentProps {
   todos?: ItemData[] //Declaro todos
   onItemClick: (item: ItemData) => void
   onCreateEvent?: (data: EventFormData) => void
+  onEditEvent?: (data: EditEventFormData & { id: string }) => void
   selectedItemId?: string
   renderDetails?: (item: ItemData) => ReactNode
 }
@@ -30,6 +32,7 @@ export function TableComponent({
   todos = [], //Uso "todos"
   onItemClick,
   onCreateEvent,
+  onEditEvent, 
   selectedItemId,
   renderDetails,
 }: TableComponentProps) {
@@ -71,12 +74,20 @@ export function TableComponent({
     return "outline"
   }
 
-  const handleCreateEvent = (data: EventFormData) => {
+  const handleCreateEvent = async (data: EventFormData) => {
     if (onCreateEvent) {
-      onCreateEvent(data)
-      setIsDialogOpen(false)
+      await onCreateEvent(data)
+      setIsDialogOpen(false) // cierra el modal solo una vez
     }
   }
+
+  const handleEditEvent = async (data: EditEventFormData & { id: string }) => {
+  if (onEditEvent) {
+    await onEditEvent(data)
+    setEditOpen(false) // cerrar modal después de editar
+  }
+}
+
 
   return (
     <div className="space-y-4">
@@ -219,17 +230,6 @@ export function TableComponent({
                           Editar
                         </Button>
                       )}
-                      {eventToEdit && (
-                        <EditEventDialog
-                          open={editOpen}
-                          onOpenChange={setEditOpen}
-                          event={eventToEdit}
-                          existeEvento={todos} // Paso los eventos                          
-                          onSubmit={(data) => {
-                            console.log("Actualizar evento:", data)
-                          }}
-                        />
-                      )}
                     </TableCell>
                   </TableRow>
                   {selectedItemId === item.id && renderDetails && (
@@ -245,13 +245,22 @@ export function TableComponent({
           </TableBody>
         </Table>
       </div>
-
       <CreateEventDialog 
+        key={isDialogOpen ? "open" : "closed"} // 👈 Fuerza a React a remount
         open={isDialogOpen} 
         onOpenChange={setIsDialogOpen} 
         onSubmit={handleCreateEvent} 
         existeEvento={todos} // Validar fecha y ubicación
       />
+      {eventToEdit && (
+      <EditEventDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        event={eventToEdit}
+        onSubmit={handleEditEvent}
+        existeEvento={todos} // Paso los eventos                          
+        />
+      )}
     </div>
   )
 }

@@ -19,6 +19,7 @@ import { crearEvento } from "../../../services/eventos"
 import { useUser } from "@/hooks/useUser";
 import type { ItemData } from "../types/ItemData"
 
+
 import MapLibreMap from "@/components/principales/mapa"
 
 interface CreateEventDialogProps {
@@ -45,7 +46,7 @@ export interface EventFormData {
   capacity: string
 }
 
-const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
+export const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
   organizerId: data.organizerId,
   titulo: data.title,
   descripcion: data.description,
@@ -73,7 +74,7 @@ interface MapLibreMapHandle {
 // Función UploadImage
 import { uploadImage } from "@/lib/uploadImage."
 
-export function CreateEventDialog({ open, onOpenChange, existeEvento}: CreateEventDialogProps) {
+export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento}: CreateEventDialogProps) {
   const user = useUser();
   const isOrganizer = user?.Role === "organizer";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -115,6 +116,12 @@ export function CreateEventDialog({ open, onOpenChange, existeEvento}: CreateEve
     setDireccionError(null)
     setUploadError(null)
     setFormErrors({})
+    // Limpia el nombre de archivo seleccionado
+    setSelectedFileName(null)
+    // Reinicia el input file 
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
   }
 
   // ⬇️ Escucha cambios en el estado 'open'
@@ -285,14 +292,10 @@ if (eventoConflictivo) {
   return
 }
 
-
-
-
-
     try {
       const itemData = adaptFormDataToItemData(formData)
       console.log("Datos a enviar al backend:", itemData)
-      await crearEvento(itemData)
+      onSubmit(formData) 
       setFormData({
         organizerId: "",
         title: "",
@@ -309,17 +312,19 @@ if (eventoConflictivo) {
         status: "published",
         capacity: "",
       })
-      onOpenChange(false)
-    } catch (error) {
-      console.error("Error al crear el evento:", error)
+      } catch (error) {
+        console.error("Error al crear el evento:", error)
+      }
     }
-  }
+
 
     // Función para formatear la fecha para el input date
   const formatDateForInput = (date: Date | null): string => {
     if (!date) return ""
     return date.toISOString().split("T")[0]
   }
+
+  
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

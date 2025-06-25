@@ -15,11 +15,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 
+
 interface EditEventDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   event: ItemData
-  onSubmit: (data: EditEventFormData) => void
+  onSubmit: (data: EditEventFormData & { id: string }) => void
   existeEvento: ItemData[] // Agrego esto para ver si el evento ya existe dentro de las fechas
 }
 
@@ -32,7 +33,35 @@ interface MapLibreMapHandle {
   handleSearch: () => void;
 }
 
-export function EditEventDialog({ open, onOpenChange, event, existeEvento }: EditEventDialogProps) {
+export const adaptEditFormDataToItemData = (
+  data: EditEventFormData & { id: string }
+): ItemData => ({
+  id: data.id,
+  organizerId: data.organizerId,
+  titulo: data.titulo,
+  descripcion: data.descripcion,
+  fechaInicio: data.fechaInicio
+    ? `${data.fechaInicio.toISOString().split("T")[0]}T00:00:00`
+    : undefined,
+  fechaFinalizacion: data.fechaFinalizacion
+    ? `${data.fechaFinalizacion.toISOString().split("T")[0]}T00:00:00`
+    : undefined,
+  direccion: data.direccion,
+  visibilidad: data.visibilidad,
+  categorias: data.categorias,
+  capacidad: Number(data.capacidad),
+  estado: data.estado === "borrador" ? "draft" : "published",
+  ubicacion: {
+    lat: data.ubicacion?.lat ?? 0,
+    lng: data.ubicacion?.lng ?? 0,
+  },
+  Latitude: String(data.ubicacion?.lat ?? 0),
+  Longitude: String(data.ubicacion?.lng ?? 0),
+  bannerUrl: data.bannerUrl,
+  videoUrl: data.videoUrl,
+})
+
+export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEvento }: EditEventDialogProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
@@ -62,6 +91,7 @@ export function EditEventDialog({ open, onOpenChange, event, existeEvento }: Edi
     videoUrl: "",
     ubicacion: { lat: 0, lng: 0 },
   })
+  
 
 
 
@@ -111,6 +141,14 @@ export function EditEventDialog({ open, onOpenChange, event, existeEvento }: Edi
     }))
   }, [lat, lon, direc])
 
+  // Limpiar errores y estados auxiliares cuando se abre el modal
+  useEffect(() => {
+    if (open) {
+      setFormErrors({});
+      setUploadError(null);
+      setSelectedFileName(null);
+    }
+  }, [open]);
 
 
 const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,15 +270,17 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       setLon(originalFormData.ubicacion?.lng ?? 0);
       setDirec(originalFormData.direccion);
     }
+    setFormErrors({}); // LIMPIA LOS ERRORES AL CERRAR
     onOpenChange(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-     e.preventDefault()
-    if (!event.id) {
-      console.error("ID del evento no definido");
-      return;
-    }
+  e.preventDefault();
+
+  if (!event.id) {
+    console.error("ID de evento no definido");
+    return;
+  }
 
     // Función para formatear la fecha manualmente evitando desfase por zona horaria
     const formatFechaLocal = (fechaStr: string) => {
@@ -297,7 +337,8 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       // Asegúrate de que `formData.ubicacion` nunca sea `undefined`
       const ubicacion = formData.ubicacion ?? { lat: 0, lng: 0 };
 
-      await editarEvento(event.id, {
+      await editarEvento(event.id as string, {
+        
         organizerId: formData.organizerId,
         titulo: formData.titulo,
         descripcion: formData.descripcion,
@@ -314,8 +355,11 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         bannerUrl: formData.bannerUrl,
         videoUrl: formData.videoUrl,
       });
-
-      onOpenChange(false);
+       onSubmit({
+    ...formData,
+    id: event.id,
+  });
+  onOpenChange(false); 
     } catch (error) {
       console.error("Error al editar el evento:", error);
     }

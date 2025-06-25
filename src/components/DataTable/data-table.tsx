@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-
+import { crearEvento } from '../../services/eventos'
+import type { EditEventFormData } from "../DataTable/form/types/EventFormData"
 import { TableComponent } from "./form/table-component"
 import { DetailView } from "./details/detail-view"
 import { MapView } from "./details/map-view"
@@ -11,6 +12,10 @@ import { ReloadIcon } from "../custom/iconos"
 import { fetchEventos, fetchEventosByOrganizador } from "../../services/eventos"
 import { useUser } from "@/hooks/useUser"  // IMPORTANTE
 import { ItemData } from "./types/ItemData"
+import { adaptFormDataToItemData } from "./form/create-event-dialog"
+import { adaptEditFormDataToItemData } from "../DataTable/form/edit-event-dialog"
+import type { EventFormData } from "./form/create-event-dialog"
+
 
 
 export function DataTable() {
@@ -60,6 +65,50 @@ export function DataTable() {
     }
   }
 
+  // Nueva función que transforma el formData y actualiza la lista
+const handleCreateEvent = async (formData: EventFormData) => {
+  console.log("Recibido en handleCreateEvent:", formData)
+  const newItem = adaptFormDataToItemData(formData)
+
+  try {
+    await crearEvento(newItem)  
+    const actualizados = user?.Role === "organizer"
+      ? await fetchEventosByOrganizador(user.UserId.toString())
+      : await fetchEventos()
+
+    setItems(actualizados)
+    setSelectedItem(newItem)
+
+    console.log("Evento guardado y actualizado:", newItem)
+  } catch (error) {
+    console.error("Error al guardar el evento:", error)
+  }
+}
+
+
+
+const handleEditEvent = async (updatedEvent: EditEventFormData & { id: string }) => {
+  try {
+    const updatedItem = adaptEditFormDataToItemData(updatedEvent)
+
+    const actualizados = user?.Role === "organizer"
+      ? await fetchEventosByOrganizador(user.UserId.toString())
+      : await fetchEventos()
+
+    setItems(actualizados)
+    setSelectedItem(null)
+
+    console.log("Evento editado:", updatedItem)
+  } catch (error) {
+    console.error("Error al editar el evento:", error)
+  }
+}
+
+
+
+
+
+
   return (
     <div className="container mx-auto py-6">
       <Card className="w-full mb-6">
@@ -79,7 +128,8 @@ export function DataTable() {
             todos={items}  
             onItemClick={handleItemClick}
             selectedItemId={selectedItem?.id}
-            //onCreateEvent={handleCreateEvent}
+            onCreateEvent={handleCreateEvent}
+            onEditEvent={handleEditEvent}
             renderDetails={(item) => (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/30 rounded-lg">
                 <DetailView item={item} />

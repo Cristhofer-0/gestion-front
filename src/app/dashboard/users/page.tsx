@@ -16,8 +16,6 @@ import { SiteHeader } from "@/components/custom/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 //LA TABLA DE HISTORIAL
 import { EventHistory } from "@/components/Historial/event-history"
-import { OrderTable } from "@/components/DataTable/data-table-orders"
-import { DataTable } from "@/components/DataTable/data-table"
 
 export default function Dashboard() {
     const user = useUser()
@@ -38,20 +36,7 @@ export default function Dashboard() {
                 <SiteHeader />
                 <div className="container mx-auto p-4 md:p-6">
                     <div className="@container/main flex flex-col gap-6">
-                        {/* Tabla de datos según el rol */}
-                        {user.Role === "helper" ? (
-                            <OrderTable key={refreshKey} />
-                        ) : user.Role === "organizer" ? (
-                            // Contenido específico para organizador
-                            <div className="px-4 lg:px-6">
-                                <DataTable key={refreshKey} /> {/* por ejemplo */}
-                            </div>
-                        ) : (
-                            // Resto de roles, como admin
-                            <div className="px-4 lg:px-6">
-                                <ChartAreaInteractive />
-                            </div>
-                        )}
+                        <UserTable key={refreshKey} /> 
                     </div>
                 </div>
             </SidebarInset>

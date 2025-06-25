@@ -1,27 +1,115 @@
 "use client"
 
 import type * as React from "react"
-import { BellIcon, CreditCardIcon, PencilIcon, ShieldIcon, UserIcon } from "lucide-react"
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState, useEffect } from "react"
+import { PencilIcon, ShieldIcon, UserIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
-import { useUser } from "@/hooks/useUser"; 
+import { useUser } from "@/hooks/useUser"
+import { editarUsuarioPerfil } from "@/services/usuario"
+import { cambiarPassword } from "@/services/usuario"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 export function AccountProfile() {
-  const user = useUser();
+  const user = useUser()
 
-  const handleSave = (e: React.FormEvent) => {
+  // Estados iniciales vacíos
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+
+  // Estados para el cambio de contraseña
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+
+  const [isEditingPassword, setIsEditingPassword] = useState(false)
+  const [showPasswordEditDialog, setShowPasswordEditDialog] = useState(false)
+  const [showPasswordSuccessDialog, setShowPasswordSuccessDialog] = useState(false)
+
+  // Cuando `user` esté disponible, carga los valores en los inputs
+  useEffect(() => {
+    if (user) {
+      setFullName(user.FullName || "")
+      setEmail(user.Email || "")
+      setPhone(user.Phone || "")
+    }
+  }, [user])
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    toast.success("Profile updated successfully")
+
+    try {
+      if (!user?.UserId) {
+        toast.error("No se encontró el ID del usuario.")
+        return
+      }
+
+      await editarUsuarioPerfil({
+        userId: String(user.UserId),
+        fullName,
+        email,
+        phone,
+      })
+
+      toast.success("Perfil actualizado correctamente")
+      setShowSuccessDialog(true) // Mostrar popup de éxito
+      setIsEditing(false) // Desactivar modo edición
+    } catch (err) {
+      toast.error("No se pudo actualizar el perfil")
+      console.error(err)
+    }
+  }
+
+  const handlePasswordChange = async () => {
+    if (!user?.UserId) {
+      toast.error("Usuario no válido")
+      return
+    }
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("Por favor, completa todos los campos")
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("Las nuevas contraseñas no coinciden")
+      return
+    }
+
+    try {
+      await cambiarPassword({
+        userId: String(user.UserId),
+        currentPassword,
+        newPassword,
+      })
+
+      toast.success("Contraseña actualizada correctamente")
+      setShowPasswordSuccessDialog(true) // Mostrar popup de éxito
+      setIsEditingPassword(false) // Desactivar modo edición
+      // Limpia campos
+      setCurrentPassword("")
+      setNewPassword("")
+      setConfirmPassword("")
+    } catch (error: any) {
+      toast.error(error.message || "Error al cambiar la contraseña")
+      console.error(error)
+    }
   }
 
   return (
@@ -29,25 +117,17 @@ export function AccountProfile() {
       <Tabs defaultValue="profile" className="w-full">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <h1 className="text-2xl font-bold">Account Settings</h1>
-            <p className="text-muted-foreground">Manage your account settings and preferences</p>
+            <h1 className="text-2xl font-bold">Ajustes de perfil</h1>
+            <p className="text-muted-foreground">Maneja tus datos</p>
           </div>
-          <TabsList className="grid w-full grid-cols-4 md:w-auto">
+          <TabsList className="grid w-full grid-cols-2 md:w-auto">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <UserIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Profile</span>
+              <span className="hidden sm:inline">Perfil</span>
             </TabsTrigger>
             <TabsTrigger value="security" className="flex items-center gap-2">
               <ShieldIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Security</span>
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
-              <BellIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Notifications</span>
-            </TabsTrigger>
-            <TabsTrigger value="billing" className="flex items-center gap-2">
-              <CreditCardIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Billing</span>
+              <span className="hidden sm:inline">Seguridad</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -55,22 +135,18 @@ export function AccountProfile() {
         <TabsContent value="profile" className="mt-6 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Update your personal information and preferences</CardDescription>
+              <CardTitle>Información del perfil</CardTitle>
+              <CardDescription>Actualiza tu información</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex flex-col items-center gap-4 sm:flex-row">
-                
                 <div className="flex flex-col gap-2">
                   <h3 className="text-lg font-medium">{user?.FullName}</h3>
                   <p className="text-sm text-muted-foreground">{user?.Role}</p>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" className="gap-1">
+                    <Button size="sm" variant="outline" className="gap-1" onClick={() => setShowEditDialog(true)}>
                       <PencilIcon className="h-3.5 w-3.5" />
-                      Change
-                    </Button>
-                    <Button size="sm" variant="outline" className="gap-1">
-                      Remove
+                      {isEditing ? "Editando..." : "Change"}
                     </Button>
                   </div>
                 </div>
@@ -79,317 +155,239 @@ export function AccountProfile() {
               <form onSubmit={handleSave} className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" defaultValue={user?.FullName} />
+                    <Label htmlFor="name">Nombre completo</Label>
+                    <Input
+                      id="name"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      disabled={!isEditing}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" defaultValue={user?.Email} />
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={!isEditing}
+                    />
                   </div>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="DNI">Documento de Identificación</Label>
-                    <Input id="DNI" defaultValue={user?.DNI} />
+                    <Input id="DNI" value={user?.DNI || ""} disabled />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Celular</Label>
-                    <Input id="phone" defaultValue={user?.Phone} />
+                    <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={!isEditing} />
                   </div>
                 </div>
-                  
+
+                <CardFooter className="flex justify-end gap-2 p-0 pt-4">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => {
+                      setFullName(user?.FullName || "")
+                      setEmail(user?.Email || "")
+                      setPhone(user?.Phone || "")
+                      setIsEditing(false)
+                      toast.info("Se restauraron los datos originales y se desactivó el modo edición.")
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={!isEditing}>
+                    Guardar cambios
+                  </Button>
+                </CardFooter>
               </form>
             </CardContent>
-            <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button onClick={() => toast.success("Profile updated successfully")}>Save Changes</Button>
-            </CardFooter>
           </Card>
-
-          
         </TabsContent>
 
         <TabsContent value="security" className="mt-6 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Password</CardTitle>
-              <CardDescription>Change your password</CardDescription>
+              <CardTitle>Contraseña</CardTitle>
+              <CardDescription>Cambia tu contraseña</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="current-password">Current Password</Label>
-                <Input id="current-password" type="password" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-password">New Password</Label>
-                <Input id="new-password" type="password" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm New Password</Label>
-                <Input id="confirm-password" type="password" />
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button onClick={() => toast.success("Password updated successfully")}>Update Password</Button>
-            </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Two-Factor Authentication</CardTitle>
-              <CardDescription>Add an extra layer of security to your account</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Two-Factor Authentication</Label>
-                  <p className="text-sm text-muted-foreground">Protect your account with two-factor authentication</p>
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h3 className="text-sm font-medium">Configuración de seguridad</h3>
+                  <p className="text-sm text-muted-foreground">Actualiza tu contraseña de acceso</p>
                 </div>
-                <Switch defaultChecked />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Recovery Codes</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Generate recovery codes to access your account if you lose your device
-                  </p>
-                </div>
-                <Button variant="outline" size="sm">
-                  Generate Codes
+                <Button size="sm" variant="outline" className="gap-1" onClick={() => setShowPasswordEditDialog(true)}>
+                  <PencilIcon className="h-3.5 w-3.5" />
+                  {isEditingPassword ? "Editando..." : "Change"}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Sessions</CardTitle>
-              <CardDescription>Manage your active sessions</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <p className="font-medium">Chrome on Windows</p>
-                    <p className="text-sm text-muted-foreground">Active now • San Francisco, CA</p>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    Sign Out
-                  </Button>
-                </div>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <p className="font-medium">Safari on iPhone</p>
-                    <p className="text-sm text-muted-foreground">Last active 2 days ago • New York, NY</p>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    Sign Out
-                  </Button>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="current-password">Contraseña actual</Label>
+                <Input
+                  id="current-password"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  disabled={!isEditingPassword}
+                />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="notifications" className="mt-6 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Choose how you want to be notified</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Email Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Receive notifications via email</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Push Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Receive notifications on your device</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>SMS Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Receive notifications via SMS</p>
-                  </div>
-                  <Switch />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-password">Nueva contraseña</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  disabled={!isEditingPassword}
+                />
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Types</CardTitle>
-              <CardDescription>Select which types of notifications you want to receive</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Security Alerts</Label>
-                    <p className="text-sm text-muted-foreground">Important security updates and alerts</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Account Activity</Label>
-                    <p className="text-sm text-muted-foreground">Notifications about your account activity</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Marketing Updates</Label>
-                    <p className="text-sm text-muted-foreground">Receive marketing updates and newsletters</p>
-                  </div>
-                  <Switch />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirmar nueva contraseña</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={!isEditingPassword}
+                />
               </div>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button onClick={() => toast.success("Notification preferences updated")}>Save Preferences</Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="billing" className="mt-6 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Subscription Plan</CardTitle>
-              <CardDescription>Manage your subscription plan</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-lg border p-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <p className="font-medium">Pro Plan</p>
-                    <p className="text-sm text-muted-foreground">$15/month • Renews on July 1, 2025</p>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    Change Plan
-                  </Button>
-                </div>
-              </div>
-              <RadioGroup defaultValue="monthly" className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="flex items-center space-x-2 rounded-lg border p-4">
-                  <RadioGroupItem value="monthly" id="monthly" />
-                  <Label htmlFor="monthly" className="flex flex-col">
-                    <span className="font-medium">Monthly</span>
-                    <span className="text-sm text-muted-foreground">$15/month</span>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 rounded-lg border p-4">
-                  <RadioGroupItem value="yearly" id="yearly" />
-                  <Label htmlFor="yearly" className="flex flex-col">
-                    <span className="font-medium">Yearly</span>
-                    <span className="text-sm text-muted-foreground">$144/year (20% off)</span>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 rounded-lg border p-4">
-                  <RadioGroupItem value="enterprise" id="enterprise" />
-                  <Label htmlFor="enterprise" className="flex flex-col">
-                    <span className="font-medium">Enterprise</span>
-                    <span className="text-sm text-muted-foreground">Custom pricing</span>
-                  </Label>
-                </div>
-              </RadioGroup>
-            </CardContent>
-            <CardFooter className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button onClick={() => toast.success("Subscription plan updated")}>Update Plan</Button>
-            </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Methods</CardTitle>
-              <CardDescription>Manage your payment methods</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div className="flex items-center gap-4">
-                    <CreditCardIcon className="h-6 w-6" />
-                    <div>
-                      <p className="font-medium">Visa ending in 4242</p>
-                      <p className="text-sm text-muted-foreground">Expires 04/2026</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              <Button variant="outline" className="gap-2">
-                <CreditCardIcon className="h-4 w-4" />
-                Add Payment Method
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => {
+                  setCurrentPassword("")
+                  setNewPassword("")
+                  setConfirmPassword("")
+                  setIsEditingPassword(false)
+                  toast.info("Campos reiniciados y modo edición desactivado")
+                }}
+              >
+                Cancelar
               </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Billing History</CardTitle>
-              <CardDescription>View your billing history</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b pb-4">
-                  <div>
-                    <p className="font-medium">Pro Plan - Monthly</p>
-                    <p className="text-sm text-muted-foreground">June 1, 2025</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">$15.00</p>
-                    <p className="text-sm text-muted-foreground">Paid</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between border-b pb-4">
-                  <div>
-                    <p className="font-medium">Pro Plan - Monthly</p>
-                    <p className="text-sm text-muted-foreground">May 1, 2025</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">$15.00</p>
-                    <p className="text-sm text-muted-foreground">Paid</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Pro Plan - Monthly</p>
-                    <p className="text-sm text-muted-foreground">April 1, 2025</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">$15.00</p>
-                    <p className="text-sm text-muted-foreground">Paid</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-center">
-              <Button variant="outline" size="sm">
-                View All Invoices
+              <Button type="button" onClick={handlePasswordChange} disabled={!isEditingPassword}>
+                Guardar nueva contraseña
               </Button>
             </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              ¡Perfil actualizado!
+            </DialogTitle>
+            <DialogDescription className="text-left">
+              Tu información de perfil ha sido actualizada correctamente. Los cambios se han guardado de forma
+              permanente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowSuccessDialog(false)} className="bg-green-600 hover:bg-green-700">
+              Entendido
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <PencilIcon className="h-5 w-5 text-orange-500" />
+              Activar modo de edición
+            </DialogTitle>
+            <DialogDescription className="text-left">
+              Estás a punto de activar el modo de edición para tu perfil. Podrás modificar tu información personal como
+              nombre, email y teléfono.
+              <br />
+              <br />
+              <strong>Recuerda:</strong> Los cambios deberán ser guardados para ser aplicados permanentemente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                setIsEditing(true)
+                setShowEditDialog(false)
+                toast.info("Modo de edición activado")
+              }}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              Activar edición
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Popup de confirmación para editar contraseña */}
+      <Dialog open={showPasswordEditDialog} onOpenChange={setShowPasswordEditDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldIcon className="h-5 w-5 text-red-500" />
+              Cambiar contraseña
+            </DialogTitle>
+            <DialogDescription className="text-left">
+              Estás a punto de modificar tu contraseña de acceso. Esta es una acción de seguridad importante.
+              <br />
+              <br />
+              <strong>Importante:</strong> Asegúrate de recordar tu nueva contraseña y guárdala en un lugar seguro.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowPasswordEditDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                setIsEditingPassword(true)
+                setShowPasswordEditDialog(false)
+                toast.info("Modo de edición de contraseña activado")
+              }}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Activar edición
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Popup de éxito para contraseña cambiada */}
+      <Dialog open={showPasswordSuccessDialog} onOpenChange={setShowPasswordSuccessDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                <ShieldIcon className="h-5 w-5 text-green-600" />
+              </div>
+              ¡Contraseña actualizada!
+            </DialogTitle>
+            <DialogDescription className="text-left">
+              Tu contraseña ha sido cambiada exitosamente. Tu cuenta ahora está protegida con la nueva contraseña. 
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowPasswordSuccessDialog(false)} className="bg-green-600 hover:bg-green-700">
+              Entendido
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
