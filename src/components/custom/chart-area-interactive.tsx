@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import SalesDashboard from "../custom/dashboard"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
@@ -161,6 +162,14 @@ export function ChartAreaInteractive() {
   })
 
   return (
+
+<SalesDashboard />
+
+
+
+
+
+/*
     <Card className="@container/card">
       <CardHeader className="relative">
         <CardTitle>Total Visitors</CardTitle>
@@ -288,5 +297,8 @@ export function ChartAreaInteractive() {
         </ChartContainer>
       </CardContent>
     </Card>
+
+    */
   )
+
 }
