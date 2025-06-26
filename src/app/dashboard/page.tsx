@@ -49,7 +49,7 @@ export default function Dashboard() {
                         ) : (
                             // Resto de roles, como admin
                             <div className="px-4 lg:px-6">
-                                <ChartAreaInteractive />
+                                {/* <ChartAreaInteractive /> */}
                             </div>
                         )}
                     </div>
