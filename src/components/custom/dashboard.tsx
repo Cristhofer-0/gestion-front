@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, TrendingDown, DollarSign, Calendar, CalendarDays, BarChart3 } from "lucide-react"
 import SalesSummaryCard from "../dashboard/dashboard-cuadro"
+import BarSalesSummary from "@/components/dashboard/BarSalesSummary"
 
 export default function SalesDashboard() {
     const [salesData, setSalesData] = useState({
@@ -197,6 +198,7 @@ export default function SalesDashboard() {
                                 <Icon className="h-4 w-4" />
                                 {period.label}
                             </Button>
+
                         )
                     })}
                 </div>
@@ -235,6 +237,7 @@ export default function SalesDashboard() {
                     </div>
                 </CardContent>
             </Card>
+            <BarSalesSummary />
 
             {/* Vista general de todos los períodos */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
