@@ -21,31 +21,33 @@ export function TableComponent({
 }: TableComponentProps) {
     const [searchTerm, setSearchTerm] = useState("")
 
+    // Primero, filtrar solo órdenes pagadas
+    const paidItems = items.filter((item) => item.estadoPago.toLowerCase() === "paid")
+
     // Filtrar los elementos según el término de búsqueda
-    const filteredItems = items.filter(
+    const filteredItems = paidItems.filter(
         (item) =>
             item.ordenFecha.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.estadoPago.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.titulo.toLowerCase().includes(searchTerm.toLowerCase()),
-
+            item.titulo.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
     // Función para formatear fechas
     const formatDate = (dateString?: string) => {
-    if (!dateString) return "-"
-    const date = new Date(dateString)
-    if (isNaN(date.getTime())) return "Fecha inválida"
-    return date.toLocaleString("es-PE", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        timeZone: "UTC", // 👈 Esto evita que se adelante o atrase por zona
-    })
-}
+        if (!dateString) return "-"
+        const date = new Date(dateString)
+        if (isNaN(date.getTime())) return "Fecha inválida"
+        return date.toLocaleString("es-PE", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            timeZone: "UTC", // 👈 Esto evita que se adelante o atrase por zona
+        })
+    }
 
     // Función para obtener el color del badge de estado
     const getStatusBadgeVariant = (estadoPago?: string) => {

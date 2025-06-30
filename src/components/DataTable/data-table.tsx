@@ -55,9 +55,11 @@ export function DataTable() {
   }
   
   // Cargar los datos al montar el componente
-  useEffect(() => {
-  fetchData()
-}, [])
+ useEffect(() => {
+  if (user) {
+    fetchData()
+  }
+}, [user])
 
   // Función para manejar el clic en un elemento de la tabla
   const handleItemClick = (item: ItemData) => {
