@@ -33,10 +33,19 @@ export function TableComponent({
 
     // Función para formatear fechas
     const formatDate = (dateString?: string) => {
-        if (!dateString) return "-"
-        const date = new Date(dateString)
-        return date.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })
-    }
+    if (!dateString) return "-"
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return "Fecha inválida"
+    return date.toLocaleString("es-PE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "UTC", // 👈 Esto evita que se adelante o atrase por zona
+    })
+}
 
     // Función para obtener el color del badge de estado
     const getStatusBadgeVariant = (estadoPago?: string) => {
