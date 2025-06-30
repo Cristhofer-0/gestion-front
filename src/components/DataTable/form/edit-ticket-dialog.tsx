@@ -14,6 +14,18 @@ interface EditTicketDialogProps {
   onSubmit: (data: EditTicketFormData) => void
 }
 
+export const adaptEditFormDataToItemData = (
+  data: EditTicketFormData & { id: string; titulo: string }
+): ItemData => ({
+  id: data.id,
+  eventoId: data.eventoId,
+  tipo: data.tipo,
+  precio: Number(data.precio),
+  titulo: data.titulo,
+  descripcion: data.descripcion,
+  stockDisponible: Number(data.stockDisponible),
+})
+
 
 export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditTicketDialogProps) {
   const [categoryInput, setCategoryInput] = useState("")
@@ -87,29 +99,33 @@ export function EditTicketDialog({ open, onOpenChange, ticket, onSubmit }: EditT
   const handleRemoveCategory = (category: string) => {
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!ticket.id) {
-      console.error("ID del ticket no definido");
-      return;
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  if (!ticket.id) {
+    console.error("ID del ticket no definido")
+    return
+  }
+  if (!validate()) return
+  try {
+    const updatedData = {
+      eventoId: formData.eventoId,
+      tipo: formData.tipo,
+      precio: formData.precio,
+      descripcion: formData.descripcion,
+      stockDisponible: formData.stockDisponible,
+      titulo: ticket.titulo, // Añade el título requerido
     }
-    if (!validate()) return
-    try {
-      // Asegúrate de que `formData.ubicacion` nunca sea `undefined`
-      await editarTicket(ticket.id, {
-        eventoId: formData.eventoId,
-        tipo: formData.tipo,
-        precio: formData.precio,
-        titulo: ticket.titulo,
-        descripcion: formData.descripcion,
-        stockDisponible: formData.stockDisponible,
-      });
 
-      onOpenChange(false);
-    } catch (error) {
-      console.error("Error al editar el evento:", error);
-    }
-  };
+    await editarTicket(ticket.id, updatedData)
+
+    onSubmit(updatedData) // 👉 Llama al callback para notificar al padre
+
+    onOpenChange(false)
+  } catch (error) {
+    console.error("Error al editar el ticket:", error)
+  }
+}
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

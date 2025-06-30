@@ -34,7 +34,7 @@ export interface TicketFormData {
     stockAvailable: string
 }
 
-const adaptFormDataToItemData = (data: TicketFormData): ItemData => ({
+export const adaptFormDataToItemData = (data: TicketFormData): ItemData => ({
     eventoId: data.EventId,
     tipo: data.type as "General" | "VIP", // Ensure type matches the expected union type
     precio: parseFloat(data.price), // Convert price to a number
@@ -152,6 +152,7 @@ export function CreateTicketDialog({ open, onOpenChange, onSubmit }: CreateTicke
             const itemData = adaptFormDataToItemData(formData)
             console.log("Datos a enviar al backend:", itemData) // 👈 Imprime aquí
             await crearTicket(itemData)
+             onSubmit(formData)
             setFormData({ // ← aquí se reinicia
                 EventId: "",
                 type: "General",

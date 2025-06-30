@@ -14,6 +14,7 @@ interface TableComponentUsersProps {
   onItemClick: (user: UsuarioData) => void
   selectedItemId?: string
   renderDetails?: (user: UsuarioData) => ReactNode
+  onUserUpdated?: () => void
 }
 
 export function TableComponentUsers({
@@ -22,6 +23,7 @@ export function TableComponentUsers({
   onItemClick,
   selectedItemId,
   renderDetails,
+  onUserUpdated,
 }: TableComponentUsersProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [userToEdit, setUserToEdit] = useState<UsuarioData | null>(null)
@@ -74,13 +76,13 @@ export function TableComponentUsers({
               </TableHead>
               <TableHead className="hidden md:table-cell">
                 <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" /> Rol
+                  <Users className="h-4 w-4" /> Rol
                 </div>
               </TableHead>
               <TableHead className="hidden lg:table-cell">
                 <div className="flex items-center gap-1">
-                    <Phone className="h-4 w-4" />
-                    Teléfono
+                  <Phone className="h-4 w-4" />
+                  Teléfono
                 </div>
               </TableHead>
             </TableRow>
@@ -122,7 +124,7 @@ export function TableComponentUsers({
                           user={userToEdit}
                           onSubmit={(updatedUser) => {
                             console.log("Usuario actualizado:", updatedUser)
-                            // Opcional: refrescar datos o actualizar lista local aquí
+                            if (onUserUpdated) onUserUpdated() // ✅ refresca los usuarios en el padre
                           }}
                         />
                       )}
