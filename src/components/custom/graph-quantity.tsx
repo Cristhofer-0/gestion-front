@@ -43,7 +43,7 @@ interface ChartData {
   [ticketType: string]: number | string
 }
 
-export function ChartAreaInteractive() {
+export function ChartAreaInteractive({ user }: { user: { UserId: number; Role: string } }) {
   const [orders, setOrders] = useState<Order[]>([])
   const [chartData, setChartData] = useState<ChartData[]>([])
   const [timeRange, setTimeRange] = useState("90d")
@@ -57,7 +57,15 @@ export function ChartAreaInteractive() {
       // Agrupar por fecha y tipo de ticket
       const aggregated: Record<string, Record<string, any>> = {};
 
-      orders.filter((order: any) => order.PaymentStatus === "paid") // 👈 solo pagados
+      orders.filter((order: any) => {
+          // Solo pagados
+          const isPaid = order.PaymentStatus === "paid"
+
+          // Si es admin, ve todo; si es organizer, solo sus eventos
+          const isVisible = user.Role === "admin" || order.Event?.OrganizerId === user.UserId
+
+          return isPaid && isVisible
+        })
         .forEach((order: any) => {
         const date = new Date(order.OrderDate).toISOString().split("T")[0];
         const type = order.Ticket?.Type || "Otro";
@@ -121,7 +129,7 @@ export function ChartAreaInteractive() {
         <p className="text-gray-600 mt-1">Resumen de rendimiento de ventas</p>
         <br />
         <div>
-          <ChartSales />
+          <ChartSales user={user}/>
           <br />
         </div>
         <Card className="@container/card">
@@ -230,7 +238,7 @@ export function ChartAreaInteractive() {
       <h1 className="text-3xl font-bold text-gray-900">Reporte de Ventas</h1>
       <p className="text-gray-600 mt-1">Reporte de rendimiento de ventas</p>
       <div>
-        <SalesDashboard />
+        {/* <SalesDashboard /> */}
       </div>
     </div>
   )

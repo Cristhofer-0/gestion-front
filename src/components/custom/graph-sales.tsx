@@ -40,7 +40,12 @@ interface ChartData {
   totalSales: number
 }
 
-export function ChartSales() {
+interface User {
+  UserId: number
+  Role: string
+}
+
+export function ChartSales({ user }: { user: { UserId: number; Role: string } }) {
   const [chartData, setChartData] = useState<ChartData[]>([])
   const [timeRange, setTimeRange] = useState("90d")
 
@@ -52,7 +57,8 @@ export function ChartSales() {
 
         const aggregated: Record<string, number> = {}
 
-        orders.filter((order: any) => order.PaymentStatus === "paid")
+        orders.filter((order: any) => order.PaymentStatus === "paid"&&
+            (user.Role === "admin" || order.Event?.OrganizerId === user.UserId))
           .forEach((order: any) => {
             const date = new Date(order.OrderDate).toISOString().split("T")[0]
             aggregated[date] = (aggregated[date] || 0) + order.TotalPrice
