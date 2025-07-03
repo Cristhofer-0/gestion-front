@@ -200,22 +200,35 @@ export function ChartAreaInteractive() {
                     />
                   }
                 />
-                {ticketTypes.map((type) => (
-                  <Area
-                    key={type}
-                    dataKey={type}
-                    type="monotone"
-                    stroke={`var(--color-${type.toLowerCase()})`}
-                    fillOpacity={1}
-                    fill={`url(#fill-${type.toLowerCase()})`}
-                  />
-                ))}
+                {ticketTypes.map((type) => {
+                  const normalized = normalize(type)
+                  const color =
+                    type.toLowerCase() === "general"
+                      ? "#8B5CF6" // morado
+                      : type.toLowerCase() === "vip"
+                      ? "#F59E0B" // dorado
+                      : "#10b981" // verde por defecto
+
+                  return (
+                    <Area
+                      key={type}
+                      dataKey={type}
+                      name={`${type}`} // Nombre visible en tooltip
+                      type="monotone"
+                      stroke={color}
+                      fillOpacity={1}
+                      fill={`url(#fill-${normalized})`}
+                    />
+                  )
+                })}
               </AreaChart>
             </ChartContainer>
           </CardContent>
         </Card>
       </div>
       <br />
+      <h1 className="text-3xl font-bold text-gray-900">Reporte de Ventas</h1>
+      <p className="text-gray-600 mt-1">Reporte de rendimiento de ventas</p>
       <div>
         <SalesDashboard />
       </div>

@@ -63,7 +63,9 @@ export function ChartSales() {
           totalSales,
         }))
 
-        setChartData(formattedData)
+        setTimeout(() => {
+            setChartData(formattedData) // 👈 da tiempo para animación
+        }, 50)
       } catch (error) {
         console.error("Error fetching sales data:", error)
       }
@@ -158,6 +160,7 @@ export function ChartSales() {
               stroke="#10B981"
               fillOpacity={1}
               fill="url(#fill-sales)"
+              isAnimationActive={true} // 👈 fuerza la animación
             />
           </AreaChart>
         </ChartContainer>
