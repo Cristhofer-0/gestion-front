@@ -142,9 +142,9 @@ export function TableComponent({
                                         <TableCell className="hidden md:table-cell">{item.tipo}</TableCell>
                                         <TableCell className="hidden sm:table-cell">{item.cantidad}</TableCell>
                                         <TableCell className="hidden sm:table-cell">
-                                            {new Intl.NumberFormat("es-ES", {
+                                            {new Intl.NumberFormat("es-PE", {
                                                 style: "currency",
-                                                currency: "EUR",
+                                                currency: "PEN",
                                             }).format(item.totalPrecio)}
                                         </TableCell>
                                         <TableCell className="hidden sm:table-cell">
