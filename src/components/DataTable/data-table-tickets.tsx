@@ -1,13 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { TableComponent } from "../DataTable/form/table-component-tickets"
 import { DetailView } from "../DataTable/details/detail-view-tickets"
 import { Button } from "@/components/ui/button"
 import { ReloadIcon } from "../ui/iconos"
-import { fetchTickets, fetchTicketsByOrganizador } from "../../services/tickets"
+import { crearTicket, fetchTickets, fetchTicketsByOrganizador } from "../../services/tickets"
 import { useUser } from "@/hooks/useUser"
+import { TicketFormData } from "./form/create-ticket-dialog"
+import { adaptFormDataToItemData } from "./form/create-ticket-dialog"
+import { EditTicketFormData } from "../tickets/types"
+import { adaptEditFormDataToItemData } from "../DataTable/form/edit-ticket-dialog"
 
 export type ItemData = {
   id?: string
@@ -56,6 +60,14 @@ export function DataTable() {
     }
   }
 
+    // Cargar los datos al montar el componente
+  useEffect(() => {
+  if (user) {
+    fetchData()
+  }
+}, [user])
+
+
   // Función para manejar el clic en un elemento de la tabla
   const handleItemClick = (item: ItemData) => {
     // Si el elemento clickeado es el mismo que ya está seleccionado, lo deseleccionamos
@@ -67,23 +79,52 @@ export function DataTable() {
     }
   }
 
+const handleCreateTicket = async () => {
+  // Solo refresca los datos, no crea nada aquí
+  const actualizados = user?.Role === "organizer"
+    ? await fetchTicketsByOrganizador(user.UserId.toString())
+    : await fetchTickets()
+
+  setItems(actualizados)
+}
+
+const handleEditTicket = async (updatedTicket: EditTicketFormData & { id: string, titulo: string }) => {
+  try {
+    const updatedItem = adaptEditFormDataToItemData(updatedTicket)
+
+    const actualizados = user?.Role === "organizer"
+      ? await fetchTicketsByOrganizador(user.UserId.toString())
+      : await fetchTickets()
+
+    setItems(actualizados)
+    setSelectedItem(null)
+
+    console.log("Ticketo editado:", updatedItem)
+  } catch (error) {
+    console.error("Error al editar el Ticketo:", error)
+  }
+}
+
+
   return (
     <div className="container mx-auto py-6">
       <Card className="w-full mb-6">
         <CardHeader>
           <CardTitle>Gestión de Tickets</CardTitle>
           <CardDescription>Visualiza y gestiona todos los tickets disponibles</CardDescription>
-          <div className="flex gap-2">
+          {/*<div className="flex gap-2">
             <Button onClick={fetchData} disabled={isLoading}>
               {isLoading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
               Cargar datos de la API
             </Button>
-          </div>
+          </div>*/}
         </CardHeader>
         <CardContent>
           <TableComponent
             items={currentItems}
             onItemClick={handleItemClick}
+            onCreateTicket={handleCreateTicket}
+            onEditTicket={handleEditTicket}
             selectedItemId={selectedItem?.id}
             //onCreateEvent={handleCreateEvent}
             renderDetails={(item) => (

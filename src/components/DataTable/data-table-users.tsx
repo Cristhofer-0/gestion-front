@@ -33,6 +33,11 @@ export function UserTable() {
     }
   }
 
+     // Cargar los datos al montar el componente
+    useEffect(() => {
+    fetchData()
+  }, [])
+
   const handleUserClick = (user: UsuarioData) => {
     if (selectedUser?.userId === user.userId) {
       setSelectedUser(null)
@@ -47,12 +52,12 @@ export function UserTable() {
         <CardHeader>
           <CardTitle>Gestión de Usuarios</CardTitle>
           <CardDescription>Visualiza y administra los usuarios registrados</CardDescription>
-          <div className="flex gap-2">
+          {/*<div className="flex gap-2">
             <Button onClick={fetchData} disabled={isLoading}>
               {isLoading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
               Cargar Usuarios
             </Button>
-          </div>
+          </div>*/}
         </CardHeader>
         <CardContent>
           <TableComponentUsers
@@ -70,6 +75,7 @@ export function UserTable() {
                 <p><strong>Fecha de Nacimiento:</strong> {new Date(user.birthDate).toLocaleDateString()}</p>
               </div>
             )}
+            onUserUpdated={fetchData}
           />
 
           {usuarios.length > 0 && (

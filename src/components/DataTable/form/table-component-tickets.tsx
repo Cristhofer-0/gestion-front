@@ -10,11 +10,13 @@ import { CreateTicketDialog, type TicketFormData } from "./create-ticket-dialog"
 import type { ItemData } from "../data-table-tickets"
 import { EditTicketDialog } from "./edit-ticket-dialog"
 import React from "react"
+import { EditTicketFormData } from "@/components/tickets/types"
 
 interface TableComponentProps {
   items?: ItemData[]
   onItemClick: (item: ItemData) => void
   onCreateTicket?: (data: TicketFormData) => void
+   onEditTicket?: (data: EditTicketFormData & { id: string, titulo: string }) => void
   selectedItemId?: string
   renderDetails?: (item: ItemData) => ReactNode
 }
@@ -23,6 +25,7 @@ export function TableComponent({
   items = [],
   onItemClick,
   onCreateTicket,
+  onEditTicket,
   selectedItemId,
   renderDetails,
 }: TableComponentProps) {
@@ -64,6 +67,13 @@ export function TableComponent({
     if (onCreateTicket) {
       onCreateTicket(data)
       setIsDialogOpen(false)
+    }
+  }
+
+  const handleEditTicket = (data: EditTicketFormData) => {
+    if (onEditTicket && ticketToEdit) {
+      onEditTicket({ ...data, id: ticketToEdit.id ?? "", titulo: ticketToEdit.titulo ?? "" })
+      setEditOpen(false) // cerrar modal después de editar
     }
   }
 
@@ -159,9 +169,7 @@ export function TableComponent({
                           open={editOpen}
                           onOpenChange={setEditOpen}
                           ticket={ticketToEdit}
-                          onSubmit={(data) => {
-                            console.log("Actualizar ticket:", data)
-                          }}
+                          onSubmit={handleEditTicket}
                         />
                       )}
                     </TableCell>

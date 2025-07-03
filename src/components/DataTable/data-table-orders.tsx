@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { TableComponent } from "../DataTable/form/table-component-orders"
@@ -47,6 +47,11 @@ export function OrderTable() {
         }
     }
 
+       // Cargar los datos al montar el componente
+        useEffect(() => {
+        fetchData()
+      }, [])
+
     // Función para manejar el clic en un elemento de la tabla
     const handleItemClick = (item: OrderData) => {
         // Si el elemento clickeado es el mismo que ya está seleccionado, lo deseleccionamos
@@ -64,12 +69,12 @@ export function OrderTable() {
                 <CardHeader>
                     <CardTitle>Gestión de Ordenes</CardTitle>
                     <CardDescription>Visualiza y gestiona todos las ordenes disponibles</CardDescription>
-                    <div className="flex gap-2">
+                    {/*<div className="flex gap-2">
                         <Button onClick={fetchData} disabled={isLoading}>
                             {isLoading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
                             Cargar datos de la API
                         </Button>
-                    </div>
+                    </div>*/}
                 </CardHeader>
                 <CardContent>
                     <TableComponent
