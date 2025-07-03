@@ -232,7 +232,7 @@ export default function SalesDashboard() {
                     </div>
                 </CardContent>
             </Card>
-            <BarSalesSummary />
+            {/* <BarSalesSummary /> */}
 
             {/* Vista general de todos los períodos */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
