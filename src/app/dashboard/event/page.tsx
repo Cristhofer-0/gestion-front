@@ -5,7 +5,7 @@ import { useUser } from "@/hooks/useUser"
 //BARRA IZQUIERDA
 import { AppSidebar } from "@/components/AppSideBar/app-sidebar"
 // EL GRAFICO DE LOS DATOS
-import { ChartAreaInteractive } from "@/components/custom/chart-area-interactive"
+import { ChartAreaInteractive } from "@/components/custom/graph-quantity"
 //LA TABLA DE LOS DATOS
 import { DataTable } from "@/components/DataTable/data-table"
 import { OrderTable } from "@/components/DataTable/data-table-orders"

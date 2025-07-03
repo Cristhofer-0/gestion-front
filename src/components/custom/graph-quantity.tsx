@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import SalesDashboard from "../custom/dashboard"
+import SalesDashboard from "./dashboard"
 import { useEffect, useState } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
@@ -29,6 +29,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
+import { ChartSales } from "./graph-sales"
 
 interface Order {
   OrderId: number
@@ -82,8 +83,6 @@ export function ChartAreaInteractive() {
       console.error("Error fetching chart data:", error);
     }
   }
-
-
     fetchData()
   }, [])
 
@@ -121,6 +120,10 @@ export function ChartAreaInteractive() {
         <h1 className="text-3xl font-bold text-gray-900">Dashboard de Ventas</h1>
         <p className="text-gray-600 mt-1">Resumen de rendimiento de ventas</p>
         <br />
+        <div>
+          <ChartSales />
+          <br />
+        </div>
         <Card className="@container/card">
           <CardHeader className="relative">
             <CardTitle>Cantidad de Entradas Vendidas</CardTitle>
@@ -212,6 +215,7 @@ export function ChartAreaInteractive() {
           </CardContent>
         </Card>
       </div>
+      <br />
       <div>
         <SalesDashboard />
       </div>
