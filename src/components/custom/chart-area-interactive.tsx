@@ -35,15 +35,12 @@ interface Order {
   UserId: number
   Quantity: number
   OrderDate: string
-  // Puedes extender el tipo si deseas usar más info como Event, Ticket o User
 }
 
 interface ChartData {
   date: string
-  [ticketType: string]: number | string // date es string, el resto son cantidades
+  [ticketType: string]: number | string
 }
-
-
 
 export function ChartAreaInteractive() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -53,13 +50,14 @@ export function ChartAreaInteractive() {
   useEffect(() => {
     async function fetchData() {
     try {
-      const response = await fetch("http://localhost:3000/orders");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders`);
       const orders = await response.json();
 
       // Agrupar por fecha y tipo de ticket
       const aggregated: Record<string, Record<string, any>> = {};
 
-      orders.forEach((order: any) => {
+      orders.filter((order: any) => order.PaymentStatus === "paid") // 👈 solo pagados
+        .forEach((order: any) => {
         const date = new Date(order.OrderDate).toISOString().split("T")[0];
         const type = order.Ticket?.Type || "Otro";
 
@@ -102,6 +100,13 @@ export function ChartAreaInteractive() {
     return date >= startDate
   })
 
+  const colorMap: Record<string, string> = {
+    general: "#8B5CF6", // azul
+    vip: "#F59E0B",     // rojo
+    otro: "#10b981",    // verde
+    // puedes agregar más tipos aquí
+  }
+
   const ticketTypes = Array.from(
     new Set(chartData.flatMap(data => Object.keys(data).filter(key => key !== "date")))
   )
@@ -118,10 +123,9 @@ export function ChartAreaInteractive() {
         <br />
         <Card className="@container/card">
           <CardHeader className="relative">
-            <CardTitle>Total Visitors</CardTitle>
+            <CardTitle>Cantidad de Entradas Vendidas</CardTitle>
             <CardDescription>
-              <span className="@[540px]/card:block hidden">Total for the selected range</span>
-              <span className="@[540px]/card:hidden">Filtered range</span>
+              <span className="@[540px]/card:block hidden">Total de entradas por tipo: General o VIP</span>
             </CardDescription>
             <div className="absolute right-4 top-4">
               <ToggleGroup
@@ -156,10 +160,11 @@ export function ChartAreaInteractive() {
                 <defs>
                   {ticketTypes.map((type) => {
                     const normalizedType = normalize(type)
+                    const color = colorMap[normalizedType] || "#8b5cf6"
                     return (
                       <linearGradient id={`fill-${normalizedType}`} x1="0" y1="0" x2="0" y2="1" key={type}>
-                        <stop offset="5%" stopColor={`var(--color-${normalizedType})`} stopOpacity={0.8} />
-                        <stop offset="95%" stopColor={`var(--color-${normalizedType})`} stopOpacity={0.1} />
+                        <stop offset="5%" stopColor={color} stopOpacity={0.8} />
+                        <stop offset="95%" stopColor={color} stopOpacity={0.1} />
                       </linearGradient>
                     )
                   })}
@@ -196,8 +201,7 @@ export function ChartAreaInteractive() {
                   <Area
                     key={type}
                     dataKey={type}
-                    type="natural"
-                    stackId="a"
+                    type="monotone"
                     stroke={`var(--color-${type.toLowerCase()})`}
                     fillOpacity={1}
                     fill={`url(#fill-${type.toLowerCase()})`}
