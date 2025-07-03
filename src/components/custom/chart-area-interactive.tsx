@@ -59,7 +59,8 @@ export function ChartAreaInteractive() {
       // Agrupar por fecha y tipo de ticket
       const aggregated: Record<string, Record<string, any>> = {};
 
-      orders.forEach((order: any) => {
+      orders.filter((order: any) => order.PaymentStatus === "paid") // 👈 solo pagados
+        .forEach((order: any) => {
         const date = new Date(order.OrderDate).toISOString().split("T")[0];
         const type = order.Ticket?.Type || "Otro";
 
@@ -118,10 +119,9 @@ export function ChartAreaInteractive() {
         <br />
         <Card className="@container/card">
           <CardHeader className="relative">
-            <CardTitle>Total Visitors</CardTitle>
+            <CardTitle>Cantidad de Entradas Vendidas</CardTitle>
             <CardDescription>
-              <span className="@[540px]/card:block hidden">Total for the selected range</span>
-              <span className="@[540px]/card:hidden">Filtered range</span>
+              <span className="@[540px]/card:block hidden">Total de entradas por tipo: General o VIP</span>
             </CardDescription>
             <div className="absolute right-4 top-4">
               <ToggleGroup
