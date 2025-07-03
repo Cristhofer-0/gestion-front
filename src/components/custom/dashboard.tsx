@@ -178,11 +178,6 @@ export default function SalesDashboard() {
     return (
         <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Dashboard de Ventas</h1>
-                    <p className="text-gray-600 mt-1">Resumen de rendimiento de ventas</p>
-                </div>
-
                 <div className="flex gap-2">
                     {periods.map((period) => {
                         const Icon = period.icon
