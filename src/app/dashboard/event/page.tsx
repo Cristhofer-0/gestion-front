@@ -38,9 +38,15 @@ export default function Dashboard() {
                 <div className="container mx-auto p-4 md:p-6">
                     <DataTable key={refreshKey} />
                 </div>
-                <div className="rounded-lg border bg-card shadow">
-                    <EventHistory onRefresh={handleHistoryRefresh} />
-                </div>
+                {user.Role === "organizer" ? (
+                    <div></div>
+                ) : (
+                    // Contenido específico para organizador
+                    <div className="container mx-auto p-4 md:p-6">
+                        <EventHistory onRefresh={handleHistoryRefresh} />
+                    </div>
+                )}
+                
             </SidebarInset>
         </SidebarProvider>
     )

@@ -45,7 +45,7 @@ export default function Dashboard() {
                         ) : user.Role === "organizer" ? (
                             // Contenido específico para organizador
                             <div className="px-4 lg:px-6">
-                                <ChartAreaInteractive user={user} /> {/* por ejemplo */}
+                                <ChartAreaInteractive user={user} />
                             </div>
                         ) : (
                             // Resto de roles, como admin

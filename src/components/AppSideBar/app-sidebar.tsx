@@ -156,7 +156,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 user.Role === "helper"
                                     ? "/dashboard/order"
                                     : user.Role === "organizer"
-                                        ? "/dashboard/event"
+                                        ? "/dashboard"
                                         : "/dashboard"
                             }>
                                 <CircleDot className="h-5 w-5" />
