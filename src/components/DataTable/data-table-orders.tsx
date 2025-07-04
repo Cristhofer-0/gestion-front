@@ -78,7 +78,7 @@ export function OrderTable() {
                 </CardHeader>
                 <CardContent>
                     <TableComponent
-                        items={items}
+                        items={currentItems}
                         selectedItemId={selectedItem?.id}
                     />
                     {items.length > 0 && (
