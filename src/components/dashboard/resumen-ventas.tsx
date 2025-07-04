@@ -104,9 +104,18 @@ export function ResumenVentasPorPeriodo({ user }: Props) {
         onValueChange={(val) => val && setPeriodo(val)}
         className="flex gap-2"
       >
-        <ToggleGroupItem value="total">Total</ToggleGroupItem>
-        <ToggleGroupItem value="mensual">Mensual</ToggleGroupItem>
-        <ToggleGroupItem value="semanal">Semanal</ToggleGroupItem>
+        <ToggleGroupItem 
+          value="total"
+          className="px-4 py-2 text-sm font-medium rounded-lg data-[state=on]:bg-primary data-[state=on]:text-white border border-muted"
+        >Total</ToggleGroupItem>
+        <ToggleGroupItem 
+          value="mensual"
+          className="px-4 py-2 text-sm font-medium rounded-lg data-[state=on]:bg-primary data-[state=on]:text-white border border-muted"
+        >Mensual</ToggleGroupItem>
+        <ToggleGroupItem 
+          value="semanal"
+          className="px-4 py-2 text-sm font-medium rounded-lg data-[state=on]:bg-primary data-[state=on]:text-white border border-muted"
+        >Semanal</ToggleGroupItem>
       </ToggleGroup>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -122,8 +131,11 @@ export function ResumenVentasPorPeriodo({ user }: Props) {
             {periodo !== "total" && (
               <div className="flex items-center gap-2 mt-2">
                 <Badge
-                  variant={changeVentas >= 0 ? "default" : "destructive"}
-                  className="flex items-center gap-1"
+                  className={`flex items-center gap-1 ${
+                    changeVentas >= 0
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
                 >
                   {getChangeIcon(changeVentas)}
                   {changeVentas > 0 ? "+" : ""}
@@ -169,8 +181,11 @@ export function ResumenVentasPorPeriodo({ user }: Props) {
             {periodo !== "total" && (
               <div className="flex items-center gap-2 mt-2">
                 <Badge
-                  variant={changePromedio >= 0 ? "default" : "destructive"}
-                  className="flex items-center gap-1"
+                  className={`flex items-center gap-1 ${
+                    changePromedio >= 0
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
                 >
                   {getChangeIcon(changePromedio)}
                   {changePromedio > 0 ? "+" : ""}
