@@ -265,13 +265,24 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const estadoEnEspañol: "borrador" | "publicado" | undefined =
       value === "draft" ? "borrador" : value === "published" ? "publicado" : undefined;
     
-    // Validación de entradas vendidas
-    if (estadoEnEspañol === "borrador" && hasPaidOrders) {
-      setEstadoError("No puedes desactivar eventos con entradas ya vendidas.")
-      return
-    }
+      const fechaFinEvento = formData.fechaFinalizacion;
+      const eventoYaTermino = fechaFinEvento && new Date(fechaFinEvento) < new Date();
+
+      // Solo aplicar restricción si el evento aún no ha terminado
+      if (estadoEnEspañol === "borrador" && hasPaidOrders && !eventoYaTermino) {
+        setEstadoError("No puedes desactivar eventos con entradas ya vendidas.");
+        return;
+      }
+
+       // Evitar pasar a "publicado" si el evento ya finalizó
+      if (estadoEnEspañol === "publicado" && eventoYaTermino) {
+        setEstadoError("No es posible publicar un evento cuya fecha de finalización ya ha concluido.");
+        return;
+      }
+
 
     setEstadoError(null) // Limpia si no hay error
+    
 
     // Actualizar el estado de 'estado' con el valor correcto
     setFormData((prev) => ({
@@ -317,8 +328,8 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  console.log("Estado actual del formulario:", formData.estado); // 👈 Aquí
-  console.log("¿Tiene entradas pagadas?", hasPaidOrders); // 👈 Y aquí
+  console.log("Estado actual del formulario:", formData.estado); 
+  console.log("¿Tiene entradas pagadas?", hasPaidOrders); 
 
 
   if (!event.id) {
@@ -539,7 +550,7 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   <SelectItem value="published">Publicado</SelectItem>
                 </SelectContent>
               </Select>
-              {/* ✅ Mostrar error si hay entradas pagadas */}
+              {/* Mostrar error si hay entradas pagadas */}
               {estadoError && (
                 <p className="text-sm text-red-500">{estadoError}</p>
               )}
