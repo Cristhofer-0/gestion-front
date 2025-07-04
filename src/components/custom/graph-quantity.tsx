@@ -30,6 +30,8 @@ import {
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
 import { ChartSales } from "./graph-sales"
+import { DollarSign } from "lucide-react"
+import { ResumenVentasPorPeriodo } from "../dashboard/resumen-ventas"
 
 interface Order {
   OrderId: number
@@ -127,6 +129,10 @@ export function ChartAreaInteractive({ user }: { user: { UserId: number; Role: s
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Dashboard de Ventas</h1>
         <p className="text-gray-600 mt-1">Resumen de rendimiento de ventas</p>
+        <br />
+        <div className="">
+          <ResumenVentasPorPeriodo user={user} />
+        </div>
         <br />
         <div>
           <ChartSales user={user}/>
@@ -234,12 +240,7 @@ export function ChartAreaInteractive({ user }: { user: { UserId: number; Role: s
           </CardContent>
         </Card>
       </div>
-      <br />
-      <h1 className="text-3xl font-bold text-gray-900">Reporte de Ventas</h1>
-      <p className="text-gray-600 mt-1">Reporte de rendimiento de ventas</p>
-      <div>
-        {/* <SalesDashboard /> */}
-      </div>
+      
     </div>
   )
 }
