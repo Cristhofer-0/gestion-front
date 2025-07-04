@@ -14,6 +14,7 @@ import { es } from "date-fns/locale"
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
+import { fetchOrders } from "@/services/orders"
 
 
 interface EditEventDialogProps {
@@ -75,6 +76,9 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
   const [lon, setLon] = useState(0);
   const [direc, setDirec] = useState("");
   const [originalFormData, setOriginalFormData] = useState<EditEventFormData | null>(null);
+  const [hasPaidOrders, setHasPaidOrders] = useState(false)
+  const [estadoError, setEstadoError] = useState<string | null>(null)
+  
 
   const [formData, setFormData] = useState<EditEventFormData>({
     organizerId: event.organizerId,
@@ -124,6 +128,8 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
       setLat(event.ubicacion?.lat ?? 0);
       setLon(event.ubicacion?.lng ?? 0);
       setDirec(event.direccion ?? "");
+      setEstadoError(null); // Limpia el error cuando cambias de evento
+
     }
   }, [event]) // Solo se ejecutará cuando `event` cambie
 
@@ -149,6 +155,32 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
       setSelectedFileName(null);
     }
   }, [open]);
+
+
+useEffect(() => {
+  if (event?.id) {
+    fetchOrders()
+      .then((orders) => {
+        console.log("Órdenes recibidas:", orders); 
+
+        const pagosDelEvento = orders.filter(
+          (order) =>
+            String(order.eventoId) === String(event.id) &&
+            order.estadoPago?.toLowerCase() === "paid" // Asegura que esté en minúsculas
+        );
+
+        console.log("Entradas pagadas encontradas:", pagosDelEvento); 
+
+        setHasPaidOrders(pagosDelEvento.length > 0);
+      })
+      .catch((err) => {
+        console.error("Error al obtener órdenes:", err); // 
+        setHasPaidOrders(false);
+      });
+  }
+}, [event?.id]);
+
+
 
 
 const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,6 +264,14 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     // Conversión de los valores de "draft" y "published" a "borrador" y "publicado"
     const estadoEnEspañol: "borrador" | "publicado" | undefined =
       value === "draft" ? "borrador" : value === "published" ? "publicado" : undefined;
+    
+    // Validación de entradas vendidas
+    if (estadoEnEspañol === "borrador" && hasPaidOrders) {
+      setEstadoError("No puedes desactivar eventos con entradas ya vendidas.")
+      return
+    }
+
+    setEstadoError(null) // Limpia si no hay error
 
     // Actualizar el estado de 'estado' con el valor correcto
     setFormData((prev) => ({
@@ -276,6 +316,10 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+
+  console.log("Estado actual del formulario:", formData.estado); // 👈 Aquí
+  console.log("¿Tiene entradas pagadas?", hasPaidOrders); // 👈 Y aquí
+
 
   if (!event.id) {
     console.error("ID de evento no definido");
@@ -495,6 +539,10 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   <SelectItem value="published">Publicado</SelectItem>
                 </SelectContent>
               </Select>
+              {/* ✅ Mostrar error si hay entradas pagadas */}
+              {estadoError && (
+                <p className="text-sm text-red-500">{estadoError}</p>
+              )}
             </div>
           </div>
 
