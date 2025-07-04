@@ -27,6 +27,7 @@ import { NavSecondary } from "./Nav/nav-secondary"
 import { NavUser } from "./Nav/nav-user"
 import { useUser } from "@/hooks/useUser"
 import { PageTransition } from "@/components/principales/pageTransition"
+import ThemeToggle from "@/components/custom/theme-toggle"
 import {
     Sidebar,
     SidebarContent,
@@ -148,6 +149,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
+                        <ThemeToggle />
                         <SidebarMenuButton
                             asChild
                             className="data-[slot=sidebar-menu-button]:!p-1.5"
@@ -172,6 +174,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarFooter>
                 <NavUser />
             </SidebarFooter>
+            {/* <SidebarFooter>
+              <ThemeToggle />
+            </SidebarFooter> */}
         </Sidebar>
         /* </PageTransition>*/
     )
