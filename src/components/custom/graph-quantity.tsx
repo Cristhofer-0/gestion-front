@@ -141,8 +141,8 @@ export function ChartAreaInteractive({ user }: { user: { UserId: number; Role: s
   return (
     <div>
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard de Ventas</h1>
-        <p className="text-gray-600 mt-1">Resumen de rendimiento de ventas</p>
+        <h1 className="text-3xl font-bold text-foreground">Dashboard de Ventas</h1>
+        <p className="mt-1 text-muted-foreground">Resumen de rendimiento de ventas</p>
         <br />
         <div className="">
           <ResumenVentasPorPeriodo user={user} />

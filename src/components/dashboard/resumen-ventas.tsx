@@ -106,16 +106,22 @@ export function ResumenVentasPorPeriodo({ user }: Props) {
       >
         <ToggleGroupItem 
           value="total"
-          className="px-4 py-2 text-sm font-medium rounded-lg data-[state=on]:bg-primary data-[state=on]:text-white border border-muted"
-        >Total</ToggleGroupItem>
+          className="px-4 py-2 text-sm font-medium rounded-lg data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border border-muted"
+        >
+          Total
+        </ToggleGroupItem>
         <ToggleGroupItem 
           value="mensual"
-          className="px-4 py-2 text-sm font-medium rounded-lg data-[state=on]:bg-primary data-[state=on]:text-white border border-muted"
-        >Mensual</ToggleGroupItem>
+          className="px-4 py-2 text-sm font-medium rounded-lg data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border border-muted"
+        >
+          Mensual
+        </ToggleGroupItem>
         <ToggleGroupItem 
           value="semanal"
-          className="px-4 py-2 text-sm font-medium rounded-lg data-[state=on]:bg-primary data-[state=on]:text-white border border-muted"
-        >Semanal</ToggleGroupItem>
+          className="px-4 py-2 text-sm font-medium rounded-lg data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border border-muted"
+        >
+          Semanal
+        </ToggleGroupItem>
       </ToggleGroup>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
