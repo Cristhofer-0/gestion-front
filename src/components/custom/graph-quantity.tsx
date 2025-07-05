@@ -39,8 +39,12 @@ interface Order {
   OrderDate: string
 }
 
-interface ChartData {
+interface ChartDataBase {
   date: string
+  jsDate?: Date
+}
+
+interface ChartData {
   [ticketType: string]: number | string
 }
 
@@ -48,61 +52,70 @@ export function ChartAreaInteractive({ user }: { user: { UserId: number; Role: s
   const [orders, setOrders] = useState<Order[]>([])
   const [chartData, setChartData] = useState<ChartData[]>([])
   const [timeRange, setTimeRange] = useState("90d")
-
+  
   useEffect(() => {
     async function fetchData() {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders`);
-      const orders = await response.json();
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders`);
+        const orders = await response.json();
 
-      // Agrupar por fecha y tipo de ticket
-      const aggregated: Record<string, Record<string, any>> = {};
+        const aggregated: Record<string, any> = {};
 
-      orders.filter((order: any) => {
-          // Solo pagados
-          const isPaid = order.PaymentStatus === "paid"
+        orders
+          .filter((order: any) => {
+            const isPaid = order.PaymentStatus === "paid";
+            const isVisible = user.Role === "admin" || order.Event?.OrganizerId === user.UserId;
+            return isPaid && isVisible;
+          })
+          .forEach((order: any) => {
+            const limaDate = new Date(
+              new Date(order.OrderDate).toLocaleString("en-US", { timeZone: "America/Lima" })
+            );
 
-          // Si es admin, ve todo; si es organizer, solo sus eventos
-          const isVisible = user.Role === "admin" || order.Event?.OrganizerId === user.UserId
+            const year = limaDate.getFullYear();
+            const month = String(limaDate.getMonth() + 1).padStart(2, "0");
+            const day = String(limaDate.getDate()).padStart(2, "0");
+            const date = `${year}-${month}-${day}`;
+            const jsDate = new Date(`${date}T12:00:00`); // ⬅️ CORRECTO
 
-          return isPaid && isVisible
-        })
-        .forEach((order: any) => {
-        const date = new Date(order.OrderDate).toISOString().split("T")[0];
-        const type = order.Ticket?.Type || "Otro";
+            const type = order.Ticket?.Type || "Otro";
 
-        if (!aggregated[date]) {
-          aggregated[date] = { date };
-        }
+            if (!aggregated[date]) {
+              aggregated[date] = { date, jsDate };
+            }
 
-        if (!aggregated[date][type]) {
-          aggregated[date][type] = 0;
-        }
+            if (!aggregated[date][type]) {
+              aggregated[date][type] = 0;
+            }
 
-        aggregated[date][type] += order.Quantity;
-      });
+            aggregated[date][type] += order.Quantity;
+          });
 
-      const formattedData: ChartData[] = Object.values(aggregated).map(obj => ({
-        ...obj,
-        date: obj.date as string, // aseguramos que 'date' esté
-      }))
+        const formattedData: ChartData[] = Object.values(aggregated).map(obj => ({
+          ...obj,
+        }));
 
-      setChartData(formattedData);
-    } catch (error) {
-      console.error("Error fetching chart data:", error);
+        setChartData(formattedData);
+      } catch (error) {
+        console.error("Error fetching chart data:", error);
+      }
     }
-  }
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
+
 
   const filteredData = chartData.filter((item) => {
-    const date = new Date(item.date)
-    const referenceDate = new Date("2025-07-03") // o new Date() si deseas "hoy"
+    const [year, month, day] = (item.date as string).split("-").map(Number)
+    const date = new Date(year, month - 1, day)
+    const now = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+    )
+
     let daysToSubtract = 90
     if (timeRange === "30d") daysToSubtract = 30
     else if (timeRange === "7d") daysToSubtract = 7
 
-    const startDate = new Date(referenceDate)
+    const startDate = new Date(now)
     startDate.setDate(startDate.getDate() - daysToSubtract)
 
     return date >= startDate
@@ -116,7 +129,9 @@ export function ChartAreaInteractive({ user }: { user: { UserId: number; Role: s
   }
 
   const ticketTypes = Array.from(
-    new Set(chartData.flatMap(data => Object.keys(data).filter(key => key !== "date")))
+    new Set(chartData.flatMap(data =>
+      Object.keys(data).filter(key => key !== "date" && key !== "jsDate")
+    ))
   )
 
   function normalize(type: string): string {
@@ -151,9 +166,9 @@ export function ChartAreaInteractive({ user }: { user: { UserId: number; Role: s
                 variant="outline"
                 className="@[767px]/card:flex hidden"
               >
-                <ToggleGroupItem value="90d" className="h-8 px-2.5">Last 3 months</ToggleGroupItem>
-                <ToggleGroupItem value="30d" className="h-8 px-2.5">Last 30 days</ToggleGroupItem>
-                <ToggleGroupItem value="7d" className="h-8 px-2.5">Last 7 days</ToggleGroupItem>
+                <ToggleGroupItem value="90d" className="h-8 px-2.5">Últimos 3 meses</ToggleGroupItem>
+                <ToggleGroupItem value="30d" className="h-8 px-2.5">Último mes</ToggleGroupItem>
+                <ToggleGroupItem value="7d" className="h-8 px-2.5">Última semana</ToggleGroupItem>
               </ToggleGroup>
               <Select value={timeRange} onValueChange={setTimeRange}>
                 <SelectTrigger className="@[767px]/card:hidden flex w-40">
@@ -193,22 +208,27 @@ export function ChartAreaInteractive({ user }: { user: { UserId: number; Role: s
                   tickMargin={8}
                   minTickGap={32}
                   tickFormatter={(value) =>
-                    new Date(value).toLocaleDateString("en-US", {
+                    new Date(value + "T00:00:00").toLocaleDateString("es-PE", {
+                      timeZone: "America/Lima",
                       month: "short",
                       day: "numeric",
                     })
                   }
+
                 />
                 <ChartTooltip
                   cursor={false}
                   content={
                     <ChartTooltipContent
-                      labelFormatter={(value) =>
-                        new Date(value).toLocaleDateString("en-US", {
+                      labelFormatter={(value) => {
+                        const date = new Date(value + "T00:00:00")
+                        if (isNaN(date.getTime())) return "Fecha inválida"
+                        return date.toLocaleDateString("es-PE", {
+                          timeZone: "America/Lima",
                           month: "short",
                           day: "numeric",
                         })
-                      }
+                      }}
                       indicator="dot"
                     />
                   }

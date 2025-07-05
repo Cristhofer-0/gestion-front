@@ -106,9 +106,9 @@ export function ChartSales({ user }: { user: { UserId: number; Role: string } })
             variant="outline"
             className="@[767px]/card:flex hidden"
           >
-            <ToggleGroupItem value="90d" className="h-8 px-2.5">Last 3 months</ToggleGroupItem>
-            <ToggleGroupItem value="30d" className="h-8 px-2.5">Last 30 days</ToggleGroupItem>
-            <ToggleGroupItem value="7d" className="h-8 px-2.5">Last 7 days</ToggleGroupItem>
+            <ToggleGroupItem value="90d" className="h-8 px-2.5">Últimos 3 meses</ToggleGroupItem>
+            <ToggleGroupItem value="30d" className="h-8 px-2.5">Último mes</ToggleGroupItem>
+            <ToggleGroupItem value="7d" className="h-8 px-2.5">Última semana</ToggleGroupItem>
           </ToggleGroup>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger className="@[767px]/card:hidden flex w-40">
@@ -139,7 +139,8 @@ export function ChartSales({ user }: { user: { UserId: number; Role: string } })
               tickMargin={8}
               minTickGap={32}
               tickFormatter={(value) =>
-                new Date(value).toLocaleDateString("en-US", {
+                new Date(value + "T00:00:00").toLocaleDateString("es-PE", {
+                  timeZone: "America/Lima",
                   month: "short",
                   day: "numeric",
                 })
@@ -149,12 +150,15 @@ export function ChartSales({ user }: { user: { UserId: number; Role: string } })
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) =>
-                    new Date(value).toLocaleDateString("en-US", {
+                  labelFormatter={(value) => {
+                    const date = new Date(value + "T00:00:00")
+                    if (isNaN(date.getTime())) return "Fecha inválida"
+                    return date.toLocaleDateString("es-PE", {
+                      timeZone: "America/Lima",
                       month: "short",
                       day: "numeric",
                     })
-                  }
+                  }}
                   indicator="dot"
                 />
               }
