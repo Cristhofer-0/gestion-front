@@ -31,7 +31,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 
 interface MapLibreMapHandle {
-  handleSearch: () => void;
+  handleSearch: () => void
 }
 
 export const adaptEditFormDataToItemData = (
@@ -67,8 +67,8 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [formattedFecha, setFormattedFecha] = useState("");
-    const [formErrors, setFormErrors] = useState<Record<string, string>>({})
-  
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
   const mapRef = useRef<MapLibreMapHandle>(null)
   const [direccionError, setDireccionError] = useState<string | null>(null);
   const [categoryInput, setCategoryInput] = useState("")
@@ -78,7 +78,7 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
   const [originalFormData, setOriginalFormData] = useState<EditEventFormData | null>(null);
   const [hasPaidOrders, setHasPaidOrders] = useState(false)
   const [estadoError, setEstadoError] = useState<string | null>(null)
-  
+
 
   const [formData, setFormData] = useState<EditEventFormData>({
     organizerId: event.organizerId,
@@ -95,13 +95,13 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     videoUrl: "",
     ubicacion: { lat: 0, lng: 0 },
   })
-  
+
 
 
 
   // Actualiza formData cuando el evento cambie
   useEffect(() => {
-      console.log("Cantidad de eventos en existeEvento:", existeEvento?.length);
+    console.log("Cantidad de eventos en existeEvento:", existeEvento?.length);
     if (event) {
       const initialData = {
         organizerId: event.organizerId,
@@ -157,68 +157,68 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
   }, [open]);
 
 
-useEffect(() => {
-  if (event?.id) {
-    fetchOrders()
-      .then((orders) => {
-        console.log("Órdenes recibidas:", orders); 
+  useEffect(() => {
+    if (event?.id) {
+      fetchOrders()
+        .then((orders) => {
+          console.log("Órdenes recibidas:", orders);
 
-        const pagosDelEvento = orders.filter(
-          (order) =>
-            String(order.eventoId) === String(event.id) &&
-            order.estadoPago?.toLowerCase() === "paid" // Asegura que esté en minúsculas
-        );
+          const pagosDelEvento = orders.filter(
+            (order) =>
+              String(order.eventoId) === String(event.id) &&
+              order.estadoPago?.toLowerCase() === "paid" // Asegura que esté en minúsculas
+          );
 
-        console.log("Entradas pagadas encontradas:", pagosDelEvento); 
+          console.log("Entradas pagadas encontradas:", pagosDelEvento);
 
-        setHasPaidOrders(pagosDelEvento.length > 0);
-      })
-      .catch((err) => {
-        console.error("Error al obtener órdenes:", err); // 
-        setHasPaidOrders(false);
-      });
-  }
-}, [event?.id]);
-
-
+          setHasPaidOrders(pagosDelEvento.length > 0);
+        })
+        .catch((err) => {
+          console.error("Error al obtener órdenes:", err); // 
+          setHasPaidOrders(false);
+        });
+    }
+  }, [event?.id]);
 
 
-const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  setUploadError(null);
-  if (!e.target.files?.length) return;
 
-  const file = e.target.files[0];
-  setSelectedFileName(file.name); // Guarda el nombre
-  const maxSizeInMB = 10;
-  const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
-  let errorMsg = "";
 
-  if (file.type !== "image/webp") {
-    errorMsg += "Solo se permiten imágenes en formato .webp.\n";
-  }
-
-  if (file.size > maxSizeInBytes) {
-    const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-    errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB.`;
-  }
-
-  if (errorMsg) {
-    setUploadError(errorMsg.trim());
-    setFormData((prev) => ({ ...prev, bannerUrl: "" }));
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    return;
-  }
-
-  const imageUrl = await uploadImage(file);
-  if (imageUrl) {
-    setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadError(null);
-  } else {
-    setUploadError("Error al subir imagen.");
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    setSelectedFileName(null);
-  }
-};
+    if (!e.target.files?.length) return;
+
+    const file = e.target.files[0];
+    setSelectedFileName(file.name); // Guarda el nombre
+    const maxSizeInMB = 10;
+    const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+    let errorMsg = "";
+
+    if (file.type !== "image/webp") {
+      errorMsg += "Solo se permiten imágenes en formato .webp.\n";
+    }
+
+    if (file.size > maxSizeInBytes) {
+      const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+      errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB.`;
+    }
+
+    if (errorMsg) {
+      setUploadError(errorMsg.trim());
+      setFormData((prev) => ({ ...prev, bannerUrl: "" }));
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    const imageUrl = await uploadImage(file);
+    if (imageUrl) {
+      setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
+      setUploadError(null);
+    } else {
+      setUploadError("Error al subir imagen.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      setSelectedFileName(null);
+    }
+  };
 
 
 
@@ -264,25 +264,25 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     // Conversión de los valores de "draft" y "published" a "borrador" y "publicado"
     const estadoEnEspañol: "borrador" | "publicado" | undefined =
       value === "draft" ? "borrador" : value === "published" ? "publicado" : undefined;
-    
-      const fechaFinEvento = formData.fechaFinalizacion;
-      const eventoYaTermino = fechaFinEvento && new Date(fechaFinEvento) < new Date();
 
-      // Solo aplicar restricción si el evento aún no ha terminado
-      if (estadoEnEspañol === "borrador" && hasPaidOrders && !eventoYaTermino) {
-        setEstadoError("No puedes desactivar eventos con entradas ya vendidas.");
-        return;
-      }
+    const fechaFinEvento = formData.fechaFinalizacion;
+    const eventoYaTermino = fechaFinEvento && new Date(fechaFinEvento) < new Date();
 
-       // Evitar pasar a "publicado" si el evento ya finalizó
-      if (estadoEnEspañol === "publicado" && eventoYaTermino) {
-        setEstadoError("No es posible publicar un evento cuya fecha de finalización ya ha concluido.");
-        return;
-      }
+    // Solo aplicar restricción si el evento aún no ha terminado
+    if (estadoEnEspañol === "borrador" && hasPaidOrders && !eventoYaTermino) {
+      setEstadoError("No puedes desactivar eventos con entradas ya vendidas.");
+      return;
+    }
+
+    // Evitar pasar a "publicado" si el evento ya finalizó
+    if (estadoEnEspañol === "publicado" && eventoYaTermino) {
+      setEstadoError("No es posible publicar un evento cuya fecha de finalización ya ha concluido.");
+      return;
+    }
 
 
     setEstadoError(null) // Limpia si no hay error
-    
+
 
     // Actualizar el estado de 'estado' con el valor correcto
     setFormData((prev) => ({
@@ -292,7 +292,7 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   };
 
   const handleAddCategory = (e: { preventDefault: () => void }) => {
-      e.preventDefault();
+    e.preventDefault();
     const nuevaCategoria = categoryInput.trim()
     if (categoryInput.trim() && !formData.categorias.includes(categoryInput.trim())) {
       setFormData((prev) => ({
@@ -326,16 +326,16 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  console.log("Estado actual del formulario:", formData.estado); 
-  console.log("¿Tiene entradas pagadas?", hasPaidOrders); 
+    console.log("Estado actual del formulario:", formData.estado);
+    console.log("¿Tiene entradas pagadas?", hasPaidOrders);
 
 
-  if (!event.id) {
-    console.error("ID de evento no definido");
-    return;
-  }
+    if (!event.id) {
+      console.error("ID de evento no definido");
+      return;
+    }
 
     // Función para formatear la fecha manualmente evitando desfase por zona horaria
     const formatFechaLocal = (fechaStr: string) => {
@@ -347,10 +347,10 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         year: "numeric",
       })
     }
-      if (!existeEvento || !Array.isArray(existeEvento)) {
-    console.warn("existeEvento no está definido o no es un array");
-    return;
-  }
+    if (!existeEvento || !Array.isArray(existeEvento)) {
+      console.warn("existeEvento no está definido o no es un array");
+      return;
+    }
 
     // Validación de conflicto de evento por fecha y lugar
     const eventoConflictivo = existeEvento.find((ev) => {
@@ -393,7 +393,7 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const ubicacion = formData.ubicacion ?? { lat: 0, lng: 0 };
 
       await editarEvento(event.id as string, {
-        
+
         organizerId: formData.organizerId,
         titulo: formData.titulo,
         descripcion: formData.descripcion,
@@ -410,11 +410,11 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         bannerUrl: formData.bannerUrl,
         videoUrl: formData.videoUrl,
       });
-       onSubmit({
-    ...formData,
-    id: event.id,
-  });
-  onOpenChange(false); 
+      onSubmit({
+        ...formData,
+        id: event.id,
+      });
+      onOpenChange(false);
     } catch (error) {
       console.error("Error al editar el evento:", error);
     }
@@ -423,7 +423,7 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
 
 
-    // Función para formatear la fecha para el input date
+  // Función para formatear la fecha para el input date
   const formatDateForInput = (date: Date | null): string => {
     if (!date) return ""
     return date.toISOString().split("T")[0]
@@ -452,54 +452,62 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Fecha de Inicio y Fecha de Finalización */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="fechaInicio">Fecha de Inicio</Label>
-            <div className="relative">
-              <Input
-                id="fechaInicio"
-                type="date"
-                value={formatDateForInput(formData.fechaInicio)}
-                onChange={(e) =>
-                  handleDateChange("fechaInicio", e.target.value ? new Date(e.target.value) : undefined)
-                }
-                className={cn(formErrors.fechaInicio && "border-red-500")}
-                min={formatDateForInput(new Date())}
-              />
+            <div className="space-y-2">
+              <Label htmlFor="fechaInicio">Fecha de Inicio</Label>
+              <div className="relative">
+                <Input
+                  id="fechaInicio"
+                  type="date"
+                  value={formatDateForInput(formData.fechaInicio)}
+                  onChange={(e) =>
+                    handleDateChange("fechaInicio", e.target.value ? new Date(e.target.value) : undefined)
+                  }
+                  className={cn(formErrors.fechaInicio && "border-red-500")}
+                  min={formatDateForInput(new Date())}
+                />
+              </div>
+              {formErrors.fechaInicio && (
+                <p className="text-sm text-red-500">{formErrors.fechaInicio}</p>
+              )}
             </div>
-            {formErrors.fechaInicio && (
-              <p className="text-sm text-red-500">{formErrors.fechaInicio}</p>
-            )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="fechaFinalizacion">Fecha de Finalización</Label>
-            <div className="relative">
-              <Input
-                id="fechaFinalizacion"
-                type="date"
-                value={formatDateForInput(formData.fechaFinalizacion)}
-                onChange={(e) =>
-                  handleDateChange(
-                    "fechaFinalizacion",
-                    e.target.value ? new Date(e.target.value) : undefined
-                  )
-                }
-                className={cn(formErrors.fechaFinalizacion && "border-red-500")}
-                min={formatDateForInput(formData.fechaInicio || new Date())}
-              />
+            <div className="space-y-2">
+              <Label htmlFor="fechaFinalizacion">Fecha de Finalización</Label>
+              <div className="relative">
+                <Input
+                  id="fechaFinalizacion"
+                  type="date"
+                  value={formatDateForInput(formData.fechaFinalizacion)}
+                  onChange={(e) =>
+                    handleDateChange(
+                      "fechaFinalizacion",
+                      e.target.value ? new Date(e.target.value) : undefined
+                    )
+                  }
+                  className={cn(formErrors.fechaFinalizacion && "border-red-500")}
+                  min={formatDateForInput(formData.fechaInicio || new Date())}
+                />
+              </div>
+              {formErrors.fechaFinalizacion && (
+                <p className="text-sm text-red-500">{formErrors.fechaFinalizacion}</p>
+              )}
             </div>
-            {formErrors.fechaFinalizacion && (
-              <p className="text-sm text-red-500">{formErrors.fechaFinalizacion}</p>
-            )}
           </div>
-        </div>
 
           <div className="space-y-2">
             <Label htmlFor="address">Dirección</Label>
             <div className="flex gap-2">
-              <Input name="direccion" value={formData.direccion} onChange={handleChange} placeholder="Dirección" />
+              <Input name="direccion" value={formData.direccion} onChange={handleChange} onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  mapRef.current?.handleSearch();
+                }
+              }} placeholder="Dirección" />
               <Button type="button" onClick={() => mapRef.current?.handleSearch()}>Buscar</Button>
             </div>
+            {direccionError && (
+              <p className="text-sm text-red-500">{direccionError}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -560,7 +568,12 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
           <div className="space-y-2">
             <Label htmlFor="categories">Categorías</Label>
             <div className="flex gap-2">
-              <Input value={categoryInput} onChange={(e) => setCategoryInput(e.target.value)} placeholder="Añadir categoría" />
+              <Input value={categoryInput} onChange={(e) => setCategoryInput(e.target.value)} onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddCategory(e);
+                }
+              }} placeholder="Añadir categoría" />
               <Button onClick={handleAddCategory}>Añadir</Button>
             </div>
             {formData.categorias.length > 0 && (
@@ -599,9 +612,9 @@ const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
               onChange={handleImageChange}
               className="hidden"
             />
-          <Button type="button" onClick={() => fileInputRef.current?.click()}>
-            {selectedFileName ? "Cambiar imagen" : "Seleccionar imagen"}
-          </Button>
+            <Button type="button" onClick={() => fileInputRef.current?.click()}>
+              {selectedFileName ? "Cambiar imagen" : "Seleccionar imagen"}
+            </Button>
 
             {selectedFileName && (
               <p className="text-sm text-gray-600 mt-1">

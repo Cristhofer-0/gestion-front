@@ -74,7 +74,7 @@ interface MapLibreMapHandle {
 // Función UploadImage
 import { uploadImage } from "@/lib/uploadImage."
 
-export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento}: CreateEventDialogProps) {
+export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }: CreateEventDialogProps) {
   const user = useUser();
   const isOrganizer = user?.Role === "organizer";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -258,44 +258,44 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento}:
       })
     }
 
- // Validación de conflicto de evento por fecha y lugar
-const eventoConflictivo = existeEvento.find((ev) => {
-  if (
-    ev.direccion !== formData.address ||
-    !ev.fechaInicio ||
-    !ev.fechaFinalizacion ||
-    !formData.startDate ||
-    !formData.endDate
-  ) {
-    return false
-  }
+    // Validación de conflicto de evento por fecha y lugar
+    const eventoConflictivo = existeEvento.find((ev) => {
+      if (
+        ev.direccion !== formData.address ||
+        !ev.fechaInicio ||
+        !ev.fechaFinalizacion ||
+        !formData.startDate ||
+        !formData.endDate
+      ) {
+        return false
+      }
 
-  const inicioExistente = new Date(ev.fechaInicio)
-  const finExistente = new Date(ev.fechaFinalizacion)
-  const nuevaInicio = formData.startDate
-  const nuevaFin = formData.endDate
+      const inicioExistente = new Date(ev.fechaInicio)
+      const finExistente = new Date(ev.fechaFinalizacion)
+      const nuevaInicio = formData.startDate
+      const nuevaFin = formData.endDate
 
-  // Verifica cualquier tipo de cruce de rangos
-  return (
-    nuevaInicio <= finExistente && nuevaFin >= inicioExistente
-  )
-})
+      // Verifica cualquier tipo de cruce de rangos
+      return (
+        nuevaInicio <= finExistente && nuevaFin >= inicioExistente
+      )
+    })
 
-if (eventoConflictivo) {
-  const inicio = formatFechaLocal(eventoConflictivo.fechaInicio!)
-  const fin = formatFechaLocal(eventoConflictivo.fechaFinalizacion!)
+    if (eventoConflictivo) {
+      const inicio = formatFechaLocal(eventoConflictivo.fechaInicio!)
+      const fin = formatFechaLocal(eventoConflictivo.fechaFinalizacion!)
 
-  setFormErrors((prev) => ({
-    ...prev,
-    startDate: `Ya existe un evento en esa ubicación entre el ${inicio} y el ${fin}`,
-  }))
-  return
-}
+      setFormErrors((prev) => ({
+        ...prev,
+        startDate: `Ya existe un evento en esa ubicación entre el ${inicio} y el ${fin}`,
+      }))
+      return
+    }
 
     try {
       const itemData = adaptFormDataToItemData(formData)
       console.log("Datos a enviar al backend:", itemData)
-      onSubmit(formData) 
+      onSubmit(formData)
       setFormData({
         organizerId: "",
         title: "",
@@ -312,19 +312,19 @@ if (eventoConflictivo) {
         status: "published",
         capacity: "",
       })
-      } catch (error) {
-        console.error("Error al crear el evento:", error)
-      }
+    } catch (error) {
+      console.error("Error al crear el evento:", error)
     }
+  }
 
 
-    // Función para formatear la fecha para el input date
+  // Función para formatear la fecha para el input date
   const formatDateForInput = (date: Date | null): string => {
     if (!date) return ""
     return date.toISOString().split("T")[0]
   }
 
-  
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -404,6 +404,12 @@ if (eventoConflictivo) {
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    mapRef.current?.handleSearch()
+                  }
+                }}
                 required
                 className={formErrors.address ? "border-red-500" : ""}
               />
@@ -491,6 +497,12 @@ if (eventoConflictivo) {
                 value={categoryInput}
                 onChange={(e) => setCategoryInput(e.target.value)}
                 placeholder="Añadir categoría"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    handleAddCategory()
+                  }
+                }}
                 className={formErrors.categories ? "border-red-500" : ""}
               />
               <Button type="button" onClick={handleAddCategory}>
@@ -518,96 +530,96 @@ if (eventoConflictivo) {
             )}
           </div>
 
-<div className="mb-6">
-  <Label htmlFor="bannerUrl">Imagen del Banner</Label>
+          <div className="mb-6">
+            <Label htmlFor="bannerUrl">Imagen del Banner</Label>
 
-  {formData.bannerUrl && (
-    <div className="mb-3">
-      <img
-        src={formData.bannerUrl}
-        alt="Vista previa del banner"
-        style={{ maxWidth: "100%", marginTop: "1rem" }}
-      />
-    </div>
-  )}
+            {formData.bannerUrl && (
+              <div className="mb-3">
+                <img
+                  src={formData.bannerUrl}
+                  alt="Vista previa del banner"
+                  style={{ maxWidth: "100%", marginTop: "1rem" }}
+                />
+              </div>
+            )}
 
-  {/* Input oculto */}
-  <input
-    ref={fileInputRef}
-    type="file"
-    accept="image/*"
-    id="fileInput"
-    className="sr-only"
-    onChange={async (e) => {
-      setUploadError(null);
-      clearFieldError("bannerUrl");
+            {/* Input oculto */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              id="fileInput"
+              className="sr-only"
+              onChange={async (e) => {
+                setUploadError(null);
+                clearFieldError("bannerUrl");
 
-      if (!e.target.files?.length) return;
+                if (!e.target.files?.length) return;
 
-      const file = e.target.files[0];
-      const maxSizeInMB = 10;
-      const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+                const file = e.target.files[0];
+                const maxSizeInMB = 10;
+                const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
 
-      let errorMsg = "";
+                let errorMsg = "";
 
-      if (file.type !== "image/webp") {
-        errorMsg += "Solo se permiten imágenes en formato .webp. \n";
-      }
+                if (file.type !== "image/webp") {
+                  errorMsg += "Solo se permiten imágenes en formato .webp. \n";
+                }
 
-      if (file.size > maxSizeInBytes) {
-        const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-        errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB. \n`;
-      }
+                if (file.size > maxSizeInBytes) {
+                  const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+                  errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB. \n`;
+                }
 
-      if (errorMsg) {
-        setUploadError(errorMsg.trim());
-        setFormData((prev) => ({ ...prev, bannerUrl: "" }));
-        fileInputRef.current && (fileInputRef.current.value = "");
-        setSelectedFileName(null);
-        return;
-      }
+                if (errorMsg) {
+                  setUploadError(errorMsg.trim());
+                  setFormData((prev) => ({ ...prev, bannerUrl: "" }));
+                  fileInputRef.current && (fileInputRef.current.value = "");
+                  setSelectedFileName(null);
+                  return;
+                }
 
-      const imageUrl = await uploadImage(file);
-      if (imageUrl) {
-        setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
-        setSelectedFileName(file.name);
-        setUploadError(null);
-      } else {
-        setUploadError("Error al subir imagen. \n");
-        fileInputRef.current && (fileInputRef.current.value = "");
-        setSelectedFileName(null);
-      }
-    }}
-  />
+                const imageUrl = await uploadImage(file);
+                if (imageUrl) {
+                  setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
+                  setSelectedFileName(file.name);
+                  setUploadError(null);
+                } else {
+                  setUploadError("Error al subir imagen. \n");
+                  fileInputRef.current && (fileInputRef.current.value = "");
+                  setSelectedFileName(null);
+                }
+              }}
+            />
 
-  {/* Botón personalizado para abrir el input */}
-  <Button
-    type="button"
-    onClick={() => fileInputRef.current?.click()}
-    className="mt-3 px-4 py-2 bg-blue-50 text-blue-700 rounded-md border border-blue-200 hover:bg-blue-100 text-sm font-semibold"
-  >
-    {selectedFileName ? "Cambiar imagen" : "Seleccionar imagen"}
-  </Button>
+            {/* Botón personalizado para abrir el input */}
+            <Button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-3 px-4 py-2 bg-blue-50 text-blue-700 rounded-md border border-blue-200 hover:bg-blue-100 text-sm font-semibold"
+            >
+              {selectedFileName ? "Cambiar imagen" : "Seleccionar imagen"}
+            </Button>
 
-  {/* Nombre del archivo seleccionado */}
-  {selectedFileName && (
-    <p className="text-sm text-gray-600 mt-1">
-      Archivo seleccionado: <strong>{selectedFileName}</strong>
-    </p>
-  )}
+            {/* Nombre del archivo seleccionado */}
+            {selectedFileName && (
+              <p className="text-sm text-gray-600 mt-1">
+                Archivo seleccionado: <strong>{selectedFileName}</strong>
+              </p>
+            )}
 
-  {/* Mensaje de error del formulario */}
-  {formErrors.bannerUrl && <p className="text-sm text-red-500">{formErrors.bannerUrl}</p>}
+            {/* Mensaje de error del formulario */}
+            {formErrors.bannerUrl && <p className="text-sm text-red-500">{formErrors.bannerUrl}</p>}
 
-  {/* Error de subida */}
-  {uploadError && (
-    <ul className="text-sm text-red-500 mt-2 space-y-1">
-      {uploadError.split("\n").map((msg, index) => (
-        <li key={index}>• {msg}</li>
-      ))}
-    </ul>
-  )}
-</div>
+            {/* Error de subida */}
+            {uploadError && (
+              <ul className="text-sm text-red-500 mt-2 space-y-1">
+                {uploadError.split("\n").map((msg, index) => (
+                  <li key={index}>• {msg}</li>
+                ))}
+              </ul>
+            )}
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="videoUrl">URL del Video</Label>
