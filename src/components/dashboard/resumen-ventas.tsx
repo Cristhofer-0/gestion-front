@@ -80,8 +80,8 @@ export function ResumenVentasPorPeriodo({ user }: Props) {
     return date >= prevStart && date < prevEnd
   })
 
-  const totalActual = current.reduce((sum, o) => sum + o.TotalPrice, 0)
-  const totalPrevio = previous.reduce((sum, o) => sum + o.TotalPrice, 0)
+  const totalActual = current.reduce((sum, o) => sum + Number(o.TotalPrice || 0), 0)
+  const totalPrevio = previous.reduce((sum, o) => sum + Number(o.TotalPrice || 0), 0)
   const promedioActual =
     current.length > 0 ? totalActual / current.length : 0
   const promedioPrevio =
@@ -95,7 +95,7 @@ export function ResumenVentasPorPeriodo({ user }: Props) {
       : ((promedioActual - promedioPrevio) / promedioPrevio) * 100
 
   const totalClientes = new Set(current.map((o) => o.UserId)).size
-
+  
   return (
     <div className="space-y-4">
       <ToggleGroup
@@ -132,7 +132,7 @@ export function ResumenVentasPorPeriodo({ user }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">S/. {totalActual.toFixed(2)}</div>
+            <div className="text-2xl font-bold">S/. {(Number(totalActual) || 0).toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">Ingresos en el periodo</p>
             {periodo !== "total" && (
               <div className="flex items-center gap-2 mt-2">
@@ -145,7 +145,7 @@ export function ResumenVentasPorPeriodo({ user }: Props) {
                 >
                   {getChangeIcon(changeVentas)}
                   {changeVentas > 0 ? "+" : ""}
-                  {changeVentas.toFixed(1)}%
+                  {(Number(changeVentas) || 0).toFixed(1)}%
                 </Badge>
                 <span className="text-xs text-gray-500">vs. período anterior</span>
               </div>
@@ -158,7 +158,7 @@ export function ResumenVentasPorPeriodo({ user }: Props) {
             <CardTitle className="text-sm font-medium">Entradas Vendidas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{current.reduce((sum, o) => sum + o.Quantity, 0)}</div>
+            <div className="text-2xl font-bold">{current.reduce((sum, o) => sum + Number(o.Quantity || 0), 0)}</div>
             <p className="text-xs text-muted-foreground">Total de tickets vendidos</p>
           </CardContent>
         </Card>
@@ -182,7 +182,7 @@ export function ResumenVentasPorPeriodo({ user }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">S/. {promedioActual.toFixed(2)}</div>
+            <div className="text-2xl font-bold">S/. {(Number(promedioActual) || 0).toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">Por orden pagada</p>
             {periodo !== "total" && (
               <div className="flex items-center gap-2 mt-2">
@@ -195,7 +195,7 @@ export function ResumenVentasPorPeriodo({ user }: Props) {
                 >
                   {getChangeIcon(changePromedio)}
                   {changePromedio > 0 ? "+" : ""}
-                  {changePromedio.toFixed(1)}%
+                  {(Number(changePromedio) || 0).toFixed(1)}%
                 </Badge>
                 <span className="text-xs text-gray-500">vs. período anterior</span>
               </div>
