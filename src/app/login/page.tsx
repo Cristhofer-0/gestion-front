@@ -81,7 +81,7 @@ export default function Login() {
 
   async function verificarCorreo(data: LoginData): Promise<void> {
     try {
-      const url = new URL("http://localhost:3000/usuarios/login")
+      const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/usuarios/login`)
       const response = await fetch(url.toString(), {
         method: "POST",
         headers: {
