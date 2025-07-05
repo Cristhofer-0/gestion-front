@@ -10,6 +10,7 @@ import { StarRating } from "@/components/custom/star-ratingProps"
 // ICONOS
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa"
 import { IoMailOutline } from "react-icons/io5"
+import Image from "next/image"
 
 interface LoginData {
   email: string
@@ -123,15 +124,19 @@ export default function Login() {
       {/* Navigation */}
       <nav className="hidden lg:flex lg:w-1/2 items-end p-12 bg-[#0e0e0e]">
         <div className="flex items-center space-x-2">
-          <div className="h-6 w-6 bg-white rounded-sm flex items-center justify-center">
-            <div className="h-3 w-3 bg-black rounded-sm"></div>
-          </div>
+            <Image
+              src="/logonew.png"
+              alt="JoinWithUs Logo"
+              width={35}
+              height={35}
+              className="rounded-sm"
+            />
           <span className="text-lg font-semibold">JoinWithUs</span>
         </div>
       </nav>
 
       {/* Main Content */}
-      <div className="flex min-h-[calc(96.1vh-88px)]">
+      <div className="flex min-h-[calc(95.3vh-88px)]">
         {/* Carrusel */}
         <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 bg-[#0e0e0e] relative overflow-hidden">
           <div className="w-full max-w-md">
