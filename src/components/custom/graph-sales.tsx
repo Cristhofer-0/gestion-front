@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { useEffect, useState } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
@@ -45,6 +45,17 @@ interface User {
   Role: string
 }
 
+function formatToLocalDateKey(dateIso: string): string {
+  const date = new Date(dateIso)
+
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "America/Lima",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date) // Devuelve 'YYYY-MM-DD'
+}
+
 export function ChartSales({ user }: { user: { UserId: number; Role: string } }) {
   const [chartData, setChartData] = useState<ChartData[]>([])
   const [timeRange, setTimeRange] = useState("90d")
@@ -57,20 +68,24 @@ export function ChartSales({ user }: { user: { UserId: number; Role: string } })
 
         const aggregated: Record<string, number> = {}
 
-        orders.filter((order: any) => order.PaymentStatus === "paid"&&
-            (user.Role === "admin" || order.Event?.OrganizerId === user.UserId))
-          .forEach((order: any) => {
-            const date = new Date(order.OrderDate).toISOString().split("T")[0]
-            aggregated[date] = (aggregated[date] || 0) + order.TotalPrice
-          })
+        orders.filter((order: any) =>
+          order.PaymentStatus === "paid" &&
+          (user.Role === "admin" || order.Event?.OrganizerId === user.UserId)
+        ).forEach((order: any) => {
+          const date = new Date(order.OrderDate)
+          const localDate = formatToLocalDateKey(order.OrderDate)
+          aggregated[localDate] = (aggregated[localDate] || 0) + Number(order.TotalPrice)
+        })
 
         const formattedData: ChartData[] = Object.entries(aggregated).map(([date, totalSales]) => ({
           date,
           totalSales,
         }))
 
+        formattedData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
         setTimeout(() => {
-            setChartData(formattedData) // 👈 da tiempo para animación
+          setChartData(formattedData)
         }, 50)
       } catch (error) {
         console.error("Error fetching sales data:", error)
@@ -79,10 +94,11 @@ export function ChartSales({ user }: { user: { UserId: number; Role: string } })
 
     fetchData()
   }, [])
-
   const filteredData = chartData.filter((item) => {
     const date = new Date(item.date)
-    const referenceDate = new Date("2025-07-03")
+    const referenceDate = new Date(
+  new Date().toLocaleString("en-US", { timeZone: "America/Lima" })
+)
     let daysToSubtract = 90
     if (timeRange === "30d") daysToSubtract = 30
     else if (timeRange === "7d") daysToSubtract = 7
@@ -131,7 +147,9 @@ export function ChartSales({ user }: { user: { UserId: number; Role: string } })
                 <stop offset="95%" stopColor="#10B981" stopOpacity={0.1} />
               </linearGradient>
             </defs>
+
             <CartesianGrid vertical={false} />
+            
             <XAxis
               dataKey="date"
               tickLine={false}
@@ -146,6 +164,13 @@ export function ChartSales({ user }: { user: { UserId: number; Role: string } })
                 })
               }
             />
+
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(value) => `S/.${value}`}
+            />
+
             <ChartTooltip
               cursor={false}
               content={
@@ -163,6 +188,7 @@ export function ChartSales({ user }: { user: { UserId: number; Role: string } })
                 />
               }
             />
+
             <Area
               type="monotone"
               name="Ventas: "
@@ -170,7 +196,8 @@ export function ChartSales({ user }: { user: { UserId: number; Role: string } })
               stroke="#10B981"
               fillOpacity={1}
               fill="url(#fill-sales)"
-              isAnimationActive={true} // 👈 fuerza la animación
+              dot={{ r: 3 }} // 👈 Esto muestra los puntos
+              isAnimationActive={true}
             />
           </AreaChart>
         </ChartContainer>
