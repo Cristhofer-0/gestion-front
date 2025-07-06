@@ -17,14 +17,20 @@ interface DetailViewProps {
 export function DetailView({ item }: DetailViewProps) {
    const router = useRouter()
   // Función para formatear fechas
-const formatDate = (dateString?: string) => {
-  if (!dateString) return "-"
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "-"
+    
+    try {
+      const parsedDate = new Date(dateString)
+      if (isNaN(parsedDate.getTime())) throw new Error("Invalid date")
+      
+      return format(parsedDate, "PPPP", { locale: es })
+    } catch (err) {
+      console.error("Fecha inválida:", dateString, err)
+      return "-"
+    }
+  }
 
-  // Extrae solo la parte de la fecha (yyyy-mm-dd)
-  const [y, m, d] = dateString.split("T")[0].split("-")
-  const fechaLocal = new Date(Number(y), Number(m) - 1, Number(d)) // Crea sin hora, respeta zona local
-  return format(fechaLocal, "PPPP", { locale: es })
-}
 
 
   // Función para obtener el color del badge de estado
