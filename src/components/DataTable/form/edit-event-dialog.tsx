@@ -137,6 +137,7 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     if (formData.fechaInicio) {
       setFormattedFecha(format(new Date(formData.fechaInicio), "PPP", { locale: es }));
     }
+    console.log("Actualizando ubicación:", lat, lon);
     setFormData((prev) => ({
       ...prev,
       direccion: direc,
@@ -153,7 +154,11 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
       setFormErrors({});
       setUploadError(null);
       setSelectedFileName(null);
+      if ((lat === 0 || lon === 0) && formData.direccion) {
+        mapRef.current?.handleSearch();
+      }
     }
+
   }, [open]);
 
 
@@ -180,8 +185,15 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     }
   }, [event?.id]);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (formData.direccion && formData.direccion.length > 5) {
+        mapRef.current?.handleSearch();
+      }
+    }, 1000); // Espera 1 segundo después de dejar de escribir
 
-
+    return () => clearTimeout(timeout); // Limpia si el usuario sigue escribiendo
+  }, [formData.direccion]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadError(null);
@@ -224,38 +236,22 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-  /*
-      if (name === "latitude" || name === "longitude") {
-        const parsedValue = parseFloat(value)
-        if (name === "latitude" || name === "longitude") {
-          const parsedValue = parseFloat(value)
-          if (!isNaN(parsedValue)) {
-            setFormData((prev) => ({
-              ...prev,
-              ubicacion: {
-                lat: name === "latitude" ? parsedValue : prev.ubicacion?.lat ?? 0,
-                lng: name === "longitude" ? parsedValue : prev.ubicacion?.lng ?? 0,
-              },
-            }))
-          }
-        }
-      }
-      else if (name === "capacidad") {
-        setFormData((prev) => ({
-          ...prev,
-          capacidad: parseInt(value) || 0,
-        }))
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          [name]: value,
-        }))
-      }
+
+    if (name === "latitud" || name === "longitud") {
+      const numericValue = parseFloat(value) || 0
+      setFormData((prev) => ({
+        ...prev,
+        ubicacion: {
+          ...prev.ubicacion,
+          lat: name === "latitud" ? numericValue : prev.ubicacion.lat,
+          lng: name === "longitud" ? numericValue : prev.ubicacion.lng,
+        },
+      }))
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }))
     }
-  
-  */
+  }
+
   const handleSelectChange = (value: "público" | "privado" | "solo invitación") => {
     setFormData((prev) => ({ ...prev, visibilidad: value }))
   }
@@ -328,9 +324,13 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("Estado actual del formulario:", formData.estado);
-    console.log("¿Tiene entradas pagadas?", hasPaidOrders);
+    const latActual = formData.ubicacion?.lat ?? 0;
+    const lonActual = formData.ubicacion?.lng ?? 0;
 
+    if (latActual === 0 || lonActual === 0) {
+      setDireccionError("Ubicación inválida: latitud y longitud son obligatorias.");
+      return;
+    }
 
     if (!event.id) {
       console.error("ID de evento no definido");
@@ -390,7 +390,12 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
 
     try {
       // Asegúrate de que `formData.ubicacion` nunca sea `undefined`
-      const ubicacion = formData.ubicacion ?? { lat: 0, lng: 0 };
+      const ubicacion = formData.ubicacion;
+
+      if (!ubicacion || ubicacion.lat === 0 || ubicacion.lng === 0) {
+        setDireccionError("Ubicación inválida: latitud y longitud son obligatorias.");
+        return;
+      }
 
       await editarEvento(event.id as string, {
 
@@ -414,6 +419,10 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
         ...formData,
         id: event.id,
       });
+      console.log("Enviando datos:", {
+        ...formData,
+        ubicacion,
+      });
       onOpenChange(false);
     } catch (error) {
       console.error("Error al editar el evento:", error);
@@ -429,7 +438,8 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     return date.toISOString().split("T")[0]
   }
 
-
+  const ubicacionValida = lat !== 0 && lon !== 0;
+  
   return (
     <Dialog open={open} onOpenChange={(open) => {
       if (!open) {
@@ -521,20 +531,22 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
             </div>
           </div>
 
-          <div className="h-[250px] rounded overflow-hidden mt-4">
-            <Label htmlFor="map" className="mb-2 block">MAPA</Label>
-            <MapLibreMap
-              direccion={formData.direccion}
-              lat={lat}
-              lon={lon}
-              setDireccion={setDirec}
-              setLati={setLat}
-              setLoni={setLon}
-              ref={mapRef}
-              mode="crear"
-              setDireccionError={setDireccionError}
-            />
-          </div>
+          {ubicacionValida && (
+            <div className="h-[250px] rounded overflow-hidden mt-4">
+              <Label htmlFor="map" className="mb-2 block">MAPA</Label>
+              <MapLibreMap
+                direccion={formData.direccion}
+                lat={lat}
+                lon={lon}
+                setDireccion={setDirec}
+                setLati={setLat}
+                setLoni={setLon}
+                ref={mapRef}
+                mode="crear"
+                setDireccionError={setDireccionError}
+              />
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="visibility">Visibilidad</Label>

@@ -29,7 +29,7 @@ export interface EditEventFormData {
   capacidad: number
   bannerUrl?: string
   videoUrl?: string
-  ubicacion?: {
+  ubicacion: {
     lat: number
     lng: number
   }

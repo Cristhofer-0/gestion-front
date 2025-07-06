@@ -21,6 +21,7 @@ export const converseGeoCode = async (direccion: string) => {
         const res = await fetch(
             `https://nominatim.openstreetmap.org/search?q=${direccion}&format=json&limit=1`
         );
+        
         const data = await res.json();
         return data;
     } catch (error) {
@@ -139,7 +140,7 @@ const MapLibreMap = forwardRef<MapLibreMapHandle, propsMap>(function MapLibreMap
     const handleSearch = async () => {
         if (!direccion) return;
 
-        const query = encodeURIComponent(`${direccion}, Perú`);
+        const query = encodeURIComponent(direccion);
 
         try {
             const data = await converseGeoCode(query);
