@@ -120,6 +120,11 @@ export function ChartAreaInteractive({ user }: { user: { UserId: number; Role: s
 
     return date >= startDate
   })
+   .sort((a, b) => {
+    const dateA = new Date(a.date as string).getTime();
+    const dateB = new Date(b.date as string).getTime();
+    return dateA - dateB;
+  });
 
   const colorMap: Record<string, string> = {
     general: "#8B5CF6", // azul
