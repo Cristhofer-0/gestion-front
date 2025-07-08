@@ -251,10 +251,6 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     }
   }
 
-  const handleSelectChange = (value: "público" | "privado" | "solo invitación") => {
-    setFormData((prev) => ({ ...prev, visibilidad: value }))
-  }
-
   const handleStatusChange = (value: "draft" | "published") => {
     const estadoEnEspañol: "borrador" | "publicado" | undefined =
       value === "draft" ? "borrador" : value === "published" ? "publicado" : undefined
@@ -409,8 +405,8 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
       organizerId: formData.organizerId,
       titulo: formData.titulo,
       descripcion: formData.descripcion,
-    fechaInicio: combinarFechaHora(formData.fechaInicio, formData.horaInicio).toISOString(),
-    fechaFinalizacion: combinarFechaHora(formData.fechaFinalizacion, formData.horaFin).toISOString(),
+      fechaInicio: combinarFechaHora(formData.fechaInicio, formData.horaInicio).toISOString(),
+      fechaFinalizacion: combinarFechaHora(formData.fechaFinalizacion, formData.horaFin).toISOString(),
       direccion: formData.direccion,
       visibilidad: formData.visibilidad,
       categorias: formData.categorias,
@@ -481,7 +477,11 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
                 id="fechaInicio"
                 type="date"
                 value={formatDateForInput(formData.fechaInicio)}
-                onChange={(e) => handleDateChange("fechaInicio", e.target.value ? new Date(e.target.value) : undefined)}
+                onChange={(e) => {
+                  const [y, m, d] = e.target.value.split("-").map(Number)
+                  const fechaLocal = new Date(y, m - 1, d)
+                  handleDateChange("fechaInicio", e.target.value ? fechaLocal : undefined)
+                }}
                 className={cn(formErrors.fechaInicio && "border-red-500")}
                 min={formatDateForInput(new Date())}
               />
@@ -507,9 +507,12 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
                 id="fechaFinalizacion"
                 type="date"
                 value={formatDateForInput(formData.fechaFinalizacion)}
-                onChange={(e) =>
-                  handleDateChange("fechaFinalizacion", e.target.value ? new Date(e.target.value) : undefined)
-                }
+                onChange={(e) => {
+                  const [y, m, d] = e.target.value.split("-").map(Number);
+                  const fechaLocal = new Date(y, m - 1, d);
+                  handleDateChange("fechaFinalizacion", e.target.value ? fechaLocal : undefined);
+                }}
+
                 className={cn(formErrors.fechaFinalizacion && "border-red-500")}
                 min={formatDateForInput(formData.fechaInicio || new Date())}
               />
@@ -592,19 +595,6 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* <div>
-              <Label htmlFor="visibilidad">Visibilidad</Label>
-              <Select value={formData.visibilidad} onValueChange={handleSelectChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar visibilidad" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="público">Público</SelectItem>
-                  <SelectItem value="privado">Privado</SelectItem>
-                  <SelectItem value="solo invitación">Solo invitación</SelectItem>
-                </SelectContent>
-              </Select>
-            </div> */}
             <div>
               <Label htmlFor="estado">Estado</Label>
               <Select value={formData.estado === "borrador" ? "draft" : "published"} onValueChange={handleStatusChange}>

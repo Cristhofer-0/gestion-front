@@ -408,7 +408,11 @@ console.log("FECHA COMBINADA DE FIN:", endDateTime)
                 id="startDate"
                 type="date"
                 value={formatDateForInput(formData.startDate)}
-                onChange={(e) => handleDateChange("startDate", e.target.value ? new Date(e.target.value) : undefined)}
+                onChange={(e) => {
+                  const [y, m, d] = e.target.value.split("-").map(Number)
+                  const fechaLocal = new Date(y, m - 1, d)
+                  handleDateChange("startDate", e.target.value ? fechaLocal : undefined)
+                }}
                 className={cn(formErrors.startDate && "border-red-500")}
                 min={formatDateForInput(new Date())}
               />
@@ -434,7 +438,11 @@ console.log("FECHA COMBINADA DE FIN:", endDateTime)
                 id="endDate"
                 type="date"
                 value={formatDateForInput(formData.endDate)}
-                onChange={(e) => handleDateChange("endDate", e.target.value ? new Date(e.target.value) : undefined)}
+                onChange={(e) => {
+                  const [y, m, d] = e.target.value.split("-").map(Number);
+                  const fechaLocal = new Date(y, m - 1, d);
+                  handleDateChange("endDate", e.target.value ? fechaLocal : undefined);
+                }}
                 className={cn(formErrors.endDate && "border-red-500")}
                 min={formatDateForInput(formData.startDate || new Date())}
               />
