@@ -109,3 +109,20 @@ export async function obtenerUsuarioPorEmail(email: string) {
   const data = await res.json()
   return data
 }
+
+export async function enviarEnlaceReset(email: string): Promise<void> {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
+
+  const res = await fetch(`${API_BASE_URL}/usuarios/enviar-enlace-reset`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    throw new Error("No se pudo enviar el enlace");
+  }
+}
