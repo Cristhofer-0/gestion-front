@@ -155,7 +155,7 @@ export function TableComponent({
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{(item.titulo)}</TableCell>
                     <TableCell className="hidden md:table-cell">{(item.precio)}</TableCell>
-                    <TableCell className="hidden md:table-cell">{(item.descripcion)}</TableCell>
+                    <TableCell className="hidden md:table-cell max-w-[200px] truncate">{(item.descripcion)}</TableCell>
                     <TableCell className="hidden sm:table-cell">{(item.stockDisponible)}</TableCell>
                     <TableCell className="text-right">
                       <Button onClick={() => {
