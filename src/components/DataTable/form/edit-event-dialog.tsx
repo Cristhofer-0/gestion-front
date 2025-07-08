@@ -592,7 +592,7 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            {/* <div>
               <Label htmlFor="visibilidad">Visibilidad</Label>
               <Select value={formData.visibilidad} onValueChange={handleSelectChange}>
                 <SelectTrigger>
@@ -604,7 +604,7 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
                   <SelectItem value="solo invitación">Solo invitación</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
             <div>
               <Label htmlFor="estado">Estado</Label>
               <Select value={formData.estado === "borrador" ? "draft" : "published"} onValueChange={handleStatusChange}>

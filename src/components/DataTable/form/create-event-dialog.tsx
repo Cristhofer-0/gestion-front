@@ -42,11 +42,16 @@ export interface EventFormData {
   capacity: string
 }
 
-function formatDateToMySQLString(date: Date): string {
+function formatDateToMySQLStringLocal(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0")
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:00`
 }
 
+function formatDateToMySQLString(date: Date): string {
+  // Convertir la fecha a UTC para evitar desfases por zona horaria
+  const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000)
+  return formatDateToMySQLStringLocal(utcDate)
+}
 
 export const adaptFormDataToItemData = (data: EventFormData): ItemData => {
 const fechaInicioCompleta =
@@ -516,7 +521,7 @@ console.log("FECHA COMBINADA DE FIN:", endDateTime)
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="visibility">Visibilidad</Label>
               <Select
                 value={formData.visibility}
@@ -530,7 +535,7 @@ console.log("FECHA COMBINADA DE FIN:", endDateTime)
                   <SelectItem value="public">Público</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
             <div className="space-y-2">
               <Label htmlFor="status">Estado</Label>
               <Select

@@ -13,12 +13,23 @@ export interface EventHistoryItem {
 }
 
 // Función para combinar fecha y hora en formato ISO
-export const combinarFechaHora = (fecha: Date, hora: string): Date => {
-  const [h, m] = hora.split(":").map(Number)
-  const nuevaFecha = new Date(fecha)
-  nuevaFecha.setHours(h, m, 0, 0)
-  return nuevaFecha
+export function combinarFechaHora(fecha: Date, hora: string): Date {
+  const [horas, minutos] = hora.split(":").map(Number)
+
+  // Crea una nueva fecha sin desfase de zona horaria
+  const fechaLocal = new Date(
+    fecha.getFullYear(),
+    fecha.getMonth(),
+    fecha.getDate(),
+    horas,
+    minutos,
+    0,
+    0
+  )
+
+  return fechaLocal
 }
+
 
 // Función para extraer fecha de un datetime
 export const extraerFecha = (datetime: string): Date => {
