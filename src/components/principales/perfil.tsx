@@ -2,6 +2,7 @@
 
 import type * as React from "react"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { PencilIcon, ShieldIcon, UserIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -23,6 +24,7 @@ import {
 
 export function AccountProfile() {
   const user = useUser()
+  const router = useRouter()
 
   // Estados iniciales vacíos
   const [fullName, setFullName] = useState("")
@@ -110,6 +112,12 @@ export function AccountProfile() {
       toast.error(error.message || "Error al cambiar la contraseña")
       console.error(error)
     }
+  }
+
+    function cerrarSesion() {
+    document.cookie = "loggedUser=; path=/; max-age=0";
+    localStorage.removeItem("user");
+    router.push("/login");
   }
 
   return (
@@ -291,17 +299,23 @@ export function AccountProfile() {
               ¡Perfil actualizado!
             </DialogTitle>
             <DialogDescription className="text-left">
-              Tu información de perfil ha sido actualizada correctamente. Los cambios se han guardado de forma
-              permanente.
+              Tu información de perfil ha sido actualizada correctamente, tendra que cerrar sesion para que los cambios se apliquen.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => setShowSuccessDialog(false)} className="bg-green-600 hover:bg-green-700">
-              Entendido
+            <Button
+              onClick={() => {
+                cerrarSesion()
+                setShowSuccessDialog(false)
+              }}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              Cerrar sesión
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -317,7 +331,7 @@ export function AccountProfile() {
               <strong>Recuerda:</strong> Los cambios deberán ser guardados para ser aplicados permanentemente.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex gap-2 sm:gap-0">
+          <DialogFooter className="flex justify-between w-full">
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>
               Cancelar
             </Button>
@@ -349,7 +363,7 @@ export function AccountProfile() {
               <strong>Importante:</strong> Asegúrate de recordar tu nueva contraseña y guárdala en un lugar seguro.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex gap-2 sm:gap-0">
+          <DialogFooter className="flex justify-between w-full">
             <Button variant="outline" onClick={() => setShowPasswordEditDialog(false)}>
               Cancelar
             </Button>

@@ -1,5 +1,6 @@
 export type CambioPasswordData = {
   userId: string
-  currentPassword: string
+  currentPassword?: string
   newPassword: string
+  requireCurrent?: boolean
 }

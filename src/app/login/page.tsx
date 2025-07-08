@@ -11,6 +11,7 @@ import { motion } from "framer-motion"
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa"
 import { IoMailOutline } from "react-icons/io5"
 import Image from "next/image"
+import Link from "next/link"
 
 interface LoginData {
   email: string
@@ -126,9 +127,8 @@ export default function Login() {
         <div className="flex-1 flex items-center justify-center">
           {testimonios.length > 0 ? (
             <div
-              className={`transition-all duration-300 ease-in-out transform ${
-                isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-              }`}
+              className={`transition-all duration-300 ease-in-out transform ${isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+                }`}
             >
               <blockquote className="text-lg leading-relaxed max-w-md">
                 <div className="mb-6">
@@ -163,9 +163,8 @@ export default function Login() {
                         setIsTransitioning(false)
                       }, 300)
                     }}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      index === testimonioActual ? "bg-white w-8" : "bg-gray-600 hover:bg-gray-400"
-                    }`}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${index === testimonioActual ? "bg-white w-8" : "bg-gray-600 hover:bg-gray-400"
+                      }`}
                   />
                 ))}
               </div>
@@ -214,9 +213,8 @@ export default function Login() {
                 type={mostrarPassword ? "text" : "password"}
                 placeholder={emailLleno ? "Tu contraseña" : "Primero ingresa el correo"}
                 disabled={!emailLleno}
-                className={`bg-gray-900 border-gray-700 text-white placeholder:text-gray-500 h-12 pr-10 ${
-                  !emailLleno ? "text-red-400" : ""
-                }`}
+                className={`bg-gray-900 border-gray-700 text-white placeholder:text-gray-500 h-12 pr-10 ${!emailLleno ? "text-red-400" : ""
+                  }`}
                 {...register("password", {
                   required: true,
                   minLength: 6,
@@ -248,6 +246,12 @@ export default function Login() {
             <Button type="submit" className="w-full h-12 cursor-pointer bg-white text-black hover:bg-gray-100">
               Iniciar sesión
             </Button>
+
+            <div className="text-center mt-2">
+              <Link href="/forgotPassword" className="text-sm text-white hover:text-gray-400 no-underline">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
           </div>
         </form>
       </motion.div>

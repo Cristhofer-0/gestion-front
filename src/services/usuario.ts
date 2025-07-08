@@ -1,6 +1,6 @@
 import { UsuarioData } from "@/components/DataTable/types/UsuarioData"
 import { UsuarioDataPerfil } from "@/components/DataTable/types/UsuarioDataPerfil"
-import { CambioPasswordData } from "@/components/DataTable/types/CambioPasswordData" 
+import { CambioPasswordData } from "@/components/DataTable/types/CambioPasswordData"
 
 export async function editarUsuario(usuario: UsuarioData): Promise<void> {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
@@ -57,8 +57,9 @@ export async function cambiarPassword(data: CambioPasswordData): Promise<void> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      currentPassword: data.currentPassword,
+      currentPassword: data.currentPassword || "", // fallback por si no se pasa
       newPassword: data.newPassword,
+      requireCurrent: data.requireCurrent ?? true, // ✅ si no se manda, asume true por defecto
     }),
   })
 
@@ -91,4 +92,20 @@ export async function fetchUsuarios(): Promise<UsuarioData[]> {
   }))
 
   return usuarios
+}
+
+export async function obtenerUsuarioPorEmail(email: string) {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
+  const url = `${API_BASE_URL}/usuarios/por-email/${encodeURIComponent(email)}`
+  console.log("📡 GET:", url)
+
+  const res = await fetch(url)
+  if (!res.ok) {
+    const text = await res.text()
+    console.error("❌ Backend respondió mal:", text)
+    throw new Error("Usuario no encontrado")
+  }
+  const data = await res.json()
+  return data
 }
