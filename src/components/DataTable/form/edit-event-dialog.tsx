@@ -196,6 +196,17 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     return () => clearTimeout(timeout)
   }, [formData.direccion])
 
+  useEffect(() => {
+    if (open && event?.id && formData.direccion && lat !== 0 && lon !== 0) {
+      const delay = setTimeout(() => {
+        console.log("🔁 Forzando búsqueda en mapa al abrir el modal con evento ID:", event.id)
+        mapRef.current?.handleSearch()
+      }, 500)
+
+      return () => clearTimeout(delay)
+    }
+  }, [open, event?.id])
+
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadError(null)
     if (!e.target.files?.length) return
