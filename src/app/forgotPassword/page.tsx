@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import Image from "next/image";
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
@@ -114,6 +115,18 @@ export default function DirectPasswordResetForm() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
         <div className="w-full max-w-md space-y-6">
+          <div className="flex justify-center">
+            <div className="flex items-center space-x-2">
+              <Image
+                src="/logonew.png"
+                alt="JoinWithUs Logo"
+                width={35}
+                height={35}
+                className="rounded-sm"
+              />
+              <span className="text-lg font-semibold">JoinWithUs</span>
+            </div>
+          </div>
 
           <Card>
             <CardHeader className="text-center">
@@ -148,7 +161,18 @@ export default function DirectPasswordResetForm() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
-
+        <div className="flex justify-center">
+          <div className="flex items-center space-x-2">
+            <Image
+              src="/logonew.png"
+              alt="JoinWithUs Logo"
+              width={35}
+              height={35}
+              className="rounded-sm"
+            />
+            <span className="text-lg font-semibold">JoinWithUs</span>
+          </div>
+        </div>
         <Card>
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
@@ -160,7 +184,7 @@ export default function DirectPasswordResetForm() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email (opcional)</Label>
                 <Input
                   id="email"
                   type="email"
