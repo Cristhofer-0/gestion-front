@@ -1,3 +1,7 @@
+"use client"
+
+import type React from "react"
+
 import { useState, useEffect, useRef } from "react"
 import type { ItemData } from "../types/ItemData"
 import type { EditEventFormData } from "./types/EventFormData"
@@ -5,80 +9,76 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { editarEvento } from "../../../services/eventos" // Asegúrate de que esta función esté definida
+import { editarEvento, combinarFechaHora, extraerFecha, extraerHora } from "../../../services/eventos"
 import MapLibreMap from "@/components/principales/mapa"
 import { Label } from "@/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover"
 import { cn } from "@/lib/utils"
-import { es } from "date-fns/locale"
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
 import { fetchOrders } from "@/services/orders"
-
+import { uploadImage } from "@/lib/uploadImage."
+import { Textarea } from "@/components/ui/textarea"
 
 interface EditEventDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   event: ItemData
   onSubmit: (data: EditEventFormData & { id: string }) => void
-  existeEvento: ItemData[] // Agrego esto para ver si el evento ya existe dentro de las fechas
+  existeEvento: ItemData[]
 }
-
-// Function UploadImage
-import { uploadImage } from "@/lib/uploadImage.";
-import { Textarea } from "@/components/ui/textarea"
-
 
 interface MapLibreMapHandle {
   handleSearch: () => void
 }
 
-export const adaptEditFormDataToItemData = (
-  data: EditEventFormData & { id: string }
-): ItemData => ({
-  id: data.id,
-  organizerId: data.organizerId,
-  titulo: data.titulo,
-  descripcion: data.descripcion,
-  fechaInicio: data.fechaInicio
-    ? `${data.fechaInicio.toISOString().split("T")[0]}T00:00:00`
-    : undefined,
-  fechaFinalizacion: data.fechaFinalizacion
-    ? `${data.fechaFinalizacion.toISOString().split("T")[0]}T00:00:00`
-    : undefined,
-  direccion: data.direccion,
-  visibilidad: data.visibilidad,
-  categorias: data.categorias,
-  capacidad: Number(data.capacidad),
-  estado: data.estado === "borrador" ? "draft" : "published",
-  ubicacion: {
-    lat: data.ubicacion?.lat ?? 0,
-    lng: data.ubicacion?.lng ?? 0,
-  },
-  Latitude: String(data.ubicacion?.lat ?? 0),
-  Longitude: String(data.ubicacion?.lng ?? 0),
-  bannerUrl: data.bannerUrl,
-  videoUrl: data.videoUrl,
-})
+export const adaptEditFormDataToItemData = (data: EditEventFormData & { id: string }): ItemData => {
+  // Combinar fecha y hora para crear el datetime completo
+  const fechaInicioCompleta =
+    data.fechaInicio && data.horaInicio
+      ? combinarFechaHora(data.fechaInicio, data.horaInicio).toISOString()
+      : undefined
+
+  const fechaFinCompleta =
+    data.fechaFinalizacion && data.horaFin
+      ? combinarFechaHora(data.fechaFinalizacion, data.horaFin).toISOString()
+      : undefined
+
+  return {
+    id: data.id,
+    organizerId: data.organizerId,
+    titulo: data.titulo,
+    descripcion: data.descripcion,
+    fechaInicio: fechaInicioCompleta,
+    fechaFinalizacion: fechaFinCompleta,
+    direccion: data.direccion,
+    visibilidad: data.visibilidad,
+    categorias: data.categorias,
+    capacidad: Number(data.capacidad),
+    estado: data.estado === "borrador" ? "draft" : "published",
+    ubicacion: {
+      lat: data.ubicacion?.lat ?? 0,
+      lng: data.ubicacion?.lng ?? 0,
+    },
+    Latitude: String(data.ubicacion?.lat ?? 0),
+    Longitude: String(data.ubicacion?.lng ?? 0),
+    bannerUrl: data.bannerUrl,
+    videoUrl: data.videoUrl,
+  }
+}
 
 export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEvento }: EditEventDialogProps) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
-  const [formattedFecha, setFormattedFecha] = useState("");
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   const mapRef = useRef<MapLibreMapHandle>(null)
-  const [direccionError, setDireccionError] = useState<string | null>(null);
+  const [direccionError, setDireccionError] = useState<string | null>(null)
   const [categoryInput, setCategoryInput] = useState("")
-  const [lat, setLat] = useState(0);
-  const [lon, setLon] = useState(0);
-  const [direc, setDirec] = useState("");
-  const [originalFormData, setOriginalFormData] = useState<EditEventFormData | null>(null);
+  const [lat, setLat] = useState(0)
+  const [lon, setLon] = useState(0)
+  const [direc, setDirec] = useState("")
+  const [originalFormData, setOriginalFormData] = useState<EditEventFormData | null>(null)
   const [hasPaidOrders, setHasPaidOrders] = useState(false)
   const [estadoError, setEstadoError] = useState<string | null>(null)
-
 
   const [formData, setFormData] = useState<EditEventFormData>({
     organizerId: event.organizerId,
@@ -86,7 +86,9 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     descripcion: "",
     direccion: "",
     fechaInicio: new Date(),
+    horaInicio: "09:00",
     fechaFinalizacion: new Date(),
+    horaFin: "18:00",
     visibilidad: "público",
     estado: "borrador",
     categorias: [],
@@ -96,22 +98,30 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     ubicacion: { lat: 0, lng: 0 },
   })
 
-
-
-
   // Actualiza formData cuando el evento cambie
   useEffect(() => {
-    console.log("Cantidad de eventos en existeEvento:", existeEvento?.length);
+    console.log("Cantidad de eventos en existeEvento:", existeEvento?.length)
     if (event) {
+      // Extraer fecha y hora por separado
+      const fechaInicio = event.fechaInicio ? extraerFecha(event.fechaInicio) : new Date()
+      const horaInicio = event.fechaInicio ? extraerHora(event.fechaInicio) : "09:00"
+      const fechaFin = event.fechaFinalizacion ? extraerFecha(event.fechaFinalizacion) : new Date()
+      const horaFin = event.fechaFinalizacion ? extraerHora(event.fechaFinalizacion) : "18:00"
+
       const initialData = {
         organizerId: event.organizerId,
         titulo: event.titulo || "",
         descripcion: event.descripcion || "",
         direccion: event.direccion || "",
-        fechaInicio: event.fechaInicio ? new Date(event.fechaInicio) : new Date(),
-        fechaFinalizacion: event.fechaFinalizacion ? new Date(event.fechaFinalizacion) : new Date(),
+        fechaInicio: fechaInicio,
+        horaInicio: horaInicio,
+        fechaFinalizacion: fechaFin,
+        horaFin: horaFin,
         visibilidad: event.visibilidad || "público",
-        estado: (event.estado === "draft" ? "borrador" : event.estado === "published" ? "publicado" : undefined) as "borrador" | "publicado" | undefined,
+        estado: (event.estado === "draft" ? "borrador" : event.estado === "published" ? "publicado" : undefined) as
+          | "borrador"
+          | "publicado"
+          | undefined,
         categorias: event.categorias || [],
         capacidad: event.capacidad || 0,
         bannerUrl: event.bannerUrl || "",
@@ -120,24 +130,20 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
           lat: event.ubicacion?.lat ?? 0,
           lng: event.ubicacion?.lng ?? 0,
         },
-      };
+      }
 
-      setFormData(initialData);
-      setOriginalFormData(initialData);  // <-- Aquí guardamos la copia original
+      setFormData(initialData)
+      setOriginalFormData(initialData)
 
-      setLat(event.ubicacion?.lat ?? 0);
-      setLon(event.ubicacion?.lng ?? 0);
-      setDirec(event.direccion ?? "");
-      setEstadoError(null); // Limpia el error cuando cambias de evento
-
+      setLat(event.ubicacion?.lat ?? 0)
+      setLon(event.ubicacion?.lng ?? 0)
+      setDirec(event.direccion ?? "")
+      setEstadoError(null)
     }
-  }, [event]) // Solo se ejecutará cuando `event` cambie
+  }, [event])
 
   useEffect(() => {
-    if (formData.fechaInicio) {
-      setFormattedFecha(format(new Date(formData.fechaInicio), "PPP", { locale: es }));
-    }
-    console.log("Actualizando ubicación:", lat, lon);
+    console.log("Actualizando ubicación:", lat, lon)
     setFormData((prev) => ({
       ...prev,
       direccion: direc,
@@ -151,94 +157,87 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
   // Limpiar errores y estados auxiliares cuando se abre el modal
   useEffect(() => {
     if (open) {
-      setFormErrors({});
-      setUploadError(null);
-      setSelectedFileName(null);
+      setFormErrors({})
+      setUploadError(null)
+      setSelectedFileName(null)
       if ((lat === 0 || lon === 0) && formData.direccion) {
-        mapRef.current?.handleSearch();
+        mapRef.current?.handleSearch()
       }
     }
-
-  }, [open]);
-
+  }, [open])
 
   useEffect(() => {
     if (event?.id) {
       fetchOrders()
         .then((orders) => {
-          console.log("Órdenes recibidas:", orders);
+          console.log("Órdenes recibidas:", orders)
 
           const pagosDelEvento = orders.filter(
-            (order) =>
-              String(order.eventoId) === String(event.id) &&
-              order.estadoPago?.toLowerCase() === "paid" // Asegura que esté en minúsculas
-          );
+            (order) => String(order.eventoId) === String(event.id) && order.estadoPago?.toLowerCase() === "paid",
+          )
 
-          console.log("Entradas pagadas encontradas:", pagosDelEvento);
-
-          setHasPaidOrders(pagosDelEvento.length > 0);
+          console.log("Entradas pagadas encontradas:", pagosDelEvento)
+          setHasPaidOrders(pagosDelEvento.length > 0)
         })
         .catch((err) => {
-          console.error("Error al obtener órdenes:", err); // 
-          setHasPaidOrders(false);
-        });
+          console.error("Error al obtener órdenes:", err)
+          setHasPaidOrders(false)
+        })
     }
-  }, [event?.id]);
+  }, [event?.id])
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (formData.direccion && formData.direccion.length > 5) {
-        mapRef.current?.handleSearch();
+        mapRef.current?.handleSearch()
       }
-    }, 1000); // Espera 1 segundo después de dejar de escribir
+    }, 1000)
 
-    return () => clearTimeout(timeout); // Limpia si el usuario sigue escribiendo
-  }, [formData.direccion]);
+    return () => clearTimeout(timeout)
+  }, [formData.direccion])
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUploadError(null);
-    if (!e.target.files?.length) return;
+    setUploadError(null)
+    if (!e.target.files?.length) return
 
-    const file = e.target.files[0];
-    setSelectedFileName(file.name); // Guarda el nombre
-    const maxSizeInMB = 10;
-    const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
-    let errorMsg = "";
+    const file = e.target.files[0]
+    setSelectedFileName(file.name)
+    const maxSizeInMB = 10
+    const maxSizeInBytes = maxSizeInMB * 1024 * 1024
+    let errorMsg = ""
 
     if (file.type !== "image/webp") {
-      errorMsg += "Solo se permiten imágenes en formato .webp.\n";
+      errorMsg += "Solo se permiten imágenes en formato .webp.\n"
     }
 
     if (file.size > maxSizeInBytes) {
-      const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-      errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB.`;
+      const sizeInMB = (file.size / (1024 * 1024)).toFixed(2)
+      errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB.`
     }
 
     if (errorMsg) {
-      setUploadError(errorMsg.trim());
-      setFormData((prev) => ({ ...prev, bannerUrl: "" }));
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
+      setUploadError(errorMsg.trim())
+      setFormData((prev) => ({ ...prev, bannerUrl: "" }))
+      if (fileInputRef.current) fileInputRef.current.value = ""
+      return
     }
 
-    const imageUrl = await uploadImage(file);
+    const imageUrl = await uploadImage(file)
     if (imageUrl) {
-      setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
-      setUploadError(null);
+      setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }))
+      setUploadError(null)
     } else {
-      setUploadError("Error al subir imagen.");
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      setSelectedFileName(null);
+      setUploadError("Error al subir imagen.")
+      if (fileInputRef.current) fileInputRef.current.value = ""
+      setSelectedFileName(null)
     }
-  };
-
-
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
 
     if (name === "latitud" || name === "longitud") {
-      const numericValue = parseFloat(value) || 0
+      const numericValue = Number.parseFloat(value) || 0
       setFormData((prev) => ({
         ...prev,
         ubicacion: {
@@ -257,38 +256,34 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
   }
 
   const handleStatusChange = (value: "draft" | "published") => {
-    // Conversión de los valores de "draft" y "published" a "borrador" y "publicado"
     const estadoEnEspañol: "borrador" | "publicado" | undefined =
-      value === "draft" ? "borrador" : value === "published" ? "publicado" : undefined;
+      value === "draft" ? "borrador" : value === "published" ? "publicado" : undefined
 
-    const fechaFinEvento = formData.fechaFinalizacion;
-    const eventoYaTermino = fechaFinEvento && new Date(fechaFinEvento) < new Date();
+    const fechaFinEvento = formData.fechaFinalizacion
+    const horaFinEvento = formData.horaFin
+    const fechaHoraFin = new Date(`${fechaFinEvento.toISOString().split("T")[0]}T${horaFinEvento}:00`)
+    const eventoYaTermino = fechaHoraFin < new Date()
 
-    // Solo aplicar restricción si el evento aún no ha terminado
     if (estadoEnEspañol === "borrador" && hasPaidOrders && !eventoYaTermino) {
-      setEstadoError("No puedes desactivar eventos con entradas ya vendidas.");
-      return;
+      setEstadoError("No puedes desactivar eventos con entradas ya vendidas.")
+      return
     }
 
-    // Evitar pasar a "publicado" si el evento ya finalizó
     if (estadoEnEspañol === "publicado" && eventoYaTermino) {
-      setEstadoError("No es posible publicar un evento cuya fecha de finalización ya ha concluido.");
-      return;
+      setEstadoError("No es posible publicar un evento cuya fecha y hora de finalización ya ha concluido.")
+      return
     }
 
+    setEstadoError(null)
 
-    setEstadoError(null) // Limpia si no hay error
-
-
-    // Actualizar el estado de 'estado' con el valor correcto
     setFormData((prev) => ({
       ...prev,
       estado: estadoEnEspañol,
-    }));
-  };
+    }))
+  }
 
   const handleAddCategory = (e: { preventDefault: () => void }) => {
-    e.preventDefault();
+    e.preventDefault()
     const nuevaCategoria = categoryInput.trim()
     if (categoryInput.trim() && !formData.categorias.includes(categoryInput.trim())) {
       setFormData((prev) => ({
@@ -310,31 +305,47 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     setFormData((prev) => ({ ...prev, [name]: date }))
   }
 
+  const handleTimeChange = (name: "horaInicio" | "horaFin", time: string) => {
+    setFormData((prev) => ({ ...prev, [name]: time }))
+  }
+
   const handleClose = () => {
     if (originalFormData) {
-      setFormData(originalFormData);
-      setLat(originalFormData.ubicacion?.lat ?? 0);
-      setLon(originalFormData.ubicacion?.lng ?? 0);
-      setDirec(originalFormData.direccion);
+      setFormData(originalFormData)
+      setLat(originalFormData.ubicacion?.lat ?? 0)
+      setLon(originalFormData.ubicacion?.lng ?? 0)
+      setDirec(originalFormData.direccion)
     }
-    setFormErrors({}); // LIMPIA LOS ERRORES AL CERRAR
-    onOpenChange(false);
-  };
+    setFormErrors({})
+    onOpenChange(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const latActual = formData.ubicacion?.lat ?? 0;
-    const lonActual = formData.ubicacion?.lng ?? 0;
+    const latActual = formData.ubicacion?.lat ?? 0
+    const lonActual = formData.ubicacion?.lng ?? 0
 
     if (latActual === 0 || lonActual === 0) {
-      setDireccionError("Ubicación inválida: latitud y longitud son obligatorias.");
-      return;
+      setDireccionError("Ubicación inválida: latitud y longitud son obligatorias.")
+      return
     }
 
     if (!event.id) {
-      console.error("ID de evento no definido");
-      return;
+      console.error("ID de evento no definido")
+      return
+    }
+
+    // Validar que la fecha y hora de fin sea posterior a la de inicio
+    const fechaHoraInicio = new Date(`${formData.fechaInicio.toISOString().split("T")[0]}T${formData.horaInicio}:00`)
+    const fechaHoraFin = new Date(`${formData.fechaFinalizacion.toISOString().split("T")[0]}T${formData.horaFin}:00`)
+
+    if (fechaHoraFin <= fechaHoraInicio) {
+      setFormErrors({
+        fechaFinalizacion: "La fecha y hora de finalización debe ser posterior a la de inicio",
+        horaFin: "La fecha y hora de finalización debe ser posterior a la de inicio",
+      })
+      return
     }
 
     // Función para formatear la fecha manualmente evitando desfase por zona horaria
@@ -347,90 +358,83 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
         year: "numeric",
       })
     }
+
     if (!existeEvento || !Array.isArray(existeEvento)) {
-      console.warn("existeEvento no está definido o no es un array");
-      return;
+      console.warn("existeEvento no está definido o no es un array")
+      return
     }
 
     // Validación de conflicto de evento por fecha y lugar
     const eventoConflictivo = existeEvento.find((ev) => {
-      if (
-        ev.id === event.id || // <- no comparar contra sí mismo
-        ev.direccion !== formData.direccion ||
-        !ev.fechaInicio ||
-        !ev.fechaFinalizacion ||
-        !formData.fechaInicio ||
-        !formData.fechaFinalizacion
-      ) {
-        return false;
+      if (ev.id === event.id || ev.direccion !== formData.direccion || !ev.fechaInicio || !ev.fechaFinalizacion) {
+        return false
       }
 
-      const inicioExistente = new Date(ev.fechaInicio);
-      const finExistente = new Date(ev.fechaFinalizacion);
-      const nuevaInicio = formData.fechaInicio;
-      const nuevaFin = formData.fechaFinalizacion;
+      const inicioExistente = new Date(ev.fechaInicio)
+      const finExistente = new Date(ev.fechaFinalizacion)
 
-      // Verifica cualquier tipo de cruce de rangos
-      return (
-        nuevaInicio <= finExistente && nuevaFin >= inicioExistente
-      )
+      return fechaHoraInicio < finExistente && fechaHoraFin > inicioExistente
     })
 
     if (eventoConflictivo) {
-      const inicio = formatFechaLocal(eventoConflictivo.fechaInicio!);
-      const fin = formatFechaLocal(eventoConflictivo.fechaFinalizacion!);
+      const inicio = formatFechaLocal(eventoConflictivo.fechaInicio!)
+      const fin = formatFechaLocal(eventoConflictivo.fechaFinalizacion!)
 
       setFormErrors((prev) => ({
         ...prev,
         fechaInicio: `Ya existe un evento en esa ubicación entre el ${inicio} y el ${fin}`,
-      }));
-      return;
+      }))
+      return
+    }
+
+    try {
+      const ubicacion = formData.ubicacion
+
+      if (!ubicacion || ubicacion.lat === 0 || ubicacion.lng === 0) {
+        setDireccionError("Ubicación inválida: latitud y longitud son obligatorias.")
+        return
+      }
+
+      const mapEstado = {
+        borrador: "draft",
+        publicado: "published",
+      } as const;
+
+      type EstadoBackend = typeof mapEstado[keyof typeof mapEstado]; // "draft" | "published"
+
+      const estadoBackend: EstadoBackend = mapEstado[formData.estado ?? "borrador"];
+
+
+    const eventoActualizado = {
+      organizerId: formData.organizerId,
+      titulo: formData.titulo,
+      descripcion: formData.descripcion,
+    fechaInicio: combinarFechaHora(formData.fechaInicio, formData.horaInicio).toISOString(),
+    fechaFinalizacion: combinarFechaHora(formData.fechaFinalizacion, formData.horaFin).toISOString(),
+      direccion: formData.direccion,
+      visibilidad: formData.visibilidad,
+      categorias: formData.categorias,
+      capacidad: formData.capacidad,
+      estado: estadoBackend, // ✅ ya tipado
+      ubicacion: ubicacion,
+      Latitude: String(ubicacion.lat),
+      Longitude: String(ubicacion.lng),
+      bannerUrl: formData.bannerUrl,
+      videoUrl: formData.videoUrl,
     }
 
 
-    try {
-      // Asegúrate de que `formData.ubicacion` nunca sea `undefined`
-      const ubicacion = formData.ubicacion;
-
-      if (!ubicacion || ubicacion.lat === 0 || ubicacion.lng === 0) {
-        setDireccionError("Ubicación inválida: latitud y longitud son obligatorias.");
-        return;
-      }
-
-      await editarEvento(event.id as string, {
-
-        organizerId: formData.organizerId,
-        titulo: formData.titulo,
-        descripcion: formData.descripcion,
-        fechaInicio: `${formatDateForInput(formData.fechaInicio)}T00:00:00`, // Para editar y que se muestre correctamente la fecha en el bd y el form
-        fechaFinalizacion: `${formatDateForInput(formData.fechaFinalizacion)}T00:00:00`, // Para editarlo y que se muestre correctamente la fecha en el bd y el form
-        direccion: formData.direccion,
-        visibilidad: formData.visibilidad,
-        categorias: formData.categorias,
-        capacidad: formData.capacidad,
-        estado: formData.estado === "borrador" ? "draft" : "published",
-        ubicacion: ubicacion,
-        Latitude: String(ubicacion.lat),
-        Longitude: String(ubicacion.lng),
-        bannerUrl: formData.bannerUrl,
-        videoUrl: formData.videoUrl,
-      });
+      await editarEvento(event.id as string, eventoActualizado)
       onSubmit({
         ...formData,
         id: event.id,
-      });
-      console.log("Enviando datos:", {
-        ...formData,
-        ubicacion,
-      });
-      onOpenChange(false);
+      })
+      console.log("Enviando datos:", eventoActualizado)
+      onOpenChange(false)
     } catch (error) {
-      console.error("Error al editar el evento:", error);
+      console.error("Error al editar el evento:", error)
     }
-  };
-  const today = new Date().toISOString().split("T")[0];
-
-
+  }
 
   // Función para formatear la fecha para el input date
   const formatDateForInput = (date: Date | null): string => {
@@ -438,179 +442,231 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     return date.toISOString().split("T")[0]
   }
 
-  const ubicacionValida = lat !== 0 && lon !== 0;
-  
+  const ubicacionValida = lat !== 0 && lon !== 0
+
   return (
-    <Dialog open={open} onOpenChange={(open) => {
-      if (!open) {
-        handleClose();
-      } else {
-        onOpenChange(open);
-      }
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        if (!open) {
+          handleClose()
+        } else {
+          onOpenChange(open)
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
           <Label htmlFor="title">Título</Label>
-          <Input name="titulo" value={formData.titulo} onChange={handleChange} placeholder="Título" />
-          <Label htmlFor="description">Descripción</Label>
-          <Textarea name="descripcion" value={formData.descripcion} onChange={(e) => setFormData(prev => ({ ...prev, descripcion: e.target.value }))} placeholder="Descripción" />
+          <Input id="title" name="titulo" value={formData.titulo} onChange={handleChange} required />
 
-          {/* Fecha de Inicio y Fecha de Finalización */}
+          <Label htmlFor="description">Descripción</Label>
+          <Textarea
+            id="description"
+            name="descripcion"
+            value={formData.descripcion}
+            onChange={(e) => setFormData((prev) => ({ ...prev, descripcion: e.target.value }))}
+            rows={3}
+            required
+          />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="fechaInicio">Fecha de Inicio</Label>
-              <div className="relative">
-                <Input
-                  id="fechaInicio"
-                  type="date"
-                  value={formatDateForInput(formData.fechaInicio)}
-                  onChange={(e) =>
-                    handleDateChange("fechaInicio", e.target.value ? new Date(e.target.value) : undefined)
-                  }
-                  className={cn(formErrors.fechaInicio && "border-red-500")}
-                  min={formatDateForInput(new Date())}
-                />
-              </div>
-              {formErrors.fechaInicio && (
-                <p className="text-sm text-red-500">{formErrors.fechaInicio}</p>
-              )}
+              <Input
+                id="fechaInicio"
+                type="date"
+                value={formatDateForInput(formData.fechaInicio)}
+                onChange={(e) => handleDateChange("fechaInicio", e.target.value ? new Date(e.target.value) : undefined)}
+                className={cn(formErrors.fechaInicio && "border-red-500")}
+                min={formatDateForInput(new Date())}
+              />
+              {formErrors.fechaInicio && <p className="text-sm text-red-500">{formErrors.fechaInicio}</p>}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="horaInicio">Hora de Inicio</Label>
+              <Input
+                id="horaInicio"
+                type="time"
+                value={formData.horaInicio}
+                onChange={(e) => handleTimeChange("horaInicio", e.target.value)}
+                className={cn(formErrors.horaInicio && "border-red-500")}
+              />
+              {formErrors.horaInicio && <p className="text-sm text-red-500">{formErrors.horaInicio}</p>}
+            </div>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="fechaFinalizacion">Fecha de Finalización</Label>
-              <div className="relative">
-                <Input
-                  id="fechaFinalizacion"
-                  type="date"
-                  value={formatDateForInput(formData.fechaFinalizacion)}
-                  onChange={(e) =>
-                    handleDateChange(
-                      "fechaFinalizacion",
-                      e.target.value ? new Date(e.target.value) : undefined
-                    )
-                  }
-                  className={cn(formErrors.fechaFinalizacion && "border-red-500")}
-                  min={formatDateForInput(formData.fechaInicio || new Date())}
-                />
-              </div>
-              {formErrors.fechaFinalizacion && (
-                <p className="text-sm text-red-500">{formErrors.fechaFinalizacion}</p>
-              )}
+              <Input
+                id="fechaFinalizacion"
+                type="date"
+                value={formatDateForInput(formData.fechaFinalizacion)}
+                onChange={(e) =>
+                  handleDateChange("fechaFinalizacion", e.target.value ? new Date(e.target.value) : undefined)
+                }
+                className={cn(formErrors.fechaFinalizacion && "border-red-500")}
+                min={formatDateForInput(formData.fechaInicio || new Date())}
+              />
+              {formErrors.fechaFinalizacion && <p className="text-sm text-red-500">{formErrors.fechaFinalizacion}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="horaFin">Hora de Finalización</Label>
+              <Input
+                id="horaFin"
+                type="time"
+                value={formData.horaFin}
+                onChange={(e) => handleTimeChange("horaFin", e.target.value)}
+                className={cn(formErrors.horaFin && "border-red-500")}
+              />
+              {formErrors.horaFin && <p className="text-sm text-red-500">{formErrors.horaFin}</p>}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address">Dirección</Label>
-            <div className="flex gap-2">
-              <Input name="direccion" value={formData.direccion} onChange={handleChange} onKeyDown={(e) => {
+          <Label htmlFor="direccion">Dirección</Label>
+          <div className="flex gap-2">
+            <Input
+              id="direccion"
+              name="direccion"
+              value={formData.direccion}
+              onChange={handleChange}
+              onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  e.preventDefault();
-                  mapRef.current?.handleSearch();
+                  e.preventDefault()
+                  mapRef.current?.handleSearch()
                 }
-              }} placeholder="Dirección" />
-              <Button type="button" onClick={() => mapRef.current?.handleSearch()}>Buscar</Button>
-            </div>
-            {direccionError && (
-              <p className="text-sm text-red-500">{direccionError}</p>
-            )}
+              }}
+              required
+            />
+            <Button type="button" onClick={() => mapRef.current?.handleSearch()}>
+              Buscar
+            </Button>
           </div>
+          {direccionError && <p className="text-sm text-red-500">{direccionError}</p>}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="latitude">Latitud</Label>
-              <Input name="latitud" value={formData.ubicacion?.lat} onChange={handleChange} placeholder="Latitud" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="longitude">Longitud</Label>
-              <Input name="longitud" value={formData.ubicacion?.lng} onChange={handleChange} placeholder="Longitud" />
-            </div>
-          </div>
-
-          {ubicacionValida && (
-            <div className="h-[250px] rounded overflow-hidden mt-4">
-              <Label htmlFor="map" className="mb-2 block">MAPA</Label>
-              <MapLibreMap
-                direccion={formData.direccion}
-                lat={lat}
-                lon={lon}
-                setDireccion={setDirec}
-                setLati={setLat}
-                setLoni={setLon}
-                ref={mapRef}
-                mode="crear"
-                setDireccionError={setDireccionError}
+            <div>
+              <Label htmlFor="latitud">Latitud</Label>
+              <Input
+                id="latitud"
+                name="latitud"
+                value={formData.ubicacion?.lat || ""}
+                onChange={handleChange}
+                placeholder={lat.toString()}
+                type="number"
+                step="0.000001"
               />
             </div>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="visibility">Visibilidad</Label>
-              <Select value={formData.visibilidad} onValueChange={handleSelectChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Visibilidad" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">Público</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="status">Estado</Label>
-              <Select value={formData.estado === "borrador" ? "draft" : "published"} onValueChange={handleStatusChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Borrador</SelectItem>
-                  <SelectItem value="published">Publicado</SelectItem>
-                </SelectContent>
-              </Select>
-              {/* Mostrar error si hay entradas pagadas */}
-              {estadoError && (
-                <p className="text-sm text-red-500">{estadoError}</p>
-              )}
+            <div>
+              <Label htmlFor="longitud">Longitud</Label>
+              <Input
+                id="longitud"
+                name="longitud"
+                value={formData.ubicacion?.lng || ""}
+                onChange={handleChange}
+                placeholder={lon.toString()}
+                type="number"
+                step="0.000001"
+              />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="h-[300px] overflow-hidden mt-4">
+            <Label htmlFor="map">MAPA</Label>
+            <MapLibreMap
+              ref={mapRef}
+              setLati={setLat}
+              setLoni={setLon}
+              setDireccion={setDirec}
+              direccion={formData.direccion}
+              lat={lat}
+              lon={lon}
+              mode="editar"
+              setDireccionError={setDireccionError}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="visibilidad">Visibilidad</Label>
+              <Select value={formData.visibilidad} onValueChange={handleSelectChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar visibilidad" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="público">Público</SelectItem>
+                  <SelectItem value="privado">Privado</SelectItem>
+                  <SelectItem value="solo invitación">Solo invitación</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="estado">Estado</Label>
+              <Select value={formData.estado === "borrador" ? "draft" : "published"} onValueChange={handleStatusChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="published">Publicado</SelectItem>
+                  <SelectItem value="draft">Borrador</SelectItem>
+                </SelectContent>
+              </Select>
+              {estadoError && <p className="text-sm text-red-500">{estadoError}</p>}
+            </div>
+          </div>
+
+          <div>
             <Label htmlFor="categories">Categorías</Label>
             <div className="flex gap-2">
-              <Input value={categoryInput} onChange={(e) => setCategoryInput(e.target.value)} onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleAddCategory(e);
-                }
-              }} placeholder="Añadir categoría" />
-              <Button onClick={handleAddCategory}>Añadir</Button>
+              <Input
+                id="categoryInput"
+                value={categoryInput}
+                onChange={(e) => setCategoryInput(e.target.value)}
+                placeholder="Añadir categoría"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    handleAddCategory(e)
+                  }
+                }}
+              />
+              <Button type="button" onClick={handleAddCategory}>
+                Añadir
+              </Button>
             </div>
             {formData.categorias.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {formData.categorias.map((cat, idx) => (
-                  <div key={idx} className="flex items-center bg-muted rounded px-2 py-1">
-                    <span>{cat}</span>
-                    <Button type="button" variant="ghost" size="sm" className="h-5 w-5 p-0 ml-1" onClick={() => handleRemoveCategory(cat)}>×</Button>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.categorias.map((category, index) => (
+                  <div key={index} className="flex items-center bg-muted rounded-md px-2 py-1">
+                    <span className="text-sm">{category}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0 ml-1"
+                      onClick={() => handleRemoveCategory(category)}
+                    >
+                      ×
+                    </Button>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Banner y Video URL */}
           <div className="mb-6">
-            <label htmlFor="banner" className="block text-sm font-medium text-gray-700 mb-1">
-              Imagen del Banner
-            </label>
+            <Label htmlFor="bannerUrl">Imagen del Banner</Label>
 
             {formData.bannerUrl && (
               <div className="mb-3">
                 <img
-                  src={formData.bannerUrl}
-                  alt="Vista previa"
+                  src={formData.bannerUrl || "/placeholder.svg"}
+                  alt="Vista previa del banner"
                   style={{ maxWidth: "100%", marginTop: "1rem" }}
                 />
               </div>
@@ -619,12 +675,17 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
             <input
               ref={fileInputRef}
               type="file"
-              id="banner"
               accept="image/*"
+              id="fileInput"
+              className="sr-only"
               onChange={handleImageChange}
-              className="hidden"
             />
-            <Button type="button" onClick={() => fileInputRef.current?.click()}>
+
+            <Button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-3 px-4 py-2 bg-blue-50 text-blue-700 rounded-md border border-blue-200 hover:bg-blue-100 text-sm font-semibold"
+            >
               {selectedFileName ? "Cambiar imagen" : "Seleccionar imagen"}
             </Button>
 
@@ -642,22 +703,30 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
               </ul>
             )}
           </div>
-          <Label htmlFor="videoUrl">URL del Video</Label>
-          <Input name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="URL del Video" />
 
-          <Label htmlFor="capacity">Capacidad</Label>
-          <Input name="capacidad" type="number" value={formData.capacidad} onChange={handleChange} placeholder="Capacidad" />
+          <Label htmlFor="videoUrl">URL del Video</Label>
+          <Input id="videoUrl" name="videoUrl" value={formData.videoUrl} onChange={handleChange} required />
+
+          <Label htmlFor="capacidad">Capacidad</Label>
+          <Input
+            id="capacidad"
+            name="capacidad"
+            value={formData.capacidad}
+            onChange={(e) => setFormData((prev) => ({ ...prev, capacidad: Number(e.target.value) }))}
+            type="number"
+            min="0"
+          />
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancelar
             </Button>
-            <Button onClick={handleSubmit}>Guardar cambios</Button>
+            <Button type="submit" disabled={!ubicacionValida}>
+              Guardar Cambios
+            </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-
   )
 }
-
