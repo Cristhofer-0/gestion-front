@@ -73,7 +73,7 @@ export function DetailView({ item }: DetailViewProps) {
             <Info className="h-4 w-4" />
             Descripción
           </h3>
-          <p className="mt-1">{item.descripcion}</p>
+          <p className="mt-1 break-words whitespace-pre-line">{item.descripcion}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -99,7 +99,7 @@ export function DetailView({ item }: DetailViewProps) {
             <MapPin className="h-4 w-4" />
             Dirección
           </h3>
-          <p className="mt-1">{item.direccion || "No disponible"}</p>
+          <p className="mt-1 break-words whitespace-pre-line">{item.direccion || "No disponible"}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -48,7 +48,7 @@ export function DetailView({ item }: DetailViewProps) {
             <Info className="h-4 w-4" />
             Descripción
           </h3>
-          <p className="mt-1">{item.descripcion}</p>
+          <p className="mt-1 break-words whitespace-pre-line">{item.descripcion}</p>
         </div>
       </CardContent>
        <CardContent className="space-y-4">
