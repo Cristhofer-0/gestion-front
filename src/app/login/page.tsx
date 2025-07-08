@@ -24,6 +24,7 @@ export default function Login() {
   const [mostrarPassword, setMostrarPassword] = useState(false)
   const [emailLleno, setEmailLleno] = useState(false)
   const [errorLogin, setErrorLogin] = useState<string | null>(null)
+  const [cargando, setCargando] = useState(false)
 
   const [testimonios, setTestimonios] = useState<{ id: string; texto: string; autor: string; rating: number }[]>([])
   const [testimonioActual, setTestimonioActual] = useState(0)
@@ -66,6 +67,8 @@ export default function Login() {
   }, [testimonios])
 
   async function verificarCorreo(data: LoginData): Promise<void> {
+    setCargando(true)
+    setErrorLogin(null)
     try {
       const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/usuarios/login`)
       const response = await fetch(url.toString(), {
@@ -73,10 +76,7 @@ export default function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
+        body: JSON.stringify(data),
       })
 
       const responseData = await response.json()
@@ -95,6 +95,9 @@ export default function Login() {
       router.push("/dashboard")
     } catch (error: unknown) {
       console.error("Error:", error)
+      setErrorLogin("Correo o contraseña incorrectos")
+    } finally {
+      setCargando(false)
     }
   }
 
@@ -126,10 +129,7 @@ export default function Login() {
 
         <div className="flex-1 flex items-center justify-center">
           {testimonios.length > 0 ? (
-            <div
-              className={`transition-all duration-300 ease-in-out transform ${isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-                }`}
-            >
+            <div className={`transition-all duration-300 ease-in-out transform ${isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}>
               <blockquote className="text-lg leading-relaxed max-w-md">
                 <div className="mb-6">
                   <svg className="w-8 h-8 text-gray-400 mb-4" fill="currentColor" viewBox="0 0 24 24">
@@ -163,8 +163,7 @@ export default function Login() {
                         setIsTransitioning(false)
                       }, 300)
                     }}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${index === testimonioActual ? "bg-white w-8" : "bg-gray-600 hover:bg-gray-400"
-                      }`}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${index === testimonioActual ? "bg-white w-8" : "bg-gray-600 hover:bg-gray-400"}`}
                   />
                 ))}
               </div>
@@ -213,8 +212,7 @@ export default function Login() {
                 type={mostrarPassword ? "text" : "password"}
                 placeholder={emailLleno ? "Tu contraseña" : "Primero ingresa el correo"}
                 disabled={!emailLleno}
-                className={`bg-gray-900 border-gray-700 text-white placeholder:text-gray-500 h-12 pr-10 ${!emailLleno ? "text-red-400" : ""
-                  }`}
+                className={`bg-gray-900 border-gray-700 text-white placeholder:text-gray-500 h-12 pr-10 ${!emailLleno ? "text-red-400" : ""}`}
                 {...register("password", {
                   required: true,
                   minLength: 6,
@@ -243,8 +241,19 @@ export default function Login() {
 
             {errorLogin && <p className="text-red-500 text-sm text-center">{errorLogin}</p>}
 
-            <Button type="submit" className="w-full h-12 cursor-pointer bg-white text-black hover:bg-gray-100">
-              Iniciar sesión
+            <Button
+              type="submit"
+              className="w-full h-12 cursor-pointer bg-white text-black hover:bg-gray-100"
+              disabled={cargando}
+            >
+              {cargando ? (
+                <div className="flex items-center justify-center gap-2">
+                  <span className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  Cargando...
+                </div>
+              ) : (
+                "Iniciar sesión"
+              )}
             </Button>
 
             <div className="text-center mt-2">
