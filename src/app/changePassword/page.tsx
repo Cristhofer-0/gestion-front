@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { jwtDecode } from "jwt-decode"
 import {
@@ -27,7 +27,7 @@ type DecodedToken = {
   exp: number
 }
 
-export default function DirectPasswordResetForm() {
+const DirectPasswordResetForm = () => {
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
 
@@ -292,4 +292,12 @@ export default function DirectPasswordResetForm() {
       </div>
     </div>
   )
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <DirectPasswordResetForm />
+    </Suspense>
+  );
 }
