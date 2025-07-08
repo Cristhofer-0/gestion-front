@@ -3,7 +3,9 @@ export interface EventFormData {
   title: string
   description: string
   startDate: Date | null
+  startTime: string  
   endDate: Date | null
+  endTime: string
   address: string
   latitude: string
   longitude: string
@@ -22,7 +24,9 @@ export interface EditEventFormData {
   descripcion: string
   direccion: string
   fechaInicio: Date
+  horaInicio: string
   fechaFinalizacion: Date
+  horaFin: string
   visibilidad: "público" | "privado" | "solo invitación"
   estado: "borrador" | "publicado" | undefined
   categorias: string[]

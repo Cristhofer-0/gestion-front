@@ -9,16 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { crearEvento } from "../../../services/eventos"
-import { useUser } from "@/hooks/useUser";
+import { combinarFechaHora } from "../../../services/eventos"
+import { useUser } from "@/hooks/useUser"
 import type { ItemData } from "../types/ItemData"
-
 
 import MapLibreMap from "@/components/principales/mapa"
 
@@ -34,7 +28,9 @@ export interface EventFormData {
   title: string
   description: string
   startDate: Date | null
+  startTime: string
   endDate: Date | null
+  endTime: string
   address: string
   latitude: string
   longitude: string
@@ -46,26 +42,45 @@ export interface EventFormData {
   capacity: string
 }
 
-export const adaptFormDataToItemData = (data: EventFormData): ItemData => ({
-  organizerId: data.organizerId,
-  titulo: data.title,
-  descripcion: data.description,
-  fechaInicio: data.startDate ? `${data.startDate.toISOString().split("T")[0]}T00:00:00` : undefined, // mostrar correctamente las fechas en la tabla de datos de los eventos
-  fechaFinalizacion: data.endDate ? `${data.endDate.toISOString().split("T")[0]}T00:00:00` : undefined, // mostrar correctamente las fechas en la tabla de datos de los eventos
-  direccion: data.address,
-  visibilidad: data.visibility as any,
-  categorias: data.categories,
-  capacidad: Number(data.capacity),
-  estado: data.status as any,
-  ubicacion: {
-    lat: Number(data.latitude),
-    lng: Number(data.longitude),
-  },
-  Latitude: data.latitude,
-  Longitude: data.longitude,
-  bannerUrl: data.bannerUrl,
-  videoUrl: data.videoUrl,
-})
+function formatDateToMySQLString(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
+
+export const adaptFormDataToItemData = (data: EventFormData): ItemData => {
+const fechaInicioCompleta =
+  data.startDate && data.startTime
+    ? formatDateToMySQLString(combinarFechaHora(data.startDate, data.startTime))
+    : undefined
+
+const fechaFinCompleta =
+  data.endDate && data.endTime
+    ? formatDateToMySQLString(combinarFechaHora(data.endDate, data.endTime))
+    : undefined
+
+      
+  return {
+    organizerId: data.organizerId,
+    titulo: data.title,
+    descripcion: data.description,
+    fechaInicio: fechaInicioCompleta,
+    fechaFinalizacion: fechaFinCompleta,
+    direccion: data.address,
+    visibilidad: data.visibility as any,
+    categorias: data.categories,
+    capacidad: Number(data.capacity),
+    estado: data.status as any,
+    ubicacion: {
+      lat: Number(data.latitude),
+      lng: Number(data.longitude),
+    },
+    Latitude: data.latitude,
+    Longitude: data.longitude,
+    bannerUrl: data.bannerUrl,
+    videoUrl: data.videoUrl,
+  }
+}
 
 interface MapLibreMapHandle {
   handleSearch: () => void
@@ -75,19 +90,22 @@ interface MapLibreMapHandle {
 import { uploadImage } from "@/lib/uploadImage."
 
 export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }: CreateEventDialogProps) {
-  const user = useUser();
-  const isOrganizer = user?.Role === "organizer";
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
-  const mapRef = useRef<MapLibreMapHandle>(null);
-  const [direccionError, setDireccionError] = useState<string | null>(null);
+  const user = useUser()
+  const isOrganizer = user?.Role === "organizer"
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
+  const mapRef = useRef<MapLibreMapHandle>(null)
+  const [direccionError, setDireccionError] = useState<string | null>(null)
+
   const initialFormData: EventFormData = {
     organizerId: "",
     title: "",
     description: "",
     startDate: null,
+    startTime: "09:00",
     endDate: null,
+    endTime: "18:00",
     address: "",
     latitude: "",
     longitude: "",
@@ -118,7 +136,7 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
     setFormErrors({})
     // Limpia el nombre de archivo seleccionado
     setSelectedFileName(null)
-    // Reinicia el input file 
+    // Reinicia el input file
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -129,7 +147,7 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
     if (user) {
       setFormData((prev) => ({
         ...prev,
-        organizerId: String(user.UserId) // user.id o el campo correcto que tengas
+        organizerId: String(user.UserId), // user.id o el campo correcto que tengas
       }))
     }
   }, [user])
@@ -161,6 +179,11 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
   const handleDateChange = (name: "startDate" | "endDate", date: Date | undefined) => {
     setFormData((prev) => ({ ...prev, [name]: date }))
     // Limpiar error del campo cuando el usuario selecciona una fecha
+    clearFieldError(name)
+  }
+
+  const handleTimeChange = (name: "startTime" | "endTime", time: string) => {
+    setFormData((prev) => ({ ...prev, [name]: time }))
     clearFieldError(name)
   }
 
@@ -223,6 +246,25 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
       newErrors.endDate = "La fecha de finalización es obligatoria"
     }
 
+    if (!formData.startTime) {
+      newErrors.startTime = "La hora de inicio es obligatoria"
+    }
+
+    if (!formData.endTime) {
+      newErrors.endTime = "La hora de finalización es obligatoria"
+    }
+
+    // Validar que la fecha y hora de fin sea posterior a la de inicio
+    if (formData.startDate && formData.endDate && formData.startTime && formData.endTime) {
+const fechaHoraInicio = combinarFechaHora(formData.startDate, formData.startTime)
+const fechaHoraFin = combinarFechaHora(formData.endDate, formData.endTime)
+
+      if (fechaHoraFin <= fechaHoraInicio) {
+        newErrors.endDate = "La fecha y hora de finalización debe ser posterior a la de inicio"
+        newErrors.endTime = "La fecha y hora de finalización debe ser posterior a la de inicio"
+      }
+    }
+
     // Categorias obligatorias
     if (formData.categories.length === 0) {
       newErrors.categories = "Debe añadir al menos una categoría"
@@ -245,7 +287,6 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
       setFormErrors(newErrors)
       return
     }
-
 
     // Función para formatear la fecha manualmente evitando desfase por zona horaria
     const formatFechaLocal = (fechaStr: string) => {
@@ -272,13 +313,11 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
 
       const inicioExistente = new Date(ev.fechaInicio)
       const finExistente = new Date(ev.fechaFinalizacion)
-      const nuevaInicio = formData.startDate
-      const nuevaFin = formData.endDate
+const nuevaInicio = combinarFechaHora(formData.startDate, formData.startTime)
+const nuevaFin = combinarFechaHora(formData.endDate, formData.endTime)
 
       // Verifica cualquier tipo de cruce de rangos
-      return (
-        nuevaInicio <= finExistente && nuevaFin >= inicioExistente
-      )
+      return nuevaInicio < finExistente && nuevaFin > inicioExistente
     })
 
     if (eventoConflictivo) {
@@ -292,39 +331,32 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
       return
     }
 
+const startDateTime = combinarFechaHora(formData.startDate!, formData.startTime)
+const endDateTime = combinarFechaHora(formData.endDate!, formData.endTime)
+
+console.log("FECHA COMBINADA DE INICIO:", startDateTime)
+console.log("FECHA COMBINADA DE FIN:", endDateTime)
+
+
     try {
       const itemData = adaptFormDataToItemData(formData)
       console.log("Datos a enviar al backend:", itemData)
-      onSubmit(formData)
-      setFormData({
-        organizerId: "",
-        title: "",
-        description: "",
-        startDate: null,
-        endDate: null,
-        address: "",
-        latitude: "",
-        longitude: "",
-        visibility: "public",
-        categories: [],
-        bannerUrl: "",
-        videoUrl: "",
-        status: "published",
-        capacity: "",
+      onSubmit({
+        ...formData,
+      startDate: startDateTime,
+      endDate: endDateTime,
       })
+      resetForm()
     } catch (error) {
       console.error("Error al crear el evento:", error)
     }
   }
-
 
   // Función para formatear la fecha para el input date
   const formatDateForInput = (date: Date | null): string => {
     if (!date) return ""
     return date.toISOString().split("T")[0]
   }
-
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -367,34 +399,54 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startDate">Fecha de Inicio</Label>
-              <div className="relative">
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={formatDateForInput(formData.startDate)}
-                  onChange={(e) => handleDateChange("startDate", e.target.value ? new Date(e.target.value) : undefined)}
-                  className={cn(formErrors.startDate && "border-red-500")}
-                  min={formatDateForInput(new Date())}
-                />
-              </div>
+              <Input
+                id="startDate"
+                type="date"
+                value={formatDateForInput(formData.startDate)}
+                onChange={(e) => handleDateChange("startDate", e.target.value ? new Date(e.target.value) : undefined)}
+                className={cn(formErrors.startDate && "border-red-500")}
+                min={formatDateForInput(new Date())}
+              />
               {formErrors.startDate && <p className="text-sm text-red-500">{formErrors.startDate}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endDate">Fecha de Finalización</Label>
-              <div className="relative">
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={formatDateForInput(formData.endDate)}
-                  onChange={(e) => handleDateChange("endDate", e.target.value ? new Date(e.target.value) : undefined)}
-                  className={cn(formErrors.endDate && "border-red-500")}
-                  min={formatDateForInput(formData.startDate || new Date())}
-                />
-              </div>
-              {formErrors.endDate && <p className="text-sm text-red-500">{formErrors.endDate}</p>}
+              <Label htmlFor="startTime">Hora de Inicio</Label>
+              <Input
+                id="startTime"
+                type="time"
+                value={formData.startTime}
+                onChange={(e) => handleTimeChange("startTime", e.target.value)}
+                className={cn(formErrors.startTime && "border-red-500")}
+              />
+              {formErrors.startTime && <p className="text-sm text-red-500">{formErrors.startTime}</p>}
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="endDate">Fecha de Finalización</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={formatDateForInput(formData.endDate)}
+                onChange={(e) => handleDateChange("endDate", e.target.value ? new Date(e.target.value) : undefined)}
+                className={cn(formErrors.endDate && "border-red-500")}
+                min={formatDateForInput(formData.startDate || new Date())}
+              />
+              {formErrors.endDate && <p className="text-sm text-red-500">{formErrors.endDate}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="endTime">Hora de Finalización</Label>
+              <Input
+                id="endTime"
+                type="time"
+                value={formData.endTime}
+                onChange={(e) => handleTimeChange("endTime", e.target.value)}
+                className={cn(formErrors.endTime && "border-red-500")}
+              />
+              {formErrors.endTime && <p className="text-sm text-red-500">{formErrors.endTime}</p>}
+            </div>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="address">Dirección</Label>
@@ -466,7 +518,11 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="visibility">Visibilidad</Label>
-              <Select value={formData.visibility} onValueChange={(value) => handleSelectChange("visibility", value)} disabled={isOrganizer}>
+              <Select
+                value={formData.visibility}
+                onValueChange={(value) => handleSelectChange("visibility", value)}
+                disabled={isOrganizer}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar visibilidad" />
                 </SelectTrigger>
@@ -477,7 +533,11 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Estado</Label>
-              <Select value={formData.status} onValueChange={(value) => handleSelectChange("status", value)} disabled={isOrganizer}>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => handleSelectChange("status", value)}
+                disabled={isOrganizer}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
@@ -536,7 +596,7 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
             {formData.bannerUrl && (
               <div className="mb-3">
                 <img
-                  src={formData.bannerUrl}
+                  src={formData.bannerUrl || "/placeholder.svg"}
                   alt="Vista previa del banner"
                   style={{ maxWidth: "100%", marginTop: "1rem" }}
                 />
@@ -551,43 +611,43 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
               id="fileInput"
               className="sr-only"
               onChange={async (e) => {
-                setUploadError(null);
-                clearFieldError("bannerUrl");
+                setUploadError(null)
+                clearFieldError("bannerUrl")
 
-                if (!e.target.files?.length) return;
+                if (!e.target.files?.length) return
 
-                const file = e.target.files[0];
-                const maxSizeInMB = 10;
-                const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+                const file = e.target.files[0]
+                const maxSizeInMB = 10
+                const maxSizeInBytes = maxSizeInMB * 1024 * 1024
 
-                let errorMsg = "";
+                let errorMsg = ""
 
                 if (file.type !== "image/webp") {
-                  errorMsg += "Solo se permiten imágenes en formato .webp. \n";
+                  errorMsg += "Solo se permiten imágenes en formato .webp. \n"
                 }
 
                 if (file.size > maxSizeInBytes) {
-                  const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-                  errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB. \n`;
+                  const sizeInMB = (file.size / (1024 * 1024)).toFixed(2)
+                  errorMsg += `La imagen pesa ${sizeInMB} MB. Máximo permitido: ${maxSizeInMB} MB. \n`
                 }
 
                 if (errorMsg) {
-                  setUploadError(errorMsg.trim());
-                  setFormData((prev) => ({ ...prev, bannerUrl: "" }));
-                  fileInputRef.current && (fileInputRef.current.value = "");
-                  setSelectedFileName(null);
-                  return;
+                  setUploadError(errorMsg.trim())
+                  setFormData((prev) => ({ ...prev, bannerUrl: "" }))
+                  fileInputRef.current && (fileInputRef.current.value = "")
+                  setSelectedFileName(null)
+                  return
                 }
 
-                const imageUrl = await uploadImage(file);
+                const imageUrl = await uploadImage(file)
                 if (imageUrl) {
-                  setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }));
-                  setSelectedFileName(file.name);
-                  setUploadError(null);
+                  setFormData((prev) => ({ ...prev, bannerUrl: imageUrl }))
+                  setSelectedFileName(file.name)
+                  setUploadError(null)
                 } else {
-                  setUploadError("Error al subir imagen. \n");
-                  fileInputRef.current && (fileInputRef.current.value = "");
-                  setSelectedFileName(null);
+                  setUploadError("Error al subir imagen. \n")
+                  fileInputRef.current && (fileInputRef.current.value = "")
+                  setSelectedFileName(null)
                 }
               }}
             />
