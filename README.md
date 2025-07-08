@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛠️ Gestión Front
 
-## Getting Started
+Interfaz administrativa para el ecosistema **Proyec-Tec**. Este frontend permite a los administradores gestionar eventos, usuarios, tickets, notificaciones y estadísticas desde un panel moderno y funcional, desarrollado con **Next.js**.
 
-First, run the development server:
+---
+
+## 🚀 Tecnologías Utilizadas
+
+- [Next.js](https://nextjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.dev/)
+- [Zustand](https://zustand-demo.pmnd.rs/) – Manejo de estado global
+- [React Hook Form](https://react-hook-form.com/) – Formularios y validación
+- [Chart.js / Recharts](https://recharts.org/) – Estadísticas gráficas
+- [Socket.IO](https://socket.io/) – Notificaciones en tiempo real
+- [MapLibre GL](https://maplibre.org/) – Selección de ubicación para eventos
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+gestion-front/
+├── app/                   # Rutas principales de la aplicación
+├── components/            # Componentes reutilizables
+├── features/              # Módulos: eventos, usuarios, tickets, etc.
+├── stores/                # Zustand stores
+├── lib/                   # Funciones y servicios auxiliares
+├── public/                # Recursos estáticos
+└── styles/                # Estilos globales
+```
+
+---
+
+## 📦 Instalación
+
+```bash
+git clone https://github.com/Cristhofer-0/gestion-front.git
+cd gestion-front
+npm install
+```
+
+---
+
+## 🧪 Uso en Desarrollo
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrir en: [http://localhost:3002](http://localhost:3002)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🌐 Variables de Entorno
 
-## Learn More
+Crear `.env.local`:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+NEXT_PUBLIC_SOCKET_URL=http://localhost:3000
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔌 Integración con Backend
 
-## Deploy on Vercel
+Se conecta con [`gestion-back`](https://github.com/Cristhofer-0/gestion-back) y complementa al frontend público [`proyec-tec-front`](https://github.com/Cristhofer-0/proyec-tec-front).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔔 Funcionalidades
+
+- 👤 Gestión de usuarios
+- 📅 Gestión de eventos (CRUD + publicación)
+- 🎫 Control de tickets
+- 📊 Dashboard de estadísticas
+- 🔔 Notificaciones en tiempo real
+- 📍 Selección de ubicación en mapas
+- 🧾 Administración de reseñas, cupones, favoritos
+
+---
+
+## 🧹 Scripts Útiles
+
+```bash
+npm run dev       # Servidor local
+npm run build     # Compilar para producción
+npm run lint      # Revisar errores de código
+```
+
+---
+
+## ✅ Estado
+
+> En desarrollo activo. Parte del ecosistema de apps conectadas con WebSocket + API REST.
+
+---
+
+## 📄 Licencia
+
+MIT
+
+---
+
+## ✨ Autores
+
+Desarrollado por:  
+- [Cristhofer](https://github.com/Cristhofer-0)  
+- [Miguel](https://github.com/sevenjpg8)  
+- [Franco](https://github.com/LuisFr3)  
+- [Adrian](https://github.com/SkipCodeBytes)  
+- [Sebastian](https://github.com/sebaslade)
