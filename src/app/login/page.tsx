@@ -210,7 +210,7 @@ export default function Login() {
 
             <div className="relative">
               <Input
-                type={mostrarPassword ? "text" : "password"}
+                //type={mostrarPassword ? "text" : "password"}
                 placeholder={emailLleno ? "Tu contraseña" : "Primero ingresa el correo"}
                 disabled={!emailLleno}
                 className={`bg-gray-900 border-gray-700 text-white placeholder:text-gray-500 h-12 pr-10 ${!emailLleno ? "text-red-400" : ""
