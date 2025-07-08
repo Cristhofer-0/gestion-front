@@ -14,12 +14,12 @@ export default function Home() {
           <CardDescription className="text-lg">Sistema de gestion de JoinWithUs</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6">
-          <Link href="/login" className="w-full">
-            <Button className="w-full h-16 text-lg" size="lg">
+          <Button asChild className="w-full h-16 text-lg cursor-pointer">
+            <Link href="/login" className="w-full">
               <LogIn className="mr-2 h-5 w-5" />
               Iniciar Sesión
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </CardContent>
       </Card>
     </main>
