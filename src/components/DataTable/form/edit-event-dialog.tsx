@@ -196,6 +196,17 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     return () => clearTimeout(timeout)
   }, [formData.direccion])
 
+  useEffect(() => {
+    if (open && event?.id && formData.direccion && lat !== 0 && lon !== 0) {
+      const delay = setTimeout(() => {
+        console.log("🔁 Forzando búsqueda en mapa al abrir el modal con evento ID:", event.id)
+        mapRef.current?.handleSearch()
+      }, 500)
+
+      return () => clearTimeout(delay)
+    }
+  }, [open, event?.id])
+
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadError(null)
     if (!e.target.files?.length) return
@@ -435,7 +446,9 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
   // Función para formatear la fecha para el input date
   const formatDateForInput = (date: Date | null): string => {
     if (!date) return ""
-    return date.toISOString().split("T")[0]
+    const offset = date.getTimezoneOffset() // En minutos
+    const localDate = new Date(date.getTime() - offset * 60 * 1000)
+    return localDate.toISOString().split("T")[0]
   }
 
   const ubicacionValida = lat !== 0 && lon !== 0
