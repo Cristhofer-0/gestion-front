@@ -245,7 +245,7 @@ export default function Login() {
 
             {errorLogin && <p className="text-red-500 text-sm text-center">{errorLogin}</p>}
 
-            <Button type="submit" className="w-full h-12 bg-white text-black hover:bg-gray-100">
+            <Button type="submit" className="w-full h-12 cursor-pointer bg-white text-black hover:bg-gray-100">
               Iniciar sesión
             </Button>
           </div>
