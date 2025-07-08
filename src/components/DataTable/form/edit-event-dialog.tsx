@@ -435,7 +435,9 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
   // Función para formatear la fecha para el input date
   const formatDateForInput = (date: Date | null): string => {
     if (!date) return ""
-    return date.toISOString().split("T")[0]
+    const offset = date.getTimezoneOffset() // En minutos
+    const localDate = new Date(date.getTime() - offset * 60 * 1000)
+    return localDate.toISOString().split("T")[0]
   }
 
   const ubicacionValida = lat !== 0 && lon !== 0
