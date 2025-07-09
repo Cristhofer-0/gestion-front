@@ -352,8 +352,8 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
     }
 
     // Validar que la fecha y hora de fin sea posterior a la de inicio
-    const fechaHoraInicio = new Date(`${formData.fechaInicio.toISOString().split("T")[0]}T${formData.horaInicio}:00`)
-    const fechaHoraFin = new Date(`${formData.fechaFinalizacion.toISOString().split("T")[0]}T${formData.horaFin}:00`)
+    const fechaHoraInicio = combinarFechaHora(formData.fechaInicio, formData.horaInicio)
+    const fechaHoraFin = combinarFechaHora(formData.fechaFinalizacion, formData.horaFin)
 
     if (fechaHoraFin <= fechaHoraInicio) {
       setFormErrors({

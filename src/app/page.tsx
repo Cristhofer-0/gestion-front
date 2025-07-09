@@ -22,7 +22,7 @@ export default function Home() {
           </CardHeader>
           <CardContent className="grid gap-6">
             <Link href="/login" className="w-full">
-              <Button className="w-full h-16 text-lg bg-black text-white hover:bg-zinc-800">
+              <Button className="w-full h-16 text-lg bg-black text-white hover:bg-zinc-800 cursor-pointer">
                 <LogIn className="mr-2 h-5 w-5" />
                 Iniciar Sesión
               </Button>

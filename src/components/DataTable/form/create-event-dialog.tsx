@@ -209,6 +209,40 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
     }))
   }, [lat, lon, direc])
 
+  useEffect(() => {
+    if (
+      formData.startDate &&
+      formData.endDate &&
+      formData.startTime &&
+      formData.endTime
+    ) {
+      const inicio = combinarFechaHora(formData.startDate, formData.startTime)
+      const fin = combinarFechaHora(formData.endDate, formData.endTime)
+
+      if (fin <= inicio) {
+        setFormErrors((prev) => ({
+          ...prev,
+          endTime: "La hora de finalización debe ser posterior a la de inicio",
+          endDate: "La fecha y hora de finalización debe ser posterior a la de inicio",
+        }))
+      } else {
+        // Limpia el error si ya no hay conflicto
+        setFormErrors((prev) => {
+          const updatedErrors = { ...prev }
+          delete updatedErrors.endTime
+          delete updatedErrors.endDate
+          return updatedErrors
+        })
+      }
+    }
+  }, [
+    formData.startDate,
+    formData.endDate,
+    formData.startTime,
+    formData.endTime,
+  ])
+
+
   const handleAddCategory = () => {
     if (categoryInput.trim() && !formData.categories.includes(categoryInput.trim())) {
       setFormData((prev) => ({
@@ -473,6 +507,11 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
                 value={formData.endTime}
                 onChange={(e) => handleTimeChange("endTime", e.target.value)}
                 className={cn(formErrors.endTime && "border-red-500")}
+                min={
+                  formData.startDate?.toDateString() === formData.endDate?.toDateString()
+                    ? formData.startTime
+                    : undefined
+                }
               />
               {formErrors.endTime && (
                 <p className="text-sm text-red-500">{formErrors.endTime}</p>
