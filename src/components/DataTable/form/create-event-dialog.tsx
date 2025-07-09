@@ -53,18 +53,26 @@ function formatDateToMySQLString(date: Date): string {
   return formatDateToMySQLStringLocal(utcDate)
 }
 
+function to12HourFormat(time24: string): string {
+  const [hourStr, minute] = time24.split(":")
+  let hour = parseInt(hourStr, 10)
+  const ampm = hour >= 12 ? "PM" : "AM"
+  hour = hour % 12 || 12
+  return `${hour}:${minute} ${ampm}`
+}
+
 export const adaptFormDataToItemData = (data: EventFormData): ItemData => {
-const fechaInicioCompleta =
-  data.startDate && data.startTime
-    ? formatDateToMySQLString(combinarFechaHora(data.startDate, data.startTime))
-    : undefined
+  const fechaInicioCompleta =
+    data.startDate && data.startTime
+      ? formatDateToMySQLString(combinarFechaHora(data.startDate, data.startTime))
+      : undefined
 
-const fechaFinCompleta =
-  data.endDate && data.endTime
-    ? formatDateToMySQLString(combinarFechaHora(data.endDate, data.endTime))
-    : undefined
+  const fechaFinCompleta =
+    data.endDate && data.endTime
+      ? formatDateToMySQLString(combinarFechaHora(data.endDate, data.endTime))
+      : undefined
 
-      
+
   return {
     organizerId: data.organizerId,
     titulo: data.title,
@@ -261,8 +269,8 @@ export function CreateEventDialog({ open, onOpenChange, onSubmit, existeEvento }
 
     // Validar que la fecha y hora de fin sea posterior a la de inicio
     if (formData.startDate && formData.endDate && formData.startTime && formData.endTime) {
-const fechaHoraInicio = combinarFechaHora(formData.startDate, formData.startTime)
-const fechaHoraFin = combinarFechaHora(formData.endDate, formData.endTime)
+      const fechaHoraInicio = combinarFechaHora(formData.startDate, formData.startTime)
+      const fechaHoraFin = combinarFechaHora(formData.endDate, formData.endTime)
 
       if (fechaHoraFin <= fechaHoraInicio) {
         newErrors.endDate = "La fecha y hora de finalización debe ser posterior a la de inicio"
@@ -318,8 +326,8 @@ const fechaHoraFin = combinarFechaHora(formData.endDate, formData.endTime)
 
       const inicioExistente = new Date(ev.fechaInicio)
       const finExistente = new Date(ev.fechaFinalizacion)
-const nuevaInicio = combinarFechaHora(formData.startDate, formData.startTime)
-const nuevaFin = combinarFechaHora(formData.endDate, formData.endTime)
+      const nuevaInicio = combinarFechaHora(formData.startDate, formData.startTime)
+      const nuevaFin = combinarFechaHora(formData.endDate, formData.endTime)
 
       // Verifica cualquier tipo de cruce de rangos
       return nuevaInicio < finExistente && nuevaFin > inicioExistente
@@ -336,11 +344,11 @@ const nuevaFin = combinarFechaHora(formData.endDate, formData.endTime)
       return
     }
 
-const startDateTime = combinarFechaHora(formData.startDate!, formData.startTime)
-const endDateTime = combinarFechaHora(formData.endDate!, formData.endTime)
+    const startDateTime = combinarFechaHora(formData.startDate!, formData.startTime)
+    const endDateTime = combinarFechaHora(formData.endDate!, formData.endTime)
 
-console.log("FECHA COMBINADA DE INICIO:", startDateTime)
-console.log("FECHA COMBINADA DE FIN:", endDateTime)
+    console.log("FECHA COMBINADA DE INICIO:", startDateTime)
+    console.log("FECHA COMBINADA DE FIN:", endDateTime)
 
 
     try {
@@ -348,8 +356,8 @@ console.log("FECHA COMBINADA DE FIN:", endDateTime)
       console.log("Datos a enviar al backend:", itemData)
       onSubmit({
         ...formData,
-      startDate: startDateTime,
-      endDate: endDateTime,
+        startDate: startDateTime,
+        endDate: endDateTime,
       })
       resetForm()
     } catch (error) {
@@ -423,11 +431,20 @@ console.log("FECHA COMBINADA DE FIN:", endDateTime)
               <Input
                 id="startTime"
                 type="time"
-                value={formData.startTime}
+                value={formData.startTime} // debe mantenerse en formato HH:mm
                 onChange={(e) => handleTimeChange("startTime", e.target.value)}
                 className={cn(formErrors.startTime && "border-red-500")}
               />
-              {formErrors.startTime && <p className="text-sm text-red-500">{formErrors.startTime}</p>}
+              {formErrors.startTime && (
+                <p className="text-sm text-red-500">{formErrors.startTime}</p>
+              )}
+
+              {/* Hora en formato AM/PM */}
+              {formData.startTime && (
+                <p className="text-sm text-muted-foreground">
+                  Hora seleccionada: {to12HourFormat(formData.startTime)}
+                </p>
+              )}
             </div>
           </div>
 
@@ -457,7 +474,16 @@ console.log("FECHA COMBINADA DE FIN:", endDateTime)
                 onChange={(e) => handleTimeChange("endTime", e.target.value)}
                 className={cn(formErrors.endTime && "border-red-500")}
               />
-              {formErrors.endTime && <p className="text-sm text-red-500">{formErrors.endTime}</p>}
+              {formErrors.endTime && (
+                <p className="text-sm text-red-500">{formErrors.endTime}</p>
+              )}
+
+              {/* Hora en formato AM/PM */}
+              {formData.endTime && (
+                <p className="text-sm text-muted-foreground">
+                  Hora seleccionada: {to12HourFormat(formData.endTime)}
+                </p>
+              )}
             </div>
           </div>
 
@@ -514,18 +540,20 @@ console.log("FECHA COMBINADA DE FIN:", endDateTime)
           </div>
 
           <div className="h-[300px] overflow-hidden mt-4">
-            <Label htmlFor="map">MAPA</Label>
-            <MapLibreMap
-              ref={mapRef}
-              setLati={setLat}
-              setLoni={setLon}
-              setDireccion={setDirec}
-              direccion={formData.address}
-              lat={-12.018419}
-              lon={-76.971028}
-              mode="crear"
-              setDireccionError={setDireccionError}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="map">MAPA</Label>
+              <MapLibreMap
+                ref={mapRef}
+                setLati={setLat}
+                setLoni={setLon}
+                setDireccion={setDirec}
+                direccion={formData.address}
+                lat={-12.018419}
+                lon={-76.971028}
+                mode="crear"
+                setDireccionError={setDireccionError}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

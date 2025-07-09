@@ -114,7 +114,7 @@ export function AccountProfile() {
     }
   }
 
-    function cerrarSesion() {
+  function cerrarSesion() {
     document.cookie = "loggedUser=; path=/; max-age=0";
     localStorage.removeItem("user");
     router.push("/login");
@@ -150,7 +150,7 @@ export function AccountProfile() {
               <div className="flex flex-col items-center gap-4 sm:flex-row">
                 <div className="flex flex-col gap-2">
                   <h3 className="text-lg font-medium">{user?.FullName}</h3>
-                  <p className="text-sm text-muted-foreground">{user?.Role}</p>
+                  <p className="text-sm text-muted-foreground">  {user?.Role ? user.Role.charAt(0).toUpperCase() + user.Role.slice(1).toLowerCase() : ""}</p>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" className="gap-1" onClick={() => setShowEditDialog(true)}>
                       <PencilIcon className="h-3.5 w-3.5" />
@@ -392,7 +392,7 @@ export function AccountProfile() {
               ¡Contraseña actualizada!
             </DialogTitle>
             <DialogDescription className="text-left">
-              Tu contraseña ha sido cambiada exitosamente. Tu cuenta ahora está protegida con la nueva contraseña. 
+              Tu contraseña ha sido cambiada exitosamente. Tu cuenta ahora está protegida con la nueva contraseña.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

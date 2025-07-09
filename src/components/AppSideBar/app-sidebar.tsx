@@ -149,7 +149,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <ThemeToggle />
+                        <div className="mb-2">
+                            <ThemeToggle />
+                        </div>
                         <SidebarMenuButton
                             asChild
                             className="data-[slot=sidebar-menu-button]:!p-1.5"
@@ -169,7 +171,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={navMainFiltered} />              
+                <NavMain items={navMainFiltered} />
             </SidebarContent>
             <SidebarFooter>
                 <NavUser />

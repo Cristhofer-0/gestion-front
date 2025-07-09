@@ -1,37 +1,37 @@
 "use client"
 
 import {
-    BellIcon,
-    CreditCardIcon,
-    LogOutIcon,
-    MoreVerticalIcon,
-    UserCircleIcon,
+  BellIcon,
+  CreditCardIcon,
+  LogOutIcon,
+  MoreVerticalIcon,
+  UserCircleIcon,
 } from "lucide-react"
 
 import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
 } from "@/components/ui/avatar"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    useSidebar,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import React, { useEffect, useState } from "react";
-import { useUser } from "@/hooks/useUser";  
+import { useUser } from "@/hooks/useUser";
 
 interface User {
   UserId: number;
@@ -40,11 +40,11 @@ interface User {
   Phone: string;
   DNI: string;
   Email: string;
-  Role : string;
+  Role: string;
   // otros campos...
 }
 export function NavUser() {
-    const user = useUser();
+  const user = useUser();
   const { isMobile } = useSidebar();
   const router = useRouter();
 
@@ -54,7 +54,7 @@ export function NavUser() {
     router.push("/login");
   }
 
-    function abrirPefil() {
+  function abrirPefil() {
     router.push("/dashboard/account");
   }
 
@@ -72,14 +72,10 @@ export function NavUser() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage alt={user.FullName} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-              </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.FullName}</span>
-                <span className="truncate text-xs text-muted-foreground">{user.Email}</span>
-                <span className="truncate text-xs text-muted-foreground">{user.Role}</span>
+                {/*<span className="truncate text-xs text-muted-foreground">{user.Email}</span>*/}
+                <span className="truncate text-xs text-muted-foreground"> {user.Role.charAt(0).toUpperCase() + user.Role.slice(1).toLowerCase()}</span>
               </div>
               <MoreVerticalIcon className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -91,15 +87,11 @@ export function NavUser() {
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage alt={user.FullName} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
+              <div className="flex items-center gap-2 px-3 py-2 text-left text-sm">
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.FullName}</span>
                   <span className="truncate text-xs text-muted-foreground">{user.Email}</span>
-                  <span className="truncate text-xs text-muted-foreground">{user.Role}</span>
+                  <span className="truncate text-xs text-muted-foreground"> {user.Role.charAt(0).toUpperCase() + user.Role.slice(1).toLowerCase()}</span>
                 </div>
               </div>
             </DropdownMenuLabel>

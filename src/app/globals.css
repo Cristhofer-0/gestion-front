@@ -120,12 +120,28 @@
   filter: invert(1);
 }
 
+/* Forzar el texto negro en el componente del mapa, incluso en modo oscuro */
+.maplibregl-map,
+.mapboxgl-map {
+  color: black !important;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-slow {
+  animation: spin-slow 1.5s linear infinite;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
-

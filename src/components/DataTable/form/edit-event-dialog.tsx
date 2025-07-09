@@ -29,6 +29,14 @@ interface MapLibreMapHandle {
   handleSearch: () => void
 }
 
+function to12HourFormat(time24: string): string {
+  const [hourStr, minute] = time24.split(":")
+  let hour = parseInt(hourStr, 10)
+  const ampm = hour >= 12 ? "PM" : "AM"
+  hour = hour % 12 || 12
+  return `${hour}:${minute} ${ampm}`
+}
+
 export const adaptEditFormDataToItemData = (data: EditEventFormData & { id: string }): ItemData => {
   // Combinar fecha y hora para crear el datetime completo
   const fechaInicioCompleta =
@@ -412,23 +420,23 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
       const estadoBackend: EstadoBackend = mapEstado[formData.estado ?? "borrador"];
 
 
-    const eventoActualizado = {
-      organizerId: formData.organizerId,
-      titulo: formData.titulo,
-      descripcion: formData.descripcion,
-      fechaInicio: combinarFechaHora(formData.fechaInicio, formData.horaInicio).toISOString(),
-      fechaFinalizacion: combinarFechaHora(formData.fechaFinalizacion, formData.horaFin).toISOString(),
-      direccion: formData.direccion,
-      visibilidad: formData.visibilidad,
-      categorias: formData.categorias,
-      capacidad: formData.capacidad,
-      estado: estadoBackend, // ✅ ya tipado
-      ubicacion: ubicacion,
-      Latitude: String(ubicacion.lat),
-      Longitude: String(ubicacion.lng),
-      bannerUrl: formData.bannerUrl,
-      videoUrl: formData.videoUrl,
-    }
+      const eventoActualizado = {
+        organizerId: formData.organizerId,
+        titulo: formData.titulo,
+        descripcion: formData.descripcion,
+        fechaInicio: combinarFechaHora(formData.fechaInicio, formData.horaInicio).toISOString(),
+        fechaFinalizacion: combinarFechaHora(formData.fechaFinalizacion, formData.horaFin).toISOString(),
+        direccion: formData.direccion,
+        visibilidad: formData.visibilidad,
+        categorias: formData.categorias,
+        capacidad: formData.capacidad,
+        estado: estadoBackend, // ✅ ya tipado
+        ubicacion: ubicacion,
+        Latitude: String(ubicacion.lat),
+        Longitude: String(ubicacion.lng),
+        bannerUrl: formData.bannerUrl,
+        videoUrl: formData.videoUrl,
+      }
 
 
       await editarEvento(event.id as string, eventoActualizado)
@@ -509,7 +517,16 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
                 onChange={(e) => handleTimeChange("horaInicio", e.target.value)}
                 className={cn(formErrors.horaInicio && "border-red-500")}
               />
-              {formErrors.horaInicio && <p className="text-sm text-red-500">{formErrors.horaInicio}</p>}
+              {formErrors.horaInicio && (
+                <p className="text-sm text-red-500">{formErrors.horaInicio}</p>
+              )}
+
+              {/* Hora en formato AM/PM */}
+              {formData.horaInicio && (
+                <p className="text-sm text-muted-foreground">
+                  Hora seleccionada: {to12HourFormat(formData.horaInicio)}
+                </p>
+              )}
             </div>
           </div>
 
@@ -540,7 +557,16 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
                 onChange={(e) => handleTimeChange("horaFin", e.target.value)}
                 className={cn(formErrors.horaFin && "border-red-500")}
               />
-              {formErrors.horaFin && <p className="text-sm text-red-500">{formErrors.horaFin}</p>}
+              {formErrors.horaFin && (
+                <p className="text-sm text-red-500">{formErrors.horaFin}</p>
+              )}
+
+              {/* Hora en formato AM/PM */}
+              {formData.horaFin && (
+                <p className="text-sm text-muted-foreground">
+                  Hora seleccionada: {to12HourFormat(formData.horaFin)}
+                </p>
+              )}
             </div>
           </div>
 
@@ -566,7 +592,7 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
           {direccionError && <p className="text-sm text-red-500">{direccionError}</p>}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="latitud">Latitud</Label>
               <Input
                 id="latitud"
@@ -578,7 +604,7 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
                 step="0.000001"
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="longitud">Longitud</Label>
               <Input
                 id="longitud"
@@ -593,18 +619,20 @@ export function EditEventDialog({ open, onOpenChange, onSubmit, event, existeEve
           </div>
 
           <div className="h-[300px] overflow-hidden mt-4">
-            <Label htmlFor="map">MAPA</Label>
-            <MapLibreMap
-              ref={mapRef}
-              setLati={setLat}
-              setLoni={setLon}
-              setDireccion={setDirec}
-              direccion={formData.direccion}
-              lat={lat}
-              lon={lon}
-              mode="editar"
-              setDireccionError={setDireccionError}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="map">MAPA</Label>
+              <MapLibreMap
+                ref={mapRef}
+                setLati={setLat}
+                setLoni={setLon}
+                setDireccion={setDirec}
+                direccion={formData.direccion}
+                lat={lat}
+                lon={lon}
+                mode="editar"
+                setDireccionError={setDireccionError}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
