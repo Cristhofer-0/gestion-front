@@ -140,7 +140,7 @@ export function TableComponent({
                 <React.Fragment key={item.id}>
                   <TableRow key={item.id} className={selectedItemId === item.id ? "bg-muted/50 border-b-0" : ""}>
                     <TableCell
-                      className={`font-medium cursor-pointer hover:text-blue-600 hover:underline ${selectedItemId === item.id ? "text-blue-600" : ""
+                      className={`font-medium cursor-pointer hover:text-muted-foreground ${selectedItemId === item.id ? "text-muted-600" : ""
                         }`}
                       onClick={() => onItemClick(item)}
                     >
