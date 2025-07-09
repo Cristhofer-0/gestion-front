@@ -110,15 +110,6 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* Estilo para inputs type="date" en modo oscuro */
-.dark input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-}
-
-/* Estilo para el ícono del reloj en inputs type="time" en modo oscuro */
-.dark input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-}
 
 /* Forzar el texto negro en el componente del mapa, incluso en modo oscuro */
 .maplibregl-map,
