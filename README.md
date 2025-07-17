@@ -1,6 +1,10 @@
 # 🛠️ Gestión Front
 
-Interfaz administrativa para el ecosistema **Proyec-Tec**. Este frontend permite a los administradores gestionar eventos, usuarios, tickets, notificaciones y estadísticas desde un panel moderno y funcional, desarrollado con **Next.js**.
+Interfaz administrativa para el ecosistema **JoinWithUs**. Este frontend permite a los administradores gestionar eventos, usuarios, tickets, notificaciones y estadísticas desde un panel moderno y funcional, desarrollado con **Next.js**.
+
+<p align="center">
+  <img src="https://i.imgur.com/Bf9Y16B.png" alt="JoinWithUs Logo" width="300"/>
+</p>
 
 ---
 
