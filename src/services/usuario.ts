@@ -64,9 +64,9 @@ export async function cambiarPassword(data: CambioPasswordData): Promise<void> {
   })
 
   if (!response.ok) {
-    const errorText = await response.text()
-    console.error("Error:", errorText)
-    throw new Error("No se pudo cambiar la contraseña")
+    const errorData = await response.json();
+
+    throw new Error(errorData.message);
   }
 }
 

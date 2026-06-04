@@ -3,7 +3,7 @@
 import type * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { PencilIcon, ShieldIcon, UserIcon } from "lucide-react"
+import { PencilIcon, ShieldIcon, UserIcon, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -43,6 +43,16 @@ export function AccountProfile() {
   const [isEditingPassword, setIsEditingPassword] = useState(false)
   const [showPasswordEditDialog, setShowPasswordEditDialog] = useState(false)
   const [showPasswordSuccessDialog, setShowPasswordSuccessDialog] = useState(false)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  // Estado para errores por campo
+  const [passwordErrors, setPasswordErrors] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
 
   // Cuando `user` esté disponible, carga los valores en los inputs
   useEffect(() => {
@@ -78,19 +88,35 @@ export function AccountProfile() {
     }
   }
 
-  const handlePasswordChange = async () => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const errors = { currentPassword: "", newPassword: "", confirmPassword: "" }
+    let hasError = false
+
+    if (!currentPassword) {
+      errors.currentPassword = "Ingresa tu contraseña actual"
+      hasError = true
+    }
+
+    if (newPassword.length < 8) {
+      errors.newPassword = "La contraseña debe tener al menos 8 caracteres"
+      hasError = true
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = "Confirma tu nueva contraseña"
+      hasError = true
+    } else if (newPassword !== confirmPassword) {
+      errors.confirmPassword = "Las contraseñas no coinciden"
+      hasError = true
+    }
+
+    setPasswordErrors(errors)
+    if (hasError) return
+
     if (!user?.UserId) {
       toast.error("Usuario no válido")
-      return
-    }
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      toast.error("Por favor, completa todos los campos")
-      return
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error("Las nuevas contraseñas no coinciden")
       return
     }
 
@@ -100,17 +126,23 @@ export function AccountProfile() {
         currentPassword,
         newPassword,
       })
-
       toast.success("Contraseña actualizada correctamente")
-      setShowPasswordSuccessDialog(true) // Mostrar popup de éxito
-      setIsEditingPassword(false) // Desactivar modo edición
-      // Limpia campos
+      setShowPasswordSuccessDialog(true)
+      setIsEditingPassword(false)
       setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
+      setPasswordErrors({ currentPassword: "", newPassword: "", confirmPassword: "" })
+      setShowCurrentPassword(false)
+      setShowNewPassword(false)
+      setShowConfirmPassword(false)
     } catch (error: any) {
-      toast.error(error.message || "Error al cambiar la contraseña")
-      console.error(error)
+      // Error de contraseña actual incorrecta → mostrar bajo el campo
+      if (error.message?.toLowerCase().includes("actual")) {
+        setPasswordErrors((prev) => ({ ...prev, currentPassword: error.message }))
+      } else {
+        toast.error(error.message || "Error al cambiar la contraseña")
+      }
     }
   }
 
@@ -237,33 +269,75 @@ export function AccountProfile() {
 
               <div className="space-y-2">
                 <Label htmlFor="current-password">Contraseña actual</Label>
-                <Input
-                  id="current-password"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  disabled={!isEditingPassword}
-                />
+                <div className="relative">
+                  <Input
+                    id="current-password"
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    disabled={!isEditingPassword}
+                  />
+                  {passwordErrors.currentPassword && (
+                    <p className="text-xs text-red-500 mt-1">{passwordErrors.currentPassword}</p>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  >
+                    {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-password">Nueva contraseña</Label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  disabled={!isEditingPassword}
-                />
+                <div className="relative">
+                  <Input
+                    id="new-password"
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    disabled={!isEditingPassword}
+                  />
+                  {passwordErrors.newPassword && (
+                    <p className="text-xs text-red-500 mt-1">{passwordErrors.newPassword}</p>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirmar nueva contraseña</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={!isEditingPassword}
-                />
+                <div className="relative">
+                  <Input
+                    id="confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={!isEditingPassword}
+                  />
+                  {passwordErrors.confirmPassword && (
+                    <p className="text-xs text-red-500 mt-1">{passwordErrors.confirmPassword}</p>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
               </div>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">
